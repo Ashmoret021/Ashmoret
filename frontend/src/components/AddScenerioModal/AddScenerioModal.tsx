@@ -9,28 +9,14 @@ import {
   Typography,
   LinearProgress,
 } from "@mui/material";
-
-const pages = [
-  {
-    title: "Welcome",
-    content: "Welcome to the setup wizard. Let's get you started.",
-  },
-  {
-    title: "Configure",
-    content: "Configure your preferences before continuing.",
-  },
-  {
-    title: "Complete",
-    content: "Everything is ready. Click Finish to complete the setup.",
-  },
-];
+import { MODAL_PAGES } from "./index";
 
 export const AddScenerioModal =() => {
-    const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(false);
   const [page, setPage] = useState(0);
 
   const handleNext = () => {
-    if (page < pages.length - 1) {
+    if (page < MODAL_PAGES.length - 1) {
       setPage((current) => current + 1);
     } else {
       setOpen(false);
@@ -43,7 +29,7 @@ export const AddScenerioModal =() => {
     setPage(0);
   };
 
-  const progress = ((page + 1) / pages.length) * 100;
+  const progress = ((page + 1) / MODAL_PAGES.length) * 100;
 
   return (
     <>
@@ -58,7 +44,7 @@ export const AddScenerioModal =() => {
         maxWidth="sm"
       >
         <DialogTitle>
-          {pages[page].title}
+          {MODAL_PAGES[page].label}
         </DialogTitle>
 
         <LinearProgress
@@ -78,26 +64,19 @@ export const AddScenerioModal =() => {
           >
             <Box>
               <Typography variant="h5" gutterBottom>
-                {pages[page].title}
+                {MODAL_PAGES[page].label}
               </Typography>
-
-              <Typography color="text.secondary">
-                {pages[page].content}
-              </Typography>
+              {MODAL_PAGES[page].component}
             </Box>
           </Box>
         </DialogContent>
 
         <DialogActions sx={{ px: 3, pb: 3 }}>
-          <Button onClick={handleClose} color="inherit">
-            Cancel
-          </Button>
-
           <Button
             variant="contained"
             onClick={handleNext}
           >
-            {page === pages.length - 1 ? "Finish" : "Next"}
+            {page === MODAL_PAGES.length - 1 ? "יצירה" : "הבא"}
           </Button>
         </DialogActions>
       </Dialog>
