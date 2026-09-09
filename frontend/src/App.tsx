@@ -17,7 +17,7 @@ export default function App() {
     }).addTo(map);
 
     return () => {
-      map.remove();
+      map.remove(); 
     };
   }, []);
 
