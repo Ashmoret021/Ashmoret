@@ -81,6 +81,7 @@ export const SimulationStats: React.FC<SimulationStatsProps> = ({
   return (
     <Card
       elevation={8}
+      dir="rtl"
       sx={{
         position: 'absolute',
         bottom: 24,
@@ -106,11 +107,11 @@ export const SimulationStats: React.FC<SimulationStatsProps> = ({
           }}
         >
           <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#f8fafc' }}>
-            לוח סטטיסטיקות HUD
+            לוח סטטיסטיקות
           </Typography>
           <Chip
             icon={<WifiIcon sx={{ fontSize: 16 }} />}
-            label={isAlgorithmConnected ? 'מחובר (Connected)' : 'גיבוי (Fallback)'}
+            label={isAlgorithmConnected ? 'מחובר' : 'גיבוי'}
             size="small"
             color={isAlgorithmConnected ? 'success' : 'warning'}
             variant="outlined"

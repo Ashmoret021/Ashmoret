@@ -164,6 +164,7 @@ export const EventLog: React.FC = () => {
   return (
     <Card
       elevation={8}
+      dir="rtl"
       sx={{
         position: 'absolute',
         top: 'calc(100vh - 550px)',
@@ -193,8 +194,8 @@ export const EventLog: React.FC = () => {
             <Badge badgeContent={logEntries.length} color="primary" max={99}>
               <HistoryIcon sx={{ color: '#38bdf8' }} />
             </Badge>
-            <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#f8fafc', ml: 1 }}>
-              יומן אירועים (Event Log)
+            <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#f8fafc', mr: 1 }}>
+              יומן אירועים
             </Typography>
           </Box>
           <Tooltip title={isExpanded ? 'מזער' : 'הרחב'}>
