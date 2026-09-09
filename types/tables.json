@@ -1,139 +1,333 @@
 {
-  "scenario": {
-    "description": "טבלת תרחישים. כל תרחיש מכיל שם, סוג וקבוצות רחפנים ומיירטים.",
-    "fields": {
-      "id": {
-        "type": "string",
-        "description": "מזהה תרחיש ייחודי."
+  "schema": {
+    "name": "scenario_management",
+    "tables": {
+      "scenario": {
+        "description": "טבלת התרחישים.",
+        "fields": {
+          "id": {
+            "type": "string",
+            "primary_key": true,
+            "nullable": false,
+            "description": "מזהה ייחודי לתרחיש"
+          },
+          "name": {
+            "type": "string",
+            "nullable": false,
+            "description": "שם התרחיש"
+          },
+          "drones_group_id": {
+            "type": "integer",
+            "nullable": false,
+            "foreign_key": {
+              "table": "drones_group",
+              "field": "id"
+            },
+            "description": "קבוצת הרחפנים של התרחיש"
+          },
+          "launchers_group_id": {
+            "type": "integer",
+            "nullable": false,
+            "foreign_key": {
+              "table": "launchers_group",
+              "field": "id"
+            },
+            "description": "קבוצת המשגרים של התרחיש"
+          },
+          "type": {
+            "type": "string",
+            "nullable": false,
+            "description": "סוג התרחיש: חד זירתי או רב זירתי"
+          }
+        }
       },
-      "name": {
-        "type": "string",
-        "description": "שם התרחיש."
+
+      "drones_group": {
+        "description": "קבוצת רחפנים המשויכת לתרחיש.",
+        "fields": {
+          "id": {
+            "type": "integer",
+            "primary_key": true,
+            "nullable": false,
+            "description": "מזהה ייחודי של קבוצת הרחפנים"
+          },
+          "name": {
+            "type": "string",
+            "nullable": false,
+            "description": "שם קבוצת הרחפנים"
+          }
+        }
       },
-      "interceptor_group_id": {
-        "type": "string",
-        "description": "מזהה קבוצת המיירטים המשויכת לתרחיש. מפתח זר (FK) ל-interceptor_group.id."
+
+      "launchers_group": {
+        "description": "קבוצת משגרים המשויכת לתרחיש.",
+        "fields": {
+          "id": {
+            "type": "integer",
+            "primary_key": true,
+            "nullable": false,
+            "description": "מזהה ייחודי של קבוצת המשגרים"
+          },
+          "name": {
+            "type": "string",
+            "nullable": false,
+            "description": "שם קבוצת המשגרים"
+          }
+        }
       },
-      "drone_group_id": {
-        "type": "string",
-        "description": "מזהה קבוצת הרחפנים המשויכת לתרחיש. מפתח זר (FK) ל-drone_group.id."
+
+      "drone": {
+        "description": "רחפנים השייכים לקבוצת רחפנים.",
+        "fields": {
+          "id": {
+            "type": "integer",
+            "primary_key": true,
+            "nullable": false,
+            "description": "מזהה ייחודי לרחפן"
+          },
+          "drones_group_id": {
+            "type": "integer",
+            "nullable": false,
+            "foreign_key": {
+              "table": "drones_group",
+              "field": "id"
+            },
+            "description": "קבוצת הרחפנים שאליה הרחפן שייך"
+          },
+          "longitude": {
+            "type": "number",
+            "nullable": false,
+            "description": "קו האורך של הרחפן"
+          },
+          "latitude": {
+            "type": "number",
+            "nullable": false,
+            "description": "קו הרוחב של הרחפן"
+          },
+          "asl": {
+            "type": "number",
+            "nullable": false,
+            "description": "גובה הרחפן מעל פני הים"
+          },
+          "agl": {
+            "type": "number",
+            "nullable": false,
+            "description": "גובה הרחפן מעל הקרקע"
+          },
+          "heading": {
+            "type": "number",
+            "nullable": false,
+            "description": "כיוון התנועה של הרחפן"
+          },
+          "velocity": {
+            "type": "number",
+            "nullable": false,
+            "description": "מהירות הרחפן"
+          },
+          "type": {
+            "type": "integer",
+            "nullable": false,
+            "foreign_key": {
+              "table": "drone_type",
+              "field": "id"
+            },
+            "description": "סוג הרחפן"
+          }
+        }
       },
-      "type": {
-        "type": "string",
-        "description": "סוג התרחיש: חד־זירתי או רב־זירתי."
+
+      "launcher": {
+        "description": "משגרים השייכים לקבוצת משגרים.",
+        "fields": {
+          "id": {
+            "type": "integer",
+            "primary_key": true,
+            "nullable": false,
+            "description": "מזהה ייחודי למשגר"
+          },
+          "launchers_group_id": {
+            "type": "integer",
+            "nullable": false,
+            "foreign_key": {
+              "table": "launchers_group",
+              "field": "id"
+            },
+            "description": "קבוצת המשגרים שאליה המשגר שייך"
+          },
+          "longitude": {
+            "type": "number",
+            "nullable": false,
+            "description": "קו האורך של המשגר"
+          },
+          "latitude": {
+            "type": "number",
+            "nullable": false,
+            "description": "קו הרוחב של המשגר"
+          },
+          "asl": {
+            "type": "number",
+            "nullable": false,
+            "description": "גובה המשגר מעל פני הים"
+          },
+          "agl": {
+            "type": "number",
+            "nullable": false,
+            "description": "גובה המשגר מעל הקרקע"
+          },
+          "type": {
+            "type": "integer",
+            "nullable": false,
+            "foreign_key": {
+              "table": "launcher_type",
+              "field": "id"
+            },
+            "description": "סוג המשגר"
+          },
+          "amount": {
+            "type": "integer",
+            "nullable": false,
+            "description": "כמות המשגרים"
+          },
+          "active": {
+            "type": "boolean",
+            "nullable": false,
+            "description": "האם המשגר פעיל"
+          }
+        }
+      },
+
+      "launcher_ammunition": {
+        "description": "טבלת התחמושת של המשגרים, המגדירה את סוג וכמות המיירטים הזמינים בכל משגר.",
+        "fields": {
+          "launcher_id": {
+            "type": "integer",
+            "primary_key": true,
+            "nullable": false,
+            "foreign_key": {
+              "table": "launcher",
+              "field": "id"
+            },
+            "description": "מזהה המשגר"
+          },
+          "interceptor_type_id": {
+            "type": "integer",
+            "primary_key": true,
+            "nullable": false,
+            "foreign_key": {
+              "table": "interceptor_type",
+              "field": "id"
+            },
+            "description": "סוג המיירט"
+          },
+          "amount": {
+            "type": "integer",
+            "nullable": false,
+            "description": "כמות המיירטים מסוג זה"
+          }
+        }
+      },
+
+      "drone_type": {
+        "description": "טבלה סטטית של סוגי הרחפנים.",
+        "fields": {
+          "id": {
+            "type": "integer",
+            "primary_key": true,
+            "nullable": false,
+            "description": "מזהה סוג הרחפן"
+          },
+          "name": {
+            "type": "string",
+            "nullable": false,
+            "unique": true,
+            "description": "שם סוג הרחפן"
+          }
+        }
+      },
+
+      "interceptor_type": {
+        "description": "טבלה סטטית של סוגי המיירטים.",
+        "fields": {
+          "id": {
+            "type": "integer",
+            "primary_key": true,
+            "nullable": false,
+            "description": "מזהה סוג המיירט"
+          },
+          "name": {
+            "type": "string",
+            "nullable": false,
+            "unique": true,
+            "description": "שם סוג המיירט"
+          }
+        }
+      },
+
+      "launcher_type": {
+        "description": "טבלה סטטית של סוגי המשגרים.",
+        "fields": {
+          "id": {
+            "type": "integer",
+            "primary_key": true,
+            "nullable": false,
+            "description": "מזהה סוג המשגר"
+          },
+          "name": {
+            "type": "string",
+            "nullable": false,
+            "unique": true,
+            "description": "שם סוג המשגר"
+          },
+          "reload_time": {
+            "type": "number",
+            "nullable": false,
+            "description": "זמן הטעינה של המשגר"
+          }
+        }
       }
-    }
-  },
-  
-  "interceptor_group": {
-    "description": "טבלת קבוצות מיירטים. קבוצה מגדירה אוסף של מיירטים.",
-    "fields": {
-      "id": {
-        "type": "string",
-        "description": "מזהה קבוצה ייחודי."
+    },
+
+    "relationships": [
+      {
+        "from": "scenario.id",
+        "to": "drones_group.id",
+        "type": "many_to_one"
       },
-      "name": {
-        "type": "string",
-        "description": "שם קבוצת המיירטים."
+      {
+        "from": "scenario.id",
+        "to": "launchers_group.id",
+        "type": "many_to_one"
+      },
+      {
+        "from": "drones_group.id",
+        "to": "drone.drones_group_id",
+        "type": "one_to_many"
+      },
+      {
+        "from": "launchers_group.id",
+        "to": "launcher.launchers_group_id",
+        "type": "one_to_many"
+      },
+      {
+        "from": "drone_type.id",
+        "to": "drone.type",
+        "type": "one_to_many"
+      },
+      {
+        "from": "launcher_type.id",
+        "to": "launcher.type",
+        "type": "one_to_many"
+      },
+      {
+        "from": "launcher.id",
+        "to": "launcher_ammunition.launcher_id",
+        "type": "one_to_many"
+      },
+      {
+        "from": "interceptor_type.id",
+        "to": "launcher_ammunition.interceptor_type_id",
+        "type": "one_to_many"
       }
-    }
-  },
-  
-  "drone_group": {
-    "description": "טבלת קבוצות רחפנים. קבוצה מגדירה אוסף של רחפנים.",
-    "fields": {
-      "id": {
-        "type": "string",
-        "description": "מזהה קבוצה ייחודי."
-      },
-      "name": {
-        "type": "string",
-        "description": "שם קבוצת הרחפנים."
-      }
-    }
-  },
-  
-  "drone": {
-    "description": "טבלת רחפנים. כל רחפן משויך לקבוצת רחפנים.",
-    "fields": {
-      "id": {
-        "type": "string",
-        "description": "מזהה רחפן ייחודי."
-      },
-      "drone_group_id": {
-        "type": "string",
-        "description": "מזהה קבוצת הרחפנים שאליה הרחפן משויך. מפתח זר (FK) ל-drone_group.id."
-      },
-      "type": {
-        "type": "string",
-        "description": "סוג הרחפן."
-      },
-      "longitude": {
-        "type": "number",
-        "description": "קו האורך של מיקום הרחפן."
-      },
-      "latitude": {
-        "type": "number",
-        "description": "קו הרוחב של מיקום הרחפן."
-      },
-      "asl": {
-        "type": "number",
-        "description": "גובה הרחפן מעל פני הים."
-      },
-      "agl": {
-        "type": "number",
-        "description": "גובה הרחפן מעל פני הקרקע."
-      },
-      "timestamp": {
-        "type": "string",
-        "description": "זמן האירוע בפורמט ISO 8601."
-      },
-      "passed_border": {
-        "type": "boolean",
-        "description": "מציין האם הרחפן חצה את הגבול."
-      },
-      "quantity": {
-        "type": "integer",
-        "description": "כמות הרחפנים באירוע."
-      },
-      "heading": {
-        "type": "number",
-        "description": "כיוון התנועה של הרחפן, בטווח 0–360 מעלות."
-      }
-    }
-  },
-  
-  "interceptor": {
-    "description": "טבלת מיירטים. כל מיירט משויך לקבוצת מיירטים.",
-    "fields": {
-      "id": {
-        "type": "string",
-        "description": "מזהה מיירט ייחודי."
-      },
-      "interceptor_group_id": {
-        "type": "string",
-        "description": "מזהה קבוצת המיירטים שאליה המיירט משויך. מפתח זר (FK) ל-interceptor_group.id."
-      },
-      "type": {
-        "type": "string",
-        "description": "סוג המיירט."
-      },
-      "longitude": {
-        "type": "number",
-        "description": "קו האורך של מיקום המיירט."
-      },
-      "latitude": {
-        "type": "number",
-        "description": "קו הרוחב של מיקום המיירט."
-      },
-      "asl": {
-        "type": "number",
-        "description": "גובה המיירט מעל פני הים."
-      },
-      "stock": {
-        "type": "integer",
-        "description": "מלאי המיירטים הזמין."
-      }
-    }
+    ]
   }
 }
