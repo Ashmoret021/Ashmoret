@@ -1,9 +1,9 @@
 import { Router } from 'express';
-import scenarioRouter from './Scenario.routes';
+import scenarioRouter from './scenario.routes';
 import dronesGroupRouter from './DronesGroup.routes';
 import launchersGroupRouter from './LaunchersGroup.routes';
-import droneRouter from './Drone.routes';
-import launcherRouter from './Launcher.routes';
+import droneRouter from './drone.routes';
+import launcherRouter from './launcher.routes';
 import launcherAmmunitionRouter from './LauncherAmmunition.routes';
 import droneTypeRouter from './DroneType.routes';
 import interceptorTypeRouter from './InterceptorType.routes';

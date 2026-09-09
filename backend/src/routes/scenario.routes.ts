@@ -6,7 +6,7 @@ import {
   createScenario,
   updateScenario,
   deleteScenario,
-} from '../services/Scenario.service';
+} from '../services/scenario.service';
 
 const router = Router();
 

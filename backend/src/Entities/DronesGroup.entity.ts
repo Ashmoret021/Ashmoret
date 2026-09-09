@@ -7,7 +7,7 @@ export class DronesGroup {
   @PrimaryGeneratedColumn()
   id!: number;
 
-  @Column()
+  @Column({ type: "varchar" })
   name!: string;
 
   @OneToMany(() => Drone, (drone: Drone) => drone.dronesGroup)

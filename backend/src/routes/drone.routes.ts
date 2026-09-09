@@ -6,7 +6,7 @@ import {
   createDrone,
   updateDrone,
   deleteDrone,
-} from '../services/Drone.service';
+} from '../services/drone.service';
 
 const router = Router();
 
