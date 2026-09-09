@@ -1,5 +1,3 @@
-// AttackerContext.tsx
-
 import {
   createContext,
   useContext,

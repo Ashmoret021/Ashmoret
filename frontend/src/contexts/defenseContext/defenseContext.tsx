@@ -1,5 +1,3 @@
-// DefenseContext.tsx
-
 import {
   createContext,
   useContext,
