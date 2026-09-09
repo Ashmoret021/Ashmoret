@@ -13,6 +13,44 @@ import { SimulationControls } from "./ui/SimulationControls";
 import { SimulationStats } from "./ui/SimulationStats";
 import { Drone, DroneType } from "./types/types";
 import DroneModal from "./components/DroneModal/DroneModal";
+import DroneSidebar, { DroneData } from "./components/DroneSidebar/DroneSidebar"; // <-- Adjust path
+
+// Mock data based on your Figma design
+const MOCK_DRONES: DroneData[] = [
+  {
+    name: "טיל חץ",
+    id: "5329383",
+    battery: 50,
+    accumulatedTime: "6h",
+    recurringFault: "חיישן נכבה",
+    previousFault: "כנף שבור",
+    lastCheck: "6.2.23",
+    lastFix: "6.2.23",
+    status: "משא",
+  },
+  {
+    name: "בליסטי",
+    id: "37464993",
+    battery: 20,
+    accumulatedTime: "8m",
+    recurringFault: "אין",
+    previousFault: "אין",
+    lastCheck: "8.7.25",
+    lastFix: "5.7.25",
+    status: "סריקה",
+  },
+  {
+    name: "כנף רואה",
+    id: "4578676",
+    battery: 67,
+    accumulatedTime: "4h",
+    recurringFault: "שבר",
+    previousFault: "נשבר",
+    lastCheck: "5.6.24",
+    lastFix: "2.7.23",
+    status: "מבצעי",
+  },
+];
 
 export default function App() {
   const mapRef = useRef<HTMLDivElement | null>(null);
@@ -106,82 +144,87 @@ export default function App() {
   return (
     <div
       style={{
+        display: "flex", 
         height: "100vh",
-        position: "relative",
         width: "100vw",
         overflow: "hidden",
       }}
     >
-      {selectedDrone && (
-        <DroneModal
-          drone={selectedDrone}
-          estimatedDamage="1"
-          flightDistance={300}
-          droneName="meofefi"
-          hebrewName="מעופפי"
-          onClose={() => setSelectedDrone(null)}
-        />
-      )}
-      <div ref={mapRef} style={{ height: "100%", width: "100%" }} />
-      <Button
-        onClick={() => setIsStateDialogOpen(true)}
-        style={{ left: 16, position: "absolute", top: 16, zIndex: 1000 }}
-        variant="contained"
-      >
-        View simulation state
-      </Button>
+      {/* Abstracted Drone Cards Section */}
+      <DroneSidebar drones={MOCK_DRONES} />
 
-      {/* Mission 4.2: Simulation Stats HUD */}
-      <SimulationStats />
+      {/* Main Map Area */}
+      <div style={{ flex: 1, position: "relative", height: "100%" }}>
+        {selectedDrone && (
+          <DroneModal
+            drone={selectedDrone}
+            estimatedDamage="1"
+            flightDistance={300}
+            droneName="meofefi"
+            hebrewName="מעופפי"
+            onClose={() => setSelectedDrone(null)}
+          />
+        )}
+        
+        <div ref={mapRef} style={{ height: "100%", width: "100%" }} />
+        
+        <Button
+          onClick={() => setIsStateDialogOpen(true)}
+          style={{ left: 16, position: "absolute", top: 16, zIndex: 1000 }}
+          variant="contained"
+        >
+          View simulation state
+        </Button>
 
-      {/* Mission 4.1: Simulation Control Bar */}
-      <SimulationControls />
+        <SimulationStats />
+        <SimulationControls />
 
-      <Dialog
-        fullWidth
-        maxWidth="md"
-        onClose={() => setIsStateDialogOpen(false)}
-        open={isStateDialogOpen}
-      >
-        <DialogTitle>Simulation state</DialogTitle>
-        <DialogContent>
-          <pre
-            style={{
-              backgroundColor: "#f5f5f5",
-              borderRadius: 4,
-              fontFamily: "monospace",
-              fontSize: 13,
-              margin: 0,
-              maxHeight: "60vh",
-              overflow: "auto",
-              padding: 16,
-              whiteSpace: "pre-wrap",
-              wordBreak: "break-word",
-            }}
-          >
-            {stateJson}
-          </pre>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={toggleClock}>
-            {isRunning ? "Pause clock" : "Run clock"}
-          </Button>
-          <select
-            aria-label="Simulation speed"
-            value={state.speedMultiplier}
-            onChange={(event) =>
-              setSpeed(Number(event.target.value) as 1 | 2 | 5 | 10)
-            }
-          >
-            {[1, 2, 5, 10].map((speed) => (
-              <option key={speed} value={speed}>
-                x{speed}
-              </option>
-            ))}
-          </select>
-          <Button onClick={() => setIsStateDialogOpen(false)}>Close</Button>
-        </DialogActions>
-      </Dialog>
+        <Dialog
+          fullWidth
+          maxWidth="md"
+          onClose={() => setIsStateDialogOpen(false)}
+          open={isStateDialogOpen}
+        >
+          <DialogTitle>Simulation state</DialogTitle>
+          <DialogContent>
+            <pre
+              style={{
+                backgroundColor: "#f5f5f5",
+                borderRadius: 4,
+                fontFamily: "monospace",
+                fontSize: 13,
+                margin: 0,
+                maxHeight: "60vh",
+                overflow: "auto",
+                padding: 16,
+                whiteSpace: "pre-wrap",
+                wordBreak: "break-word",
+              }}
+            >
+              {stateJson}
+            </pre>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={toggleClock}>
+              {isRunning ? "Pause clock" : "Run clock"}
+            </Button>
+            <select
+              aria-label="Simulation speed"
+              value={state.speedMultiplier}
+              onChange={(event) =>
+                setSpeed(Number(event.target.value) as 1 | 2 | 5 | 10)
+              }
+            >
+              {[1, 2, 5, 10].map((speed) => (
+                <option key={speed} value={speed}>
+                  x{speed}
+                </option>
+              ))}
+            </select>
+            <Button onClick={() => setIsStateDialogOpen(false)}>Close</Button>
+          </DialogActions>
+        </Dialog>
+      </div>
     </div>
   );
 }
