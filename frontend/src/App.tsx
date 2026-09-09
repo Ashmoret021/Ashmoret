@@ -1,9 +1,13 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
+import { CoordinatesControl } from "./components/CoordinatesControl";
 
 export default function App() {
   const mapRef = useRef<HTMLDivElement | null>(null);
+  const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(
+    null,
+  );
 
   useEffect(() => {
     if (!mapRef.current) {
@@ -35,6 +39,13 @@ export default function App() {
 
     L.control.layers(baseMaps).addTo(map);
 
+    map.on("mousemove", (e: L.LeafletMouseEvent) => {
+      setCoords({ lat: e.latlng.lat, lng: e.latlng.lng });
+    });
+
+    map.on("mouseout", () => {
+      setCoords(null);
+    });
 
     fetch("/CITIES.geojson")
       .then((response) => response.json())
@@ -49,11 +60,21 @@ export default function App() {
 
   return (
     <div
-      ref={mapRef}
       style={{
+        position: "relative",
         height: "100vh",
         width: "100vw",
+        overflow: "hidden",
       }}
-    />
+    >
+      <div
+        ref={mapRef}
+        style={{
+          height: "100%",
+          width: "100%",
+        }}
+      />
+      <CoordinatesControl coords={coords} />
+    </div>
   );
 }
