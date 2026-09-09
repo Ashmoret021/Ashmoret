@@ -1,31 +1,25 @@
-import { Box, Typography } from '@mui/material';
-import axios from 'axios';
-
-void axios;
+import { useEffect, useRef } from 'react';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
 
 export default function App() {
-  return (
-    <Box
-      sx={{
-        minHeight: '100vh',
-        display: 'grid',
-        placeItems: 'center',
-        bgcolor: '#111827',
-        color: 'white',
-        textAlign: 'center',
-      }}
-    >
-      <Box>
-        <Box
-          component="img"
-          src="/react.svg"
-          alt="React"
-          sx={{ width: 96, height: 96, mb: 2 }}
-        />
-        <Typography variant="h5" component="h1" fontWeight={700}>
-          React + Vite + TypeScript + MUI + Axios
-        </Typography>
-      </Box>
-    </Box>
-  );
+  const mapRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (!mapRef.current) {
+      return;
+    }
+
+    const map = L.map(mapRef.current).setView([31.0461, 34.8516], 6);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap contributors',
+    }).addTo(map);
+
+    return () => {
+      map.remove();
+    };
+  }, []);
+
+  return <div ref={mapRef} style={{ height: '100vh', width: '100vw' }} />;
 }
