@@ -5,18 +5,17 @@ import { SimulationControls } from './ui/SimulationControls';
 import { SimulationStats } from './ui/SimulationStats';
 import { EventLog } from './ui/EventLog';
 import { MapLegend } from './ui/MapLegend';
-import { useSimulation } from './simulation/useSimulation';
+import { loadScenario } from './simulation/SimulationContext';
 import { sampleScenario } from './simulation/sampleScenario';
 import { LeafletRenderer } from './map/LeafletRenderer';
 
 export default function App() {
-  const { loadScenario } = useSimulation();
   const rendererRef = useRef<LeafletRenderer | null>(null);
 
   useEffect(() => {
-    // Load default realistic scenario
+    // Load default realistic scenario once on mount
     loadScenario(sampleScenario);
-  }, [loadScenario]);
+  }, []);
 
   const handleMapReady = useCallback((map: L.Map) => {
     // Create LeafletRenderer for 60 FPS visual rendering decoupled from sim logic

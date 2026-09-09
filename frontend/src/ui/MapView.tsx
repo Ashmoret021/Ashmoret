@@ -8,20 +8,25 @@ export interface MapViewProps {
   onMapReady?: (map: L.Map) => void;
 }
 
-export const MapView: React.FC<MapViewProps> = ({
-  center = [31.0461, 34.8516],
-  zoom = 6,
+const DEFAULT_CENTER: [number, number] = [31.0461, 34.8516];
+const DEFAULT_ZOOM = 6;
+
+export const MapView: React.FC<MapViewProps> = React.memo(({
+  center = DEFAULT_CENTER,
+  zoom = DEFAULT_ZOOM,
   onMapReady,
 }) => {
   const mapRef = useRef<HTMLDivElement | null>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
+  const onMapReadyRef = useRef(onMapReady);
+  onMapReadyRef.current = onMapReady;
 
   useEffect(() => {
     if (!mapRef.current || mapInstanceRef.current) {
       return;
     }
 
-    const map = L.map(mapRef.current).setView(center, zoom);
+    const map = L.map(mapRef.current, { preferCanvas: true }).setView(center, zoom);
     mapInstanceRef.current = map;
 
     const streetLayer = L.tileLayer(
@@ -56,13 +61,13 @@ export const MapView: React.FC<MapViewProps> = ({
         // Fallback gracefully if GeoJSON isn't available
       });
 
-    onMapReady?.(map);
+    onMapReadyRef.current?.(map);
 
     return () => {
       map.remove();
       mapInstanceRef.current = null;
     };
-  }, [center, zoom, onMapReady]);
+  }, []);
 
   return (
     <div
@@ -77,4 +82,5 @@ export const MapView: React.FC<MapViewProps> = ({
       }}
     />
   );
-};
+});
+
