@@ -6,7 +6,7 @@ import {
   createLauncher,
   updateLauncher,
   deleteLauncher,
-} from '../services/launcher.service';
+} from '../services/Launcher.service';
 
 const router = Router();
 

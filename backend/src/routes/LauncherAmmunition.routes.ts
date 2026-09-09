@@ -6,7 +6,7 @@ import {
   createLauncherAmmunition,
   updateLauncherAmmunition,
   deleteLauncherAmmunition,
-} from '../services/launcher-ammunition.service';
+} from '../services/LauncherAmmunition.service';
 
 const router = Router();
 

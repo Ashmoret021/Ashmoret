@@ -1,13 +1,13 @@
 import { Router } from 'express';
-import scenarioRouter from './scenario.routes';
-import dronesGroupRouter from './drones-group.routes';
-import launchersGroupRouter from './launchers-group.routes';
-import droneRouter from './drone.routes';
-import launcherRouter from './launcher.routes';
-import launcherAmmunitionRouter from './launcher-ammunition.routes';
-import droneTypeRouter from './drone-type.routes';
-import interceptorTypeRouter from './interceptor-type.routes';
-import launcherTypeRouter from './launcher-type.routes';
+import scenarioRouter from './Scenario.routes';
+import dronesGroupRouter from './DronesGroup.routes';
+import launchersGroupRouter from './LaunchersGroup.routes';
+import droneRouter from './Drone.routes';
+import launcherRouter from './Launcher.routes';
+import launcherAmmunitionRouter from './LauncherAmmunition.routes';
+import droneTypeRouter from './DroneType.routes';
+import interceptorTypeRouter from './InterceptorType.routes';
+import launcherTypeRouter from './LauncherType.routes';
 
 const apiRouter = Router();
 
