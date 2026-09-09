@@ -153,10 +153,10 @@
 - [x] **4.4 מימוש מקרא מפה ותפריט הגדרות (`src/ui/MapLegend.tsx`)**
   - [x] מקרא סמלים ברור ומפורט (סוגי עצמים וצבעים/צורות).
   - [x] מתגי הצגה/הסתרה של מסלולים (Threat Routes, Interceptor Routes).
-- [ ] **4.5 אינטגרציה מרכזית (`src/App.tsx`, `src/ui/MapView.tsx`)**
-  - [ ] טעינת תרחיש ראשוני (`Scenario`) והזנתו למנוע.
-  - [ ] חיבור עטיפת Leaflet React לרנדרר האימפרטיבי.
-  - [ ] עיצוב Responsive ומודרני (Glassmorphism, Dark Theme).
+- [x] **4.5 אינטגרציה מרכזית (`src/App.tsx`, `src/ui/MapView.tsx`)**
+  - [x] טעינת תרחיש ראשוני (`Scenario`) והזנתו למנוע.
+  - [x] חיבור עטיפת Leaflet React לרנדרר האימפרטיבי.
+  - [x] עיצוב Responsive ומודרני (Glassmorphism, Dark Theme).
 
 ---
 
