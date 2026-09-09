@@ -1,6 +1,7 @@
 import { pool } from '../config/db';
 import { getTable } from '../config/schema';
 import { Scenario, CreateScenarioInput, UpdateScenarioInput } from '../types/models';
+import { logger } from '../utils/logger';
 
 const TABLE_NAME = 'scenario';
 
@@ -24,6 +25,7 @@ export const createScenario = async (data: CreateScenarioInput): Promise<Scenari
   `;
   const values = [data.id, data.name, data.drones_group_id, data.launchers_group_id, data.type];
   const result = await pool.query<Scenario>(query, values);
+  logger.info(`Created scenario with id: ${result.rows[0].id}`);
   return result.rows[0];
 };
 
@@ -53,11 +55,19 @@ export const updateScenario = async (
     RETURNING *
   `;
   const result = await pool.query<Scenario>(query, values);
-  return result.rows[0] ?? null;
+  const updated = result.rows[0] ?? null;
+  if (updated) {
+    logger.info(`Updated scenario with id: ${id}`);
+  }
+  return updated;
 };
 
 export const deleteScenario = async (id: string): Promise<boolean> => {
   const query = `DELETE FROM ${getTable(TABLE_NAME)} WHERE id = $1`;
   const result = await pool.query(query, [id]);
-  return (result.rowCount ?? 0) > 0;
+  const deleted = (result.rowCount ?? 0) > 0;
+  if (deleted) {
+    logger.info(`Deleted scenario with id: ${id}`);
+  }
+  return deleted;
 };

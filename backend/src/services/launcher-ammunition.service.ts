@@ -5,6 +5,7 @@ import {
   CreateLauncherAmmunitionInput,
   UpdateLauncherAmmunitionInput,
 } from '../types/models';
+import { logger } from '../utils/logger';
 
 const TABLE_NAME = 'launcher_ammunition';
 
@@ -61,6 +62,9 @@ export const createLauncherAmmunition = async (
     data.interceptor_type_id,
     data.amount,
   ]);
+  logger.info(
+    `Created launcher ammunition for launcher: ${data.launcher_id}, interceptor: ${data.interceptor_type_id}`
+  );
   return result.rows[0];
 };
 
@@ -80,7 +84,13 @@ export const updateLauncherAmmunition = async (
     interceptorTypeId,
     data.amount,
   ]);
-  return result.rows[0] ?? null;
+  const updated = result.rows[0] ?? null;
+  if (updated) {
+    logger.info(
+      `Updated launcher ammunition for launcher: ${launcherId}, interceptor: ${interceptorTypeId}`
+    );
+  }
+  return updated;
 };
 
 export const deleteLauncherAmmunition = async (
@@ -92,5 +102,11 @@ export const deleteLauncherAmmunition = async (
     WHERE launcher_id = $1 AND interceptor_type_id = $2
   `;
   const result = await pool.query(query, [launcherId, interceptorTypeId]);
-  return (result.rowCount ?? 0) > 0;
+  const deleted = (result.rowCount ?? 0) > 0;
+  if (deleted) {
+    logger.info(
+      `Deleted launcher ammunition for launcher: ${launcherId}, interceptor: ${interceptorTypeId}`
+    );
+  }
+  return deleted;
 };

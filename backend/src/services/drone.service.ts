@@ -1,6 +1,7 @@
 import { pool } from '../config/db';
 import { getTable } from '../config/schema';
 import { Drone, CreateDroneInput, UpdateDroneInput } from '../types/models';
+import { logger } from '../utils/logger';
 
 const TABLE_NAME = 'drone';
 
@@ -23,6 +24,7 @@ export const getDroneById = async (id: number): Promise<Drone | null> => {
 };
 
 export const createDrone = async (data: CreateDroneInput): Promise<Drone> => {
+  let created: Drone;
   if (data.id !== undefined) {
     const query = `
       INSERT INTO ${getTable(TABLE_NAME)} (id, drones_group_id, longitude, latitude, asl, agl, heading, velocity, type)
@@ -41,26 +43,28 @@ export const createDrone = async (data: CreateDroneInput): Promise<Drone> => {
       data.type,
     ];
     const result = await pool.query<Drone>(query, values);
-    return result.rows[0];
+    created = result.rows[0];
+  } else {
+    const query = `
+      INSERT INTO ${getTable(TABLE_NAME)} (drones_group_id, longitude, latitude, asl, agl, heading, velocity, type)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+      RETURNING *
+    `;
+    const values = [
+      data.drones_group_id,
+      data.longitude,
+      data.latitude,
+      data.asl,
+      data.agl,
+      data.heading,
+      data.velocity,
+      data.type,
+    ];
+    const result = await pool.query<Drone>(query, values);
+    created = result.rows[0];
   }
-
-  const query = `
-    INSERT INTO ${getTable(TABLE_NAME)} (drones_group_id, longitude, latitude, asl, agl, heading, velocity, type)
-    VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-    RETURNING *
-  `;
-  const values = [
-    data.drones_group_id,
-    data.longitude,
-    data.latitude,
-    data.asl,
-    data.agl,
-    data.heading,
-    data.velocity,
-    data.type,
-  ];
-  const result = await pool.query<Drone>(query, values);
-  return result.rows[0];
+  logger.info(`Created drone with id: ${created.id}`);
+  return created;
 };
 
 export const updateDrone = async (id: number, data: UpdateDroneInput): Promise<Drone | null> => {
@@ -90,11 +94,19 @@ export const updateDrone = async (id: number, data: UpdateDroneInput): Promise<D
     RETURNING *
   `;
   const result = await pool.query<Drone>(query, values);
-  return result.rows[0] ?? null;
+  const updated = result.rows[0] ?? null;
+  if (updated) {
+    logger.info(`Updated drone with id: ${id}`);
+  }
+  return updated;
 };
 
 export const deleteDrone = async (id: number): Promise<boolean> => {
   const query = `DELETE FROM ${getTable(TABLE_NAME)} WHERE id = $1`;
   const result = await pool.query(query, [id]);
-  return (result.rowCount ?? 0) > 0;
+  const deleted = (result.rowCount ?? 0) > 0;
+  if (deleted) {
+    logger.info(`Deleted drone with id: ${id}`);
+  }
+  return deleted;
 };

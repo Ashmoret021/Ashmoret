@@ -1,6 +1,7 @@
 import { pool } from '../config/db';
 import { getTable } from '../config/schema';
 import { Launcher, CreateLauncherInput, UpdateLauncherInput } from '../types/models';
+import { logger } from '../utils/logger';
 
 const TABLE_NAME = 'launcher';
 
@@ -23,6 +24,7 @@ export const getLauncherById = async (id: number): Promise<Launcher | null> => {
 };
 
 export const createLauncher = async (data: CreateLauncherInput): Promise<Launcher> => {
+  let created: Launcher;
   if (data.id !== undefined) {
     const query = `
       INSERT INTO ${getTable(TABLE_NAME)} (id, launchers_group_id, longitude, latitude, asl, agl, type, amount, active)
@@ -41,26 +43,28 @@ export const createLauncher = async (data: CreateLauncherInput): Promise<Launche
       data.active,
     ];
     const result = await pool.query<Launcher>(query, values);
-    return result.rows[0];
+    created = result.rows[0];
+  } else {
+    const query = `
+      INSERT INTO ${getTable(TABLE_NAME)} (launchers_group_id, longitude, latitude, asl, agl, type, amount, active)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+      RETURNING *
+    `;
+    const values = [
+      data.launchers_group_id,
+      data.longitude,
+      data.latitude,
+      data.asl,
+      data.agl,
+      data.type,
+      data.amount,
+      data.active,
+    ];
+    const result = await pool.query<Launcher>(query, values);
+    created = result.rows[0];
   }
-
-  const query = `
-    INSERT INTO ${getTable(TABLE_NAME)} (launchers_group_id, longitude, latitude, asl, agl, type, amount, active)
-    VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-    RETURNING *
-  `;
-  const values = [
-    data.launchers_group_id,
-    data.longitude,
-    data.latitude,
-    data.asl,
-    data.agl,
-    data.type,
-    data.amount,
-    data.active,
-  ];
-  const result = await pool.query<Launcher>(query, values);
-  return result.rows[0];
+  logger.info(`Created launcher with id: ${created.id}`);
+  return created;
 };
 
 export const updateLauncher = async (
@@ -93,11 +97,19 @@ export const updateLauncher = async (
     RETURNING *
   `;
   const result = await pool.query<Launcher>(query, values);
-  return result.rows[0] ?? null;
+  const updated = result.rows[0] ?? null;
+  if (updated) {
+    logger.info(`Updated launcher with id: ${id}`);
+  }
+  return updated;
 };
 
 export const deleteLauncher = async (id: number): Promise<boolean> => {
   const query = `DELETE FROM ${getTable(TABLE_NAME)} WHERE id = $1`;
   const result = await pool.query(query, [id]);
-  return (result.rowCount ?? 0) > 0;
+  const deleted = (result.rowCount ?? 0) > 0;
+  if (deleted) {
+    logger.info(`Deleted launcher with id: ${id}`);
+  }
+  return deleted;
 };

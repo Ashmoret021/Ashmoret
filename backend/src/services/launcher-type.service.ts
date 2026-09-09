@@ -1,6 +1,7 @@
 import { pool } from '../config/db';
 import { getTable } from '../config/schema';
 import { LauncherType, CreateLauncherTypeInput, UpdateLauncherTypeInput } from '../types/models';
+import { logger } from '../utils/logger';
 
 const TABLE_NAME = 'launcher_type';
 
@@ -19,6 +20,7 @@ export const getLauncherTypeById = async (id: number): Promise<LauncherType | nu
 export const createLauncherType = async (
   data: CreateLauncherTypeInput
 ): Promise<LauncherType> => {
+  let created: LauncherType;
   if (data.id !== undefined) {
     const query = `
       INSERT INTO ${getTable(TABLE_NAME)} (id, name, reload_time)
@@ -26,16 +28,18 @@ export const createLauncherType = async (
       RETURNING *
     `;
     const result = await pool.query<LauncherType>(query, [data.id, data.name, data.reload_time]);
-    return result.rows[0];
+    created = result.rows[0];
+  } else {
+    const query = `
+      INSERT INTO ${getTable(TABLE_NAME)} (name, reload_time)
+      VALUES ($1, $2)
+      RETURNING *
+    `;
+    const result = await pool.query<LauncherType>(query, [data.name, data.reload_time]);
+    created = result.rows[0];
   }
-
-  const query = `
-    INSERT INTO ${getTable(TABLE_NAME)} (name, reload_time)
-    VALUES ($1, $2)
-    RETURNING *
-  `;
-  const result = await pool.query<LauncherType>(query, [data.name, data.reload_time]);
-  return result.rows[0];
+  logger.info(`Created launcher type with id: ${created.id}`);
+  return created;
 };
 
 export const updateLauncherType = async (
@@ -59,11 +63,19 @@ export const updateLauncherType = async (
     RETURNING *
   `;
   const result = await pool.query<LauncherType>(query, values);
-  return result.rows[0] ?? null;
+  const updated = result.rows[0] ?? null;
+  if (updated) {
+    logger.info(`Updated launcher type with id: ${id}`);
+  }
+  return updated;
 };
 
 export const deleteLauncherType = async (id: number): Promise<boolean> => {
   const query = `DELETE FROM ${getTable(TABLE_NAME)} WHERE id = $1`;
   const result = await pool.query(query, [id]);
-  return (result.rowCount ?? 0) > 0;
+  const deleted = (result.rowCount ?? 0) > 0;
+  if (deleted) {
+    logger.info(`Deleted launcher type with id: ${id}`);
+  }
+  return deleted;
 };

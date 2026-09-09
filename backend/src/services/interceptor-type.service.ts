@@ -1,6 +1,7 @@
 import { pool } from '../config/db';
 import { getTable } from '../config/schema';
 import { InterceptorType, CreateInterceptorTypeInput, UpdateInterceptorTypeInput } from '../types/models';
+import { logger } from '../utils/logger';
 
 const TABLE_NAME = 'interceptor_type';
 
@@ -19,6 +20,7 @@ export const getInterceptorTypeById = async (id: number): Promise<InterceptorTyp
 export const createInterceptorType = async (
   data: CreateInterceptorTypeInput
 ): Promise<InterceptorType> => {
+  let created: InterceptorType;
   if (data.id !== undefined) {
     const query = `
       INSERT INTO ${getTable(TABLE_NAME)} (id, name)
@@ -26,16 +28,18 @@ export const createInterceptorType = async (
       RETURNING *
     `;
     const result = await pool.query<InterceptorType>(query, [data.id, data.name]);
-    return result.rows[0];
+    created = result.rows[0];
+  } else {
+    const query = `
+      INSERT INTO ${getTable(TABLE_NAME)} (name)
+      VALUES ($1)
+      RETURNING *
+    `;
+    const result = await pool.query<InterceptorType>(query, [data.name]);
+    created = result.rows[0];
   }
-
-  const query = `
-    INSERT INTO ${getTable(TABLE_NAME)} (name)
-    VALUES ($1)
-    RETURNING *
-  `;
-  const result = await pool.query<InterceptorType>(query, [data.name]);
-  return result.rows[0];
+  logger.info(`Created interceptor type with id: ${created.id}`);
+  return created;
 };
 
 export const updateInterceptorType = async (
@@ -59,11 +63,19 @@ export const updateInterceptorType = async (
     RETURNING *
   `;
   const result = await pool.query<InterceptorType>(query, values);
-  return result.rows[0] ?? null;
+  const updated = result.rows[0] ?? null;
+  if (updated) {
+    logger.info(`Updated interceptor type with id: ${id}`);
+  }
+  return updated;
 };
 
 export const deleteInterceptorType = async (id: number): Promise<boolean> => {
   const query = `DELETE FROM ${getTable(TABLE_NAME)} WHERE id = $1`;
   const result = await pool.query(query, [id]);
-  return (result.rowCount ?? 0) > 0;
+  const deleted = (result.rowCount ?? 0) > 0;
+  if (deleted) {
+    logger.info(`Deleted interceptor type with id: ${id}`);
+  }
+  return deleted;
 };

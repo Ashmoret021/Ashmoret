@@ -1,6 +1,8 @@
 import 'dotenv/config';
 import http from 'http';
 import app from './app';
+import { logger } from './utils/logger';
+import { testConnection } from './config/db';
 
 const normalizePort = (val: string): number | string | false => {
   const parsedPort = parseInt(val, 10);
@@ -32,22 +34,29 @@ const onError = (error: NodeJS.ErrnoException): void => {
 
   switch (error.code) {
     case 'EACCES':
-      console.error(bind + ' requires elevated privileges');
+      logger.error(`${bind} requires elevated privileges`);
       process.exit(1);
       break;
     case 'EADDRINUSE':
-      console.error(bind + ' is already in use');
+      logger.error(`${bind} is already in use`);
       process.exit(1);
       break;
     default:
+      logger.error('Unexpected server error', { error });
       throw error;
   }
 };
 
-const onListening = (): void => {
+const onListening = async (): Promise<void> => {
   const addr = server.address();
   const bind = typeof addr === 'string' ? 'pipe ' + addr : 'port ' + addr?.port;
-  console.log('Listening on ' + bind);
+  logger.info(`Server is listening on ${bind}`);
+
+  try {
+    await testConnection();
+  } catch (err) {
+    logger.warn('Initial database connection check failed', { error: err });
+  }
 };
 
 server.listen(port);

@@ -1,6 +1,7 @@
 import { pool } from '../config/db';
 import { getTable } from '../config/schema';
 import { DroneType, CreateDroneTypeInput, UpdateDroneTypeInput } from '../types/models';
+import { logger } from '../utils/logger';
 
 const TABLE_NAME = 'drone_type';
 
@@ -17,6 +18,7 @@ export const getDroneTypeById = async (id: number): Promise<DroneType | null> =>
 };
 
 export const createDroneType = async (data: CreateDroneTypeInput): Promise<DroneType> => {
+  let created: DroneType;
   if (data.id !== undefined) {
     const query = `
       INSERT INTO ${getTable(TABLE_NAME)} (id, name)
@@ -24,16 +26,18 @@ export const createDroneType = async (data: CreateDroneTypeInput): Promise<Drone
       RETURNING *
     `;
     const result = await pool.query<DroneType>(query, [data.id, data.name]);
-    return result.rows[0];
+    created = result.rows[0];
+  } else {
+    const query = `
+      INSERT INTO ${getTable(TABLE_NAME)} (name)
+      VALUES ($1)
+      RETURNING *
+    `;
+    const result = await pool.query<DroneType>(query, [data.name]);
+    created = result.rows[0];
   }
-
-  const query = `
-    INSERT INTO ${getTable(TABLE_NAME)} (name)
-    VALUES ($1)
-    RETURNING *
-  `;
-  const result = await pool.query<DroneType>(query, [data.name]);
-  return result.rows[0];
+  logger.info(`Created drone type with id: ${created.id}`);
+  return created;
 };
 
 export const updateDroneType = async (
@@ -57,11 +61,19 @@ export const updateDroneType = async (
     RETURNING *
   `;
   const result = await pool.query<DroneType>(query, values);
-  return result.rows[0] ?? null;
+  const updated = result.rows[0] ?? null;
+  if (updated) {
+    logger.info(`Updated drone type with id: ${id}`);
+  }
+  return updated;
 };
 
 export const deleteDroneType = async (id: number): Promise<boolean> => {
   const query = `DELETE FROM ${getTable(TABLE_NAME)} WHERE id = $1`;
   const result = await pool.query(query, [id]);
-  return (result.rowCount ?? 0) > 0;
+  const deleted = (result.rowCount ?? 0) > 0;
+  if (deleted) {
+    logger.info(`Deleted drone type with id: ${id}`);
+  }
+  return deleted;
 };
