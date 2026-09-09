@@ -25,8 +25,8 @@ const pages = [
   },
 ];
 
-export function ThreePageModal() {
-  const [open, setOpen] = useState(false);
+export const AddScenerioModal =() => {
+    const [open, setOpen] = useState(false);
   const [page, setPage] = useState(0);
 
   const handleNext = () => {
