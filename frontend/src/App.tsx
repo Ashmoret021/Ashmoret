@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import { DefenseSide } from './components/DefenseSide/defenseSide';
 
 export default function App() {
   const mapRef = useRef<HTMLDivElement | null>(null);
@@ -21,5 +22,19 @@ export default function App() {
     };
   }, []);
 
-  return <div ref={mapRef} style={{ height: '100vh', width: '100vw' }} />;
+  return (
+    <>
+      <div
+        ref={mapRef}
+        style={{
+          position: "fixed",
+
+          width: "100vw",
+          height: "100vh",
+        }}
+      />
+
+      <DefenseSide />
+    </>
+  );
 }
