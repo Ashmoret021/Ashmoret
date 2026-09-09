@@ -2,7 +2,7 @@ import { useRef, useState } from "react";
 import { Box, IconButton, Popper, Typography } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 
-const options = ["הוספת הגנה", "הוספת תוקף", "יצירת תרחיש"];
+const options = ["הוספת הגנה", "הוספת תקיפה", "יצירת תרחיש"];
 
 export default function AddScenerioButton() {
   const [open, setOpen] = useState(false);
