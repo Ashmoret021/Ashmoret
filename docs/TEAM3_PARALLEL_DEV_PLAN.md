@@ -114,13 +114,13 @@
 תרגום החלטות אלגוריתם לאירועים ויזואליים, חישוב נקודת הצטלבות ויזואלית (`interceptPoint`), ניהול תור האירועים הוויזואליים, ומימוש רכיב הרנדור הבלעדי ב-Leaflet ברמת 60 FPS.
 
 #### משימות לביצוע:
-- [ ] **3.1 הגדרת טיפוסים ויזואליים (`src/visual/types.ts`)**
+- [V] **3.1 הגדרת טיפוסים ויזואליים (`src/visual/types.ts`)**
   - [ ] הגדרת `VisualEvent`, `VisualStatus` (`pending`, `active`, `finished`).
   - [ ] סוגי אירועים: `launch`, `interception`, `impact`, `miss`.
-- [ ] **3.2 מימוש בונה אירועים ויזואליים (`src/visual/VisualEventBuilder.ts`)**
+- [V] **3.2 מימוש בונה אירועים ויזואליים (`src/visual/VisualEventBuilder.ts`)**
   - [ ] קבלת `EngagementDecision` והפיכתו ל-`InterceptorState` + `VisualEvent`.
   - [ ] חישוב דטרמיניסטי לנקודת יירוט: `interceptPoint = getThreatPositionAtTime(simulationTime + 3s)`.
-- [ ] **3.3 מימוש תור אירועים ויזואליים (`src/visual/VisualEventQueue.ts`)**
+- [V] **3.3 מימוש תור אירועים ויזואליים (`src/visual/VisualEventQueue.ts`)**
   - [ ] תור ממוין לפי `startTime` ו-`endTime`.
   - [ ] מנגנון עדכון וניקוי אירועים שסתיימו.
 - [ ] **3.4 מימוש Leaflet Renderer המרכזי (`src/map/LeafletRenderer.ts`)**
