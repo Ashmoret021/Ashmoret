@@ -3,6 +3,7 @@ import { Button, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { useSimulation } from './simulation/useSimulation';
+import { SimulationControls } from './ui/SimulationControls';
 
 export default function App() {
   const mapRef = useRef<HTMLDivElement | null>(null);
@@ -66,7 +67,7 @@ export default function App() {
   };
 
   return (
-    <div style={{ height: '100vh', position: 'relative', width: '100vw' }}>
+    <div style={{ height: '100vh', position: 'relative', width: '100vw', overflow: 'hidden' }}>
       <div ref={mapRef} style={{ height: '100%', width: '100%' }} />
       <Button
         onClick={() => setIsStateDialogOpen(true)}
@@ -75,6 +76,10 @@ export default function App() {
       >
         View simulation state
       </Button>
+
+      {/* Mission 4.1: Simulation Control Bar */}
+      <SimulationControls />
+
       <Dialog
         fullWidth
         maxWidth="md"
@@ -121,3 +126,4 @@ export default function App() {
     </div>
   );
 }
+
