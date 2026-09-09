@@ -53,7 +53,13 @@ export default function App() {
     fetch("/CITIES.geojson")
       .then((response) => response.json())
       .then((data) => {
-        L.geoJSON(data).addTo(map);
+        L.geoJSON(data, {
+          style: {
+            color: "#d32f2f",
+            fillColor: "#d32f2f",
+            fillOpacity: 0.35,
+          },
+        }).addTo(map);
       });
 
     return () => {
