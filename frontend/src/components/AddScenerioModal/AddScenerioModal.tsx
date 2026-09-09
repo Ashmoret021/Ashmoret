@@ -105,9 +105,10 @@ export const AddScenerioModal: FC = () => {
         onClose={handleClose}
         fullWidth
         maxWidth="sm"
-        dir="rtl"
         PaperProps={{
           sx: {
+            direction: "rtl",
+            textAlign: "right",
             backgroundColor: "#1e293b",
             color: "#f8fafc",
             borderRadius: 3,
@@ -122,6 +123,8 @@ export const AddScenerioModal: FC = () => {
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
+            direction: "rtl",
+            textAlign: "right",
             px: 3,
             pt: 2.5,
             pb: 1.5,
@@ -142,14 +145,26 @@ export const AddScenerioModal: FC = () => {
           </IconButton>
         </DialogTitle>
 
-        {/* Standard MUI Stepper */}
-        <Box sx={{ px: 3, py: 1.5 }}>
+        {/* Standard MUI Stepper (RTL) */}
+        <Box sx={{ px: 3, py: 1.5, direction: "rtl" }}>
           <Stepper
             activeStep={page}
             sx={{
+              direction: "rtl",
+              "& .MuiStep-root": {
+                direction: "rtl",
+              },
+              "& .MuiStepLabel-root": {
+                direction: "rtl",
+              },
+              "& .MuiStepLabel-iconContainer": {
+                paddingRight: 0,
+                paddingLeft: "8px",
+              },
               "& .MuiStepLabel-label": {
                 color: "#64748b",
                 fontSize: "0.85rem",
+                textAlign: "right",
               },
               "& .MuiStepLabel-label.Mui-active": {
                 color: "#38bdf8",
@@ -184,7 +199,7 @@ export const AddScenerioModal: FC = () => {
         <Divider sx={{ borderColor: "rgba(255, 255, 255, 0.08)" }} />
 
         {/* Dialog Content */}
-        <DialogContent sx={{ px: 3, py: 2.5 }}>
+        <DialogContent sx={{ px: 3, py: 2.5, direction: "rtl", textAlign: "right" }}>
           {page === 0 && (
             <GeneralDetailsPage
               data={generalData}
@@ -216,6 +231,7 @@ export const AddScenerioModal: FC = () => {
           sx={{
             px: 3,
             py: 2,
+            direction: "rtl",
             display: "flex",
             justifyContent: "space-between",
           }}
@@ -224,7 +240,7 @@ export const AddScenerioModal: FC = () => {
             ביטול
           </Button>
 
-          <Box sx={{ display: "flex", gap: 1.5 }}>
+          <Box sx={{ display: "flex", gap: 1.5, direction: "rtl" }}>
             {page > 0 && (
               <Button onClick={handleBack} color="inherit" sx={{ color: "#cbd5e1" }}>
                 חזור

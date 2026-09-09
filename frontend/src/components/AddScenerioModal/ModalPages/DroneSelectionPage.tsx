@@ -1,14 +1,12 @@
 import {
   Box,
   Button,
-  Collapse,
   FormControl,
   InputLabel,
   MenuItem,
   Select,
   SelectChangeEvent,
   Stack,
-  TextField,
 } from "@mui/material";
 import { FC, useState } from "react";
 
@@ -18,12 +16,15 @@ export interface DroneSelectionPageProps {
 }
 
 const darkInputSx = {
+  direction: "rtl",
   "& .MuiOutlinedInput-root": {
     backgroundColor: "rgba(15, 23, 42, 0.5)",
     borderRadius: 1.5,
     color: "#f8fafc",
+    direction: "rtl",
     "& fieldset": {
       borderColor: "rgba(255, 255, 255, 0.15)",
+      textAlign: "right",
     },
     "&:hover fieldset": {
       borderColor: "rgba(255, 255, 255, 0.3)",
@@ -31,24 +32,61 @@ const darkInputSx = {
     "&.Mui-focused fieldset": {
       borderColor: "#38bdf8",
     },
+    "& .MuiOutlinedInput-input": {
+      textAlign: "right",
+      direction: "rtl",
+    },
   },
   "& .MuiInputLabel-root": {
     color: "#94a3b8",
+    right: 28,
+    left: "auto",
+    transformOrigin: "top right",
+    textAlign: "right",
+    direction: "rtl",
+    transform: "translate(0, 16px) scale(1)",
     "&.Mui-focused": {
       color: "#38bdf8",
     },
+    "&.MuiInputLabel-shrink, &[data-shrink='true']": {
+      transform: "translate(14px, -9px) scale(0.75)",
+      transformOrigin: "top right",
+    },
+  },
+  "& .MuiOutlinedInput-notchedOutline": {
+    textAlign: "right",
+    "& legend": {
+      textAlign: "right",
+      fontSize: "0.75em",
+    },
+  },
+  "& .MuiSelect-select": {
+    textAlign: "right",
+    direction: "rtl",
+    paddingRight: "14px !important",
+    paddingLeft: "36px !important",
   },
   "& .MuiSelect-icon": {
     color: "#94a3b8",
+    right: "auto",
+    left: 7,
   },
 };
 
 const menuPropsSx = {
   PaperProps: {
+    dir: "rtl",
     sx: {
       backgroundColor: "#1e293b",
       color: "#f8fafc",
+      direction: "rtl",
+      textAlign: "right",
       border: "1px solid rgba(255, 255, 255, 0.1)",
+      "& .MuiMenuItem-root": {
+        direction: "rtl",
+        textAlign: "right",
+        justifyContent: "flex-start",
+      },
       "& .MuiMenuItem-root:hover": {
         backgroundColor: "rgba(255, 255, 255, 0.08)",
       },
@@ -76,9 +114,7 @@ export const DroneSelectionPage: FC<DroneSelectionPageProps> = ({
   onSelectGroup,
 }) => {
   const [internalGroup, setInternalGroup] = useState<string>("group-1");
-  const [groups, setGroups] = useState<GroupItem[]>(DEFAULT_GROUPS);
-  const [isCreating, setIsCreating] = useState(false);
-  const [newGroupName, setNewGroupName] = useState("");
+  const [groups] = useState<GroupItem[]>(DEFAULT_GROUPS);
 
   const currentGroup = propGroup ?? internalGroup;
 
@@ -89,19 +125,8 @@ export const DroneSelectionPage: FC<DroneSelectionPageProps> = ({
     onSelectGroup?.(val, chosen?.label);
   };
 
-  const handleAddGroup = () => {
-    if (!newGroupName.trim()) return;
-    const newId = `group-${Date.now()}`;
-    const newGroup: GroupItem = { id: newId, label: newGroupName.trim() };
-    setGroups((prev) => [...prev, newGroup]);
-    setInternalGroup(newId);
-    onSelectGroup?.(newId, newGroup.label);
-    setNewGroupName("");
-    setIsCreating(false);
-  };
-
   return (
-    <Box sx={{ width: "100%", dir: "rtl", pt: 1 }}>
+    <Box dir="rtl" sx={{ width: "100%", direction: "rtl", textAlign: "right", pt: 1 }}>
       <Stack spacing={2.5}>
         <FormControl fullWidth sx={darkInputSx}>
           <InputLabel id="drone-select-label">בחר קבוצת רחפנים</InputLabel>
@@ -124,7 +149,6 @@ export const DroneSelectionPage: FC<DroneSelectionPageProps> = ({
         <Button
           variant="outlined"
           fullWidth
-          onClick={() => setIsCreating((prev) => !prev)}
           sx={{
             color: "#38bdf8",
             borderColor: "rgba(56, 189, 248, 0.4)",
@@ -134,34 +158,8 @@ export const DroneSelectionPage: FC<DroneSelectionPageProps> = ({
             },
           }}
         >
-          {isCreating ? "ביטול הוספה" : "יצירת קבוצת רחפנים"}
+          יצירת קבוצת רחפנים
         </Button>
-
-        <Collapse in={isCreating}>
-          <Stack direction="row" spacing={1.5} sx={{ mt: 0.5 }}>
-            <TextField
-              fullWidth
-              size="small"
-              placeholder="שם קבוצת רחפנים חדשה"
-              value={newGroupName}
-              onChange={(e) => setNewGroupName(e.target.value)}
-              sx={darkInputSx}
-            />
-            <Button
-              variant="contained"
-              disabled={!newGroupName.trim()}
-              onClick={handleAddGroup}
-              sx={{
-                bgcolor: "#0284c7",
-                "&:hover": { bgcolor: "#0369a1" },
-                whiteSpace: "nowrap",
-                px: 2.5,
-              }}
-            >
-              הוסף
-            </Button>
-          </Stack>
-        </Collapse>
       </Stack>
     </Box>
   );

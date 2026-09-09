@@ -1,14 +1,12 @@
 import {
   Box,
   Button,
-  Collapse,
   FormControl,
   InputLabel,
   MenuItem,
   Select,
   SelectChangeEvent,
   Stack,
-  TextField,
 } from "@mui/material";
 import { FC, useState } from "react";
 
@@ -18,12 +16,15 @@ export interface LauncherSelectionPageProps {
 }
 
 const darkInputSx = {
+  direction: "rtl",
   "& .MuiOutlinedInput-root": {
     backgroundColor: "rgba(15, 23, 42, 0.5)",
     borderRadius: 1.5,
     color: "#f8fafc",
+    direction: "rtl",
     "& fieldset": {
       borderColor: "rgba(255, 255, 255, 0.15)",
+      textAlign: "right",
     },
     "&:hover fieldset": {
       borderColor: "rgba(255, 255, 255, 0.3)",
@@ -31,24 +32,61 @@ const darkInputSx = {
     "&.Mui-focused fieldset": {
       borderColor: "#38bdf8",
     },
+    "& .MuiOutlinedInput-input": {
+      textAlign: "right",
+      direction: "rtl",
+    },
   },
   "& .MuiInputLabel-root": {
     color: "#94a3b8",
+    right: 28,
+    left: "auto",
+    transformOrigin: "top right",
+    textAlign: "right",
+    direction: "rtl",
+    transform: "translate(0, 16px) scale(1)",
     "&.Mui-focused": {
       color: "#38bdf8",
     },
+    "&.MuiInputLabel-shrink, &[data-shrink='true']": {
+      transform: "translate(14px, -9px) scale(0.75)",
+      transformOrigin: "top right",
+    },
+  },
+  "& .MuiOutlinedInput-notchedOutline": {
+    textAlign: "right",
+    "& legend": {
+      textAlign: "right",
+      fontSize: "0.75em",
+    },
+  },
+  "& .MuiSelect-select": {
+    textAlign: "right",
+    direction: "rtl",
+    paddingRight: "14px !important",
+    paddingLeft: "36px !important",
   },
   "& .MuiSelect-icon": {
     color: "#94a3b8",
+    right: "auto",
+    left: 7,
   },
 };
 
 const menuPropsSx = {
   PaperProps: {
+    dir: "rtl",
     sx: {
       backgroundColor: "#1e293b",
       color: "#f8fafc",
+      direction: "rtl",
+      textAlign: "right",
       border: "1px solid rgba(255, 255, 255, 0.1)",
+      "& .MuiMenuItem-root": {
+        direction: "rtl",
+        textAlign: "right",
+        justifyContent: "flex-start",
+      },
       "& .MuiMenuItem-root:hover": {
         backgroundColor: "rgba(255, 255, 255, 0.08)",
       },
@@ -76,9 +114,7 @@ export const LauncherSelectionPage: FC<LauncherSelectionPageProps> = ({
   onSelectGroup,
 }) => {
   const [internalGroup, setInternalGroup] = useState<string>("battery-1");
-  const [batteries, setBatteries] = useState<BatteryItem[]>(DEFAULT_BATTERIES);
-  const [isCreating, setIsCreating] = useState(false);
-  const [newBatteryName, setNewBatteryName] = useState("");
+  const [batteries] = useState<BatteryItem[]>(DEFAULT_BATTERIES);
 
   const currentGroup = propGroup ?? internalGroup;
 
@@ -89,22 +125,8 @@ export const LauncherSelectionPage: FC<LauncherSelectionPageProps> = ({
     onSelectGroup?.(val, chosen?.label);
   };
 
-  const handleAddBattery = () => {
-    if (!newBatteryName.trim()) return;
-    const newId = `battery-${Date.now()}`;
-    const newBattery: BatteryItem = {
-      id: newId,
-      label: newBatteryName.trim(),
-    };
-    setBatteries((prev) => [...prev, newBattery]);
-    setInternalGroup(newId);
-    onSelectGroup?.(newId, newBattery.label);
-    setNewBatteryName("");
-    setIsCreating(false);
-  };
-
   return (
-    <Box sx={{ width: "100%", dir: "rtl", pt: 1 }}>
+    <Box dir="rtl" sx={{ width: "100%", direction: "rtl", textAlign: "right", pt: 1 }}>
       <Stack spacing={2.5}>
         <FormControl fullWidth sx={darkInputSx}>
           <InputLabel id="launcher-select-label">בחר קבוצת משגרים</InputLabel>
@@ -127,7 +149,6 @@ export const LauncherSelectionPage: FC<LauncherSelectionPageProps> = ({
         <Button
           variant="outlined"
           fullWidth
-          onClick={() => setIsCreating((prev) => !prev)}
           sx={{
             color: "#38bdf8",
             borderColor: "rgba(56, 189, 248, 0.4)",
@@ -137,34 +158,8 @@ export const LauncherSelectionPage: FC<LauncherSelectionPageProps> = ({
             },
           }}
         >
-          {isCreating ? "ביטול הוספה" : "יצירת קבוצת משגרים"}
+          יצירת קבוצת משגרים
         </Button>
-
-        <Collapse in={isCreating}>
-          <Stack direction="row" spacing={1.5} sx={{ mt: 0.5 }}>
-            <TextField
-              fullWidth
-              size="small"
-              placeholder="שם סוללת משגרים חדשה"
-              value={newBatteryName}
-              onChange={(e) => setNewBatteryName(e.target.value)}
-              sx={darkInputSx}
-            />
-            <Button
-              variant="contained"
-              disabled={!newBatteryName.trim()}
-              onClick={handleAddBattery}
-              sx={{
-                bgcolor: "#0284c7",
-                "&:hover": { bgcolor: "#0369a1" },
-                whiteSpace: "nowrap",
-                px: 2.5,
-              }}
-            >
-              הוסף
-            </Button>
-          </Stack>
-        </Collapse>
       </Stack>
     </Box>
   );
