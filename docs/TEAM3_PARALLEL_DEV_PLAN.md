@@ -114,23 +114,23 @@
 תרגום החלטות אלגוריתם לאירועים ויזואליים, חישוב נקודת הצטלבות ויזואלית (`interceptPoint`), ניהול תור האירועים הוויזואליים, ומימוש רכיב הרנדור הבלעדי ב-Leaflet ברמת 60 FPS.
 
 #### משימות לביצוע:
-- [ ] **3.1 הגדרת טיפוסים ויזואליים (`src/visual/types.ts`)**
+- [V] **3.1 הגדרת טיפוסים ויזואליים (`src/visual/types.ts`)**
   - [ ] הגדרת `VisualEvent`, `VisualStatus` (`pending`, `active`, `finished`).
   - [ ] סוגי אירועים: `launch`, `interception`, `impact`, `miss`.
-- [ ] **3.2 מימוש בונה אירועים ויזואליים (`src/visual/VisualEventBuilder.ts`)**
+- [V] **3.2 מימוש בונה אירועים ויזואליים (`src/visual/VisualEventBuilder.ts`)**
   - [ ] קבלת `EngagementDecision` והפיכתו ל-`InterceptorState` + `VisualEvent`.
   - [ ] חישוב דטרמיניסטי לנקודת יירוט: `interceptPoint = getThreatPositionAtTime(simulationTime + 3s)`.
-- [ ] **3.3 מימוש תור אירועים ויזואליים (`src/visual/VisualEventQueue.ts`)**
+- [V] **3.3 מימוש תור אירועים ויזואליים (`src/visual/VisualEventQueue.ts`)**
   - [ ] תור ממוין לפי `startTime` ו-`endTime`.
   - [ ] מנגנון עדכון וניקוי אירועים שסתיימו.
-- [ ] **3.4 מימוש Leaflet Renderer המרכזי (`src/map/LeafletRenderer.ts`)**
+- [V] **3.4 מימוש Leaflet Renderer המרכזי (`src/map/LeafletRenderer.ts`)**
   - [ ] אתחול מפה עם `preferCanvas: true` לביצועים גבוהים.
   - [ ] ניהול `Map<string, L.Marker>` עבור threats, interceptors, defense systems, impacts.
   - [ ] עדכון מיקומים בלבד (`marker.setLatLng()`) ללא יצירת/מחיקת Markers בכל Frame.
   - [ ] לולאת רנדור 60 FPS (`requestAnimationFrame`) הנפרדת מהלוגיקה.
-- [ ] **3.5 מימוש שכבות ואייקונים (`src/map/icons.ts`, `src/map/*Layer.ts`)**
-  - [ ] יצירת SVG Icons מותאמים לכל סוג יישות (איום 🔴, מיירט 🔵, סוללה 🟦, פיצוץ ✴, פגיעה 💥).
-  - [ ] שכבות Polylines עבור מסלולי איומים ומיירטים (כולל toggle להצגה/הסתרה).
+- [V] **3.5 מימוש שכבות ואייקונים (`src/map/icons.ts`, `src/map/*Layer.ts`)**
+  - [x] יצירת SVG Icons מותאמים לכל סוג יישות (איום 🔴, מיירט 🔵, סוללה 🟦, פיצוץ ✴, פגיעה 💥).
+  - [x] שכבות Polylines עבור מסלולי איומים ומיירטים (כולל toggle להצגה/הסתרה).
 
 ---
 
