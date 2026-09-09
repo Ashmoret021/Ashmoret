@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import axios from "axios";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
@@ -16,10 +17,13 @@ export default function App() {
       attribution: "&copy; OpenStreetMap contributors",
     }).addTo(map);
 
-    fetch("/CITIES.geojson")
-      .then((response) => response.json())
-      .then((data) => {
-        L.geoJSON(data).addTo(map);
+    axios
+      .get("/CITIES.geojson")
+      .then((response) => {
+        L.geoJSON(response.data).addTo(map);
+      })
+      .catch((error) => {
+        console.error("Failed to load cities:", error);
       });
 
     return () => {
@@ -27,5 +31,13 @@ export default function App() {
     };
   }, []);
 
-  return <div ref={mapRef} style={{ height: "100vh", width: "100vw" }} />;
+  return (
+    <div
+      ref={mapRef}
+      style={{
+        height: "100vh",
+        width: "100vw",
+      }}
+    />
+  );
 }
