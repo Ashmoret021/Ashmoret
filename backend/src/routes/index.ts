@@ -1,5 +1,4 @@
 import { Router } from 'express';
-import healthRouter from './health';
 import scenarioRouter from './scenario.routes';
 import dronesGroupRouter from './drones-group.routes';
 import launchersGroupRouter from './launchers-group.routes';
@@ -12,7 +11,6 @@ import launcherTypeRouter from './launcher-type.routes';
 
 const apiRouter = Router();
 
-apiRouter.use(healthRouter);
 apiRouter.use('/scenarios', scenarioRouter);
 apiRouter.use('/drones-groups', dronesGroupRouter);
 apiRouter.use('/launchers-groups', launchersGroupRouter);
