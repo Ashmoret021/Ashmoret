@@ -1,0 +1,139 @@
+{
+  "scenario": {
+    "description": "טבלת תרחישים. כל תרחיש מכיל שם, סוג וקבוצות רחפנים ומיירטים.",
+    "fields": {
+      "id": {
+        "type": "string",
+        "description": "מזהה תרחיש ייחודי."
+      },
+      "name": {
+        "type": "string",
+        "description": "שם התרחיש."
+      },
+      "interceptor_group_id": {
+        "type": "string",
+        "description": "מזהה קבוצת המיירטים המשויכת לתרחיש. מפתח זר (FK) ל-interceptor_group.id."
+      },
+      "drone_group_id": {
+        "type": "string",
+        "description": "מזהה קבוצת הרחפנים המשויכת לתרחיש. מפתח זר (FK) ל-drone_group.id."
+      },
+      "type": {
+        "type": "string",
+        "description": "סוג התרחיש: חד־זירתי או רב־זירתי."
+      }
+    }
+  },
+  
+  "interceptor_group": {
+    "description": "טבלת קבוצות מיירטים. קבוצה מגדירה אוסף של מיירטים.",
+    "fields": {
+      "id": {
+        "type": "string",
+        "description": "מזהה קבוצה ייחודי."
+      },
+      "name": {
+        "type": "string",
+        "description": "שם קבוצת המיירטים."
+      }
+    }
+  },
+  
+  "drone_group": {
+    "description": "טבלת קבוצות רחפנים. קבוצה מגדירה אוסף של רחפנים.",
+    "fields": {
+      "id": {
+        "type": "string",
+        "description": "מזהה קבוצה ייחודי."
+      },
+      "name": {
+        "type": "string",
+        "description": "שם קבוצת הרחפנים."
+      }
+    }
+  },
+  
+  "drone": {
+    "description": "טבלת רחפנים. כל רחפן משויך לקבוצת רחפנים.",
+    "fields": {
+      "id": {
+        "type": "string",
+        "description": "מזהה רחפן ייחודי."
+      },
+      "drone_group_id": {
+        "type": "string",
+        "description": "מזהה קבוצת הרחפנים שאליה הרחפן משויך. מפתח זר (FK) ל-drone_group.id."
+      },
+      "type": {
+        "type": "string",
+        "description": "סוג הרחפן."
+      },
+      "longitude": {
+        "type": "number",
+        "description": "קו האורך של מיקום הרחפן."
+      },
+      "latitude": {
+        "type": "number",
+        "description": "קו הרוחב של מיקום הרחפן."
+      },
+      "asl": {
+        "type": "number",
+        "description": "גובה הרחפן מעל פני הים."
+      },
+      "agl": {
+        "type": "number",
+        "description": "גובה הרחפן מעל פני הקרקע."
+      },
+      "timestamp": {
+        "type": "string",
+        "description": "זמן האירוע בפורמט ISO 8601."
+      },
+      "passed_border": {
+        "type": "boolean",
+        "description": "מציין האם הרחפן חצה את הגבול."
+      },
+      "quantity": {
+        "type": "integer",
+        "description": "כמות הרחפנים באירוע."
+      },
+      "heading": {
+        "type": "number",
+        "description": "כיוון התנועה של הרחפן, בטווח 0–360 מעלות."
+      }
+    }
+  },
+  
+  "interceptor": {
+    "description": "טבלת מיירטים. כל מיירט משויך לקבוצת מיירטים.",
+    "fields": {
+      "id": {
+        "type": "string",
+        "description": "מזהה מיירט ייחודי."
+      },
+      "interceptor_group_id": {
+        "type": "string",
+        "description": "מזהה קבוצת המיירטים שאליה המיירט משויך. מפתח זר (FK) ל-interceptor_group.id."
+      },
+      "type": {
+        "type": "string",
+        "description": "סוג המיירט."
+      },
+      "longitude": {
+        "type": "number",
+        "description": "קו האורך של מיקום המיירט."
+      },
+      "latitude": {
+        "type": "number",
+        "description": "קו הרוחב של מיקום המיירט."
+      },
+      "asl": {
+        "type": "number",
+        "description": "גובה המיירט מעל פני הים."
+      },
+      "stock": {
+        "type": "integer",
+        "description": "מלאי המיירטים הזמין."
+      }
+    }
+  }
+}
