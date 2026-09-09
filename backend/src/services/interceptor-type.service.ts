@@ -1,69 +1,50 @@
-import { pool } from '../config/db';
-import { getTable } from '../config/schema';
-import { InterceptorType, CreateInterceptorTypeInput, UpdateInterceptorTypeInput } from '../types/models';
+import { AppDataSource } from '../config/db';
+import { InterceptorType } from '../Entities';
 import { logger } from '../utils/logger';
 
-const TABLE_NAME = 'interceptor_type';
+export const getInterceptorTypeRepository = () => AppDataSource.getRepository(InterceptorType);
 
 export const getAllInterceptorTypes = async (): Promise<InterceptorType[]> => {
-  const query = `SELECT * FROM ${getTable(TABLE_NAME)} ORDER BY id ASC`;
-  const result = await pool.query<InterceptorType>(query);
-  return result.rows;
+  const repo = getInterceptorTypeRepository();
+  return repo.find({
+    relations: { launcherAmmunition: true },
+    order: { id: 'ASC' },
+  });
 };
 
 export const getInterceptorTypeById = async (id: number): Promise<InterceptorType | null> => {
-  const query = `SELECT * FROM ${getTable(TABLE_NAME)} WHERE id = $1`;
-  const result = await pool.query<InterceptorType>(query, [id]);
-  return result.rows[0] ?? null;
+  const repo = getInterceptorTypeRepository();
+  return repo.findOne({
+    where: { id },
+    relations: { launcherAmmunition: true },
+  });
 };
 
 export const createInterceptorType = async (
-  data: CreateInterceptorTypeInput
+  data: Partial<InterceptorType>
 ): Promise<InterceptorType> => {
-  let created: InterceptorType;
-  if (data.id !== undefined) {
-    const query = `
-      INSERT INTO ${getTable(TABLE_NAME)} (id, name)
-      VALUES ($1, $2)
-      RETURNING *
-    `;
-    const result = await pool.query<InterceptorType>(query, [data.id, data.name]);
-    created = result.rows[0];
-  } else {
-    const query = `
-      INSERT INTO ${getTable(TABLE_NAME)} (name)
-      VALUES ($1)
-      RETURNING *
-    `;
-    const result = await pool.query<InterceptorType>(query, [data.name]);
-    created = result.rows[0];
-  }
-  logger.info(`Created interceptor type with id: ${created.id}`);
-  return created;
+  const repo = getInterceptorTypeRepository();
+  const item = repo.create(data);
+  const saved = await repo.save(item);
+  logger.info(`Created interceptor type with id: ${saved.id}`);
+  return saved;
 };
 
 export const updateInterceptorType = async (
   id: number,
-  data: UpdateInterceptorTypeInput
+  data: Partial<InterceptorType>
 ): Promise<InterceptorType | null> => {
-  const allowedKeys: (keyof UpdateInterceptorTypeInput)[] = ['name'];
-  const keysToUpdate = allowedKeys.filter((key) => data[key] !== undefined);
-
-  if (keysToUpdate.length === 0) {
-    return getInterceptorTypeById(id);
+  const repo = getInterceptorTypeRepository();
+  const existing = await repo.findOneBy({ id });
+  if (!existing) {
+    return null;
   }
 
-  const setClause = keysToUpdate.map((key, index) => `"${key}" = $${index + 2}`).join(', ');
-  const values = [id, ...keysToUpdate.map((key) => data[key])];
+  if (data.name !== undefined) {
+    await repo.update(id, { name: data.name });
+  }
 
-  const query = `
-    UPDATE ${getTable(TABLE_NAME)}
-    SET ${setClause}
-    WHERE id = $1
-    RETURNING *
-  `;
-  const result = await pool.query<InterceptorType>(query, values);
-  const updated = result.rows[0] ?? null;
+  const updated = await repo.findOneBy({ id });
   if (updated) {
     logger.info(`Updated interceptor type with id: ${id}`);
   }
@@ -71,9 +52,9 @@ export const updateInterceptorType = async (
 };
 
 export const deleteInterceptorType = async (id: number): Promise<boolean> => {
-  const query = `DELETE FROM ${getTable(TABLE_NAME)} WHERE id = $1`;
-  const result = await pool.query(query, [id]);
-  const deleted = (result.rowCount ?? 0) > 0;
+  const repo = getInterceptorTypeRepository();
+  const result = await repo.delete(id);
+  const deleted = (result.affected ?? 0) > 0;
   if (deleted) {
     logger.info(`Deleted interceptor type with id: ${id}`);
   }

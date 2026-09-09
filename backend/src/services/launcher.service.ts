@@ -1,103 +1,72 @@
-import { pool } from '../config/db';
-import { getTable } from '../config/schema';
-import { Launcher, CreateLauncherInput, UpdateLauncherInput } from '../types/models';
+import { AppDataSource } from '../config/db';
+import { Launcher } from '../Entities';
 import { logger } from '../utils/logger';
 
-const TABLE_NAME = 'launcher';
+export const getLauncherRepository = () => AppDataSource.getRepository(Launcher);
+
+export type LauncherInput = Partial<Launcher> & {
+  launchers_group_id?: number;
+};
 
 export const getAllLaunchers = async (launchersGroupId?: number): Promise<Launcher[]> => {
-  if (launchersGroupId !== undefined) {
-    const query = `SELECT * FROM ${getTable(TABLE_NAME)} WHERE launchers_group_id = $1 ORDER BY id ASC`;
-    const result = await pool.query<Launcher>(query, [launchersGroupId]);
-    return result.rows;
-  }
-
-  const query = `SELECT * FROM ${getTable(TABLE_NAME)} ORDER BY id ASC`;
-  const result = await pool.query<Launcher>(query);
-  return result.rows;
+  const repo = getLauncherRepository();
+  return repo.find({
+    where: launchersGroupId !== undefined ? { launchersGroupId } : undefined,
+    relations: { launchersGroup: true, launcherType: true, ammunition: true },
+    order: { id: 'ASC' },
+  });
 };
 
 export const getLauncherById = async (id: number): Promise<Launcher | null> => {
-  const query = `SELECT * FROM ${getTable(TABLE_NAME)} WHERE id = $1`;
-  const result = await pool.query<Launcher>(query, [id]);
-  return result.rows[0] ?? null;
+  const repo = getLauncherRepository();
+  return repo.findOne({
+    where: { id },
+    relations: { launchersGroup: true, launcherType: true, ammunition: true },
+  });
 };
 
-export const createLauncher = async (data: CreateLauncherInput): Promise<Launcher> => {
-  let created: Launcher;
-  if (data.id !== undefined) {
-    const query = `
-      INSERT INTO ${getTable(TABLE_NAME)} (id, launchers_group_id, longitude, latitude, asl, agl, type, amount, active)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-      RETURNING *
-    `;
-    const values = [
-      data.id,
-      data.launchers_group_id,
-      data.longitude,
-      data.latitude,
-      data.asl,
-      data.agl,
-      data.type,
-      data.amount,
-      data.active,
-    ];
-    const result = await pool.query<Launcher>(query, values);
-    created = result.rows[0];
-  } else {
-    const query = `
-      INSERT INTO ${getTable(TABLE_NAME)} (launchers_group_id, longitude, latitude, asl, agl, type, amount, active)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-      RETURNING *
-    `;
-    const values = [
-      data.launchers_group_id,
-      data.longitude,
-      data.latitude,
-      data.asl,
-      data.agl,
-      data.type,
-      data.amount,
-      data.active,
-    ];
-    const result = await pool.query<Launcher>(query, values);
-    created = result.rows[0];
-  }
-  logger.info(`Created launcher with id: ${created.id}`);
-  return created;
+export const createLauncher = async (data: LauncherInput): Promise<Launcher> => {
+  const repo = getLauncherRepository();
+  const launcher = repo.create({
+    id: data.id,
+    launchersGroupId: data.launchersGroupId ?? data.launchers_group_id,
+    longitude: data.longitude,
+    latitude: data.latitude,
+    asl: data.asl,
+    agl: data.agl,
+    type: data.type,
+    amount: data.amount,
+    active: data.active,
+  });
+  const saved = await repo.save(launcher);
+  logger.info(`Created launcher with id: ${saved.id}`);
+  return saved;
 };
 
 export const updateLauncher = async (
   id: number,
-  data: UpdateLauncherInput
+  data: Partial<LauncherInput>
 ): Promise<Launcher | null> => {
-  const allowedKeys: (keyof UpdateLauncherInput)[] = [
-    'launchers_group_id',
-    'longitude',
-    'latitude',
-    'asl',
-    'agl',
-    'type',
-    'amount',
-    'active',
-  ];
-  const keysToUpdate = allowedKeys.filter((key) => data[key] !== undefined);
-
-  if (keysToUpdate.length === 0) {
-    return getLauncherById(id);
+  const repo = getLauncherRepository();
+  const existing = await repo.findOneBy({ id });
+  if (!existing) {
+    return null;
   }
 
-  const setClause = keysToUpdate.map((key, index) => `"${key}" = $${index + 2}`).join(', ');
-  const values = [id, ...keysToUpdate.map((key) => data[key])];
+  const updatePayload: Partial<Launcher> = {};
+  if (data.launchersGroupId !== undefined || data.launchers_group_id !== undefined) {
+    updatePayload.launchersGroupId = data.launchersGroupId ?? data.launchers_group_id;
+  }
+  if (data.longitude !== undefined) updatePayload.longitude = data.longitude;
+  if (data.latitude !== undefined) updatePayload.latitude = data.latitude;
+  if (data.asl !== undefined) updatePayload.asl = data.asl;
+  if (data.agl !== undefined) updatePayload.agl = data.agl;
+  if (data.type !== undefined) updatePayload.type = data.type;
+  if (data.amount !== undefined) updatePayload.amount = data.amount;
+  if (data.active !== undefined) updatePayload.active = data.active;
 
-  const query = `
-    UPDATE ${getTable(TABLE_NAME)}
-    SET ${setClause}
-    WHERE id = $1
-    RETURNING *
-  `;
-  const result = await pool.query<Launcher>(query, values);
-  const updated = result.rows[0] ?? null;
+  await repo.update(id, updatePayload);
+  const updated = await repo.findOneBy({ id });
   if (updated) {
     logger.info(`Updated launcher with id: ${id}`);
   }
@@ -105,9 +74,9 @@ export const updateLauncher = async (
 };
 
 export const deleteLauncher = async (id: number): Promise<boolean> => {
-  const query = `DELETE FROM ${getTable(TABLE_NAME)} WHERE id = $1`;
-  const result = await pool.query(query, [id]);
-  const deleted = (result.rowCount ?? 0) > 0;
+  const repo = getLauncherRepository();
+  const result = await repo.delete(id);
+  const deleted = (result.affected ?? 0) > 0;
   if (deleted) {
     logger.info(`Deleted launcher with id: ${id}`);
   }

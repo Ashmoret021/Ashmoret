@@ -1,61 +1,66 @@
-import { pool } from '../config/db';
-import { getTable } from '../config/schema';
-import { Scenario, CreateScenarioInput, UpdateScenarioInput } from '../types/models';
+import { AppDataSource } from '../config/db';
+import { Scenario } from '../Entities';
 import { logger } from '../utils/logger';
 
-const TABLE_NAME = 'scenario';
+export const getScenarioRepository = () => AppDataSource.getRepository(Scenario);
+
+export type ScenarioInput = Partial<Scenario> & {
+  drones_group_id?: number;
+  launchers_group_id?: number;
+};
 
 export const getAllScenarios = async (): Promise<Scenario[]> => {
-  const query = `SELECT * FROM ${getTable(TABLE_NAME)} ORDER BY id ASC`;
-  const result = await pool.query<Scenario>(query);
-  return result.rows;
+  const repo = getScenarioRepository();
+  return repo.find({
+    relations: { dronesGroup: true, launchersGroup: true },
+    order: { id: 'ASC' },
+  });
 };
 
 export const getScenarioById = async (id: string): Promise<Scenario | null> => {
-  const query = `SELECT * FROM ${getTable(TABLE_NAME)} WHERE id = $1`;
-  const result = await pool.query<Scenario>(query, [id]);
-  return result.rows[0] ?? null;
+  const repo = getScenarioRepository();
+  return repo.findOne({
+    where: { id },
+    relations: { dronesGroup: true, launchersGroup: true },
+  });
 };
 
-export const createScenario = async (data: CreateScenarioInput): Promise<Scenario> => {
-  const query = `
-    INSERT INTO ${getTable(TABLE_NAME)} (id, name, drones_group_id, launchers_group_id, type)
-    VALUES ($1, $2, $3, $4, $5)
-    RETURNING *
-  `;
-  const values = [data.id, data.name, data.drones_group_id, data.launchers_group_id, data.type];
-  const result = await pool.query<Scenario>(query, values);
-  logger.info(`Created scenario with id: ${result.rows[0].id}`);
-  return result.rows[0];
+export const createScenario = async (data: ScenarioInput): Promise<Scenario> => {
+  const repo = getScenarioRepository();
+  const scenario = repo.create({
+    id: data.id,
+    name: data.name,
+    dronesGroupId: data.dronesGroupId ?? data.drones_group_id,
+    launchersGroupId: data.launchersGroupId ?? data.launchers_group_id,
+    type: data.type,
+  });
+  const saved = await repo.save(scenario);
+  logger.info(`Created scenario with id: ${saved.id}`);
+  return saved;
 };
 
 export const updateScenario = async (
   id: string,
-  data: UpdateScenarioInput
+  data: Partial<ScenarioInput>
 ): Promise<Scenario | null> => {
-  const allowedKeys: (keyof UpdateScenarioInput)[] = [
-    'name',
-    'drones_group_id',
-    'launchers_group_id',
-    'type',
-  ];
-  const keysToUpdate = allowedKeys.filter((key) => data[key] !== undefined);
-
-  if (keysToUpdate.length === 0) {
-    return getScenarioById(id);
+  const repo = getScenarioRepository();
+  const existing = await repo.findOneBy({ id });
+  if (!existing) {
+    return null;
   }
 
-  const setClause = keysToUpdate.map((key, index) => `"${key}" = $${index + 2}`).join(', ');
-  const values = [id, ...keysToUpdate.map((key) => data[key])];
+  const updatePayload: Partial<Scenario> = {};
+  if (data.name !== undefined) updatePayload.name = data.name;
+  if (data.type !== undefined) updatePayload.type = data.type;
+  if (data.dronesGroupId !== undefined || data.drones_group_id !== undefined) {
+    updatePayload.dronesGroupId = data.dronesGroupId ?? data.drones_group_id;
+  }
+  if (data.launchersGroupId !== undefined || data.launchers_group_id !== undefined) {
+    updatePayload.launchersGroupId = data.launchersGroupId ?? data.launchers_group_id;
+  }
 
-  const query = `
-    UPDATE ${getTable(TABLE_NAME)}
-    SET ${setClause}
-    WHERE id = $1
-    RETURNING *
-  `;
-  const result = await pool.query<Scenario>(query, values);
-  const updated = result.rows[0] ?? null;
+  await repo.update(id, updatePayload);
+  const updated = await repo.findOneBy({ id });
   if (updated) {
     logger.info(`Updated scenario with id: ${id}`);
   }
@@ -63,9 +68,9 @@ export const updateScenario = async (
 };
 
 export const deleteScenario = async (id: string): Promise<boolean> => {
-  const query = `DELETE FROM ${getTable(TABLE_NAME)} WHERE id = $1`;
-  const result = await pool.query(query, [id]);
-  const deleted = (result.rowCount ?? 0) > 0;
+  const repo = getScenarioRepository();
+  const result = await repo.delete(id);
+  const deleted = (result.affected ?? 0) > 0;
   if (deleted) {
     logger.info(`Deleted scenario with id: ${id}`);
   }

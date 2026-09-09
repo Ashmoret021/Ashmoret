@@ -1,8 +1,9 @@
+import 'reflect-metadata';
 import 'dotenv/config';
 import http from 'http';
 import app from './app';
 import { logger } from './utils/logger';
-import { testConnection } from './config/db';
+import { initializeDatabase } from './config/db';
 
 const normalizePort = (val: string): number | string | false => {
   const parsedPort = parseInt(val, 10);
@@ -53,7 +54,7 @@ const onListening = async (): Promise<void> => {
   logger.info(`Server is listening on ${bind}`);
 
   try {
-    await testConnection();
+    await initializeDatabase();
   } catch (err) {
     logger.warn('Initial database connection check failed', { error: err });
   }

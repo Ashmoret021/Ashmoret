@@ -1,90 +1,81 @@
-import { pool } from '../config/db';
-import { getTable } from '../config/schema';
-import {
-  LauncherAmmunition,
-  CreateLauncherAmmunitionInput,
-  UpdateLauncherAmmunitionInput,
-} from '../types/models';
+import { AppDataSource } from '../config/db';
+import { LauncherAmmunition } from '../Entities';
 import { logger } from '../utils/logger';
 
-const TABLE_NAME = 'launcher_ammunition';
+export const getLauncherAmmunitionRepository = () =>
+  AppDataSource.getRepository(LauncherAmmunition);
+
+export type LauncherAmmunitionInput = {
+  launcherId?: number;
+  launcher_id?: number;
+  interceptorTypeId?: number;
+  interceptor_type_id?: number;
+  amount: number;
+};
 
 export const getAllLauncherAmmunition = async (
   launcherId?: number,
   interceptorTypeId?: number
 ): Promise<LauncherAmmunition[]> => {
-  const conditions: string[] = [];
-  const values: unknown[] = [];
+  const repo = getLauncherAmmunitionRepository();
+  const where: Partial<LauncherAmmunition> = {};
+  if (launcherId !== undefined) where.launcherId = launcherId;
+  if (interceptorTypeId !== undefined) where.interceptorTypeId = interceptorTypeId;
 
-  if (launcherId !== undefined) {
-    values.push(launcherId);
-    conditions.push(`launcher_id = $${values.length}`);
-  }
-
-  if (interceptorTypeId !== undefined) {
-    values.push(interceptorTypeId);
-    conditions.push(`interceptor_type_id = $${values.length}`);
-  }
-
-  const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
-  const query = `
-    SELECT * FROM ${getTable(TABLE_NAME)}
-    ${whereClause}
-    ORDER BY launcher_id ASC, interceptor_type_id ASC
-  `;
-
-  const result = await pool.query<LauncherAmmunition>(query, values);
-  return result.rows;
+  return repo.find({
+    where,
+    relations: { launcher: true, interceptorType: true },
+    order: { launcherId: 'ASC', interceptorTypeId: 'ASC' },
+  });
 };
 
 export const getLauncherAmmunitionById = async (
   launcherId: number,
   interceptorTypeId: number
 ): Promise<LauncherAmmunition | null> => {
-  const query = `
-    SELECT * FROM ${getTable(TABLE_NAME)}
-    WHERE launcher_id = $1 AND interceptor_type_id = $2
-  `;
-  const result = await pool.query<LauncherAmmunition>(query, [launcherId, interceptorTypeId]);
-  return result.rows[0] ?? null;
+  const repo = getLauncherAmmunitionRepository();
+  return repo.findOne({
+    where: { launcherId, interceptorTypeId },
+    relations: { launcher: true, interceptorType: true },
+  });
 };
 
 export const createLauncherAmmunition = async (
-  data: CreateLauncherAmmunitionInput
+  data: LauncherAmmunitionInput
 ): Promise<LauncherAmmunition> => {
-  const query = `
-    INSERT INTO ${getTable(TABLE_NAME)} (launcher_id, interceptor_type_id, amount)
-    VALUES ($1, $2, $3)
-    RETURNING *
-  `;
-  const result = await pool.query<LauncherAmmunition>(query, [
-    data.launcher_id,
-    data.interceptor_type_id,
-    data.amount,
-  ]);
+  const repo = getLauncherAmmunitionRepository();
+  const lId = data.launcherId ?? data.launcher_id;
+  const iId = data.interceptorTypeId ?? data.interceptor_type_id;
+
+  if (lId === undefined || iId === undefined) {
+    throw new Error('launcherId and interceptorTypeId are required');
+  }
+
+  const record = repo.create({
+    launcherId: lId,
+    interceptorTypeId: iId,
+    amount: data.amount,
+  });
+  const saved = await repo.save(record);
   logger.info(
-    `Created launcher ammunition for launcher: ${data.launcher_id}, interceptor: ${data.interceptor_type_id}`
+    `Created launcher ammunition for launcher: ${saved.launcherId}, interceptor: ${saved.interceptorTypeId}`
   );
-  return result.rows[0];
+  return saved;
 };
 
 export const updateLauncherAmmunition = async (
   launcherId: number,
   interceptorTypeId: number,
-  data: UpdateLauncherAmmunitionInput
+  data: { amount: number }
 ): Promise<LauncherAmmunition | null> => {
-  const query = `
-    UPDATE ${getTable(TABLE_NAME)}
-    SET amount = $3
-    WHERE launcher_id = $1 AND interceptor_type_id = $2
-    RETURNING *
-  `;
-  const result = await pool.query<LauncherAmmunition>(query, [
-    launcherId,
-    interceptorTypeId,
-    data.amount,
-  ]);
-  const updated = result.rows[0] ?? null;
+  const repo = getLauncherAmmunitionRepository();
+  const existing = await repo.findOneBy({ launcherId, interceptorTypeId });
+  if (!existing) {
+    return null;
+  }
+
+  await repo.update({ launcherId, interceptorTypeId }, { amount: data.amount });
+  const updated = await repo.findOneBy({ launcherId, interceptorTypeId });
   if (updated) {
     logger.info(
       `Updated launcher ammunition for launcher: ${launcherId}, interceptor: ${interceptorTypeId}`
@@ -97,12 +88,9 @@ export const deleteLauncherAmmunition = async (
   launcherId: number,
   interceptorTypeId: number
 ): Promise<boolean> => {
-  const query = `
-    DELETE FROM ${getTable(TABLE_NAME)}
-    WHERE launcher_id = $1 AND interceptor_type_id = $2
-  `;
-  const result = await pool.query(query, [launcherId, interceptorTypeId]);
-  const deleted = (result.rowCount ?? 0) > 0;
+  const repo = getLauncherAmmunitionRepository();
+  const result = await repo.delete({ launcherId, interceptorTypeId });
+  const deleted = (result.affected ?? 0) > 0;
   if (deleted) {
     logger.info(
       `Deleted launcher ammunition for launcher: ${launcherId}, interceptor: ${interceptorTypeId}`
