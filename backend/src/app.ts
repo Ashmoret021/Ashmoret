@@ -1,19 +1,21 @@
 import express from 'express';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
-import logger from 'morgan';
-import healthRouter from './routes/health';
+import morgan from 'morgan';
+import apiRouter from './routes';
 import { errorHandler } from './middleware/errorHandler';
+import { morganStream } from './middleware/logger';
 
 const app = express();
 
-app.use(logger('dev'));
+const morganFormat = process.env.NODE_ENV === 'production' ? 'combined' : 'dev';
+app.use(morgan(morganFormat, { stream: morganStream }));
 app.use(cors({ origin: process.env.FRONTEND_ORIGIN, credentials: true }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 
-app.use('/api', healthRouter);
+app.use('/api', apiRouter);
 
 app.use(errorHandler);
 
