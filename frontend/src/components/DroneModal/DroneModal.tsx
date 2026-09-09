@@ -31,6 +31,7 @@ import {
     [DroneType.FalconLongX4]: "Falcon Long X4",
     [DroneType.NanoSwarmQ9]: "NanoSwarm Q9",
   };
+
   
   export default function DroneModal({
     drone,
