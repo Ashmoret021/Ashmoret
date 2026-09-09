@@ -146,6 +146,18 @@ export class LeafletRenderer {
     this.lastPruneTime = 0;
   }
 
+  /**
+   * Clears all visual state (markers, polylines, interceptors) without stopping
+   * the RAF render loop. Call this on simulation restart so the loop can
+   * immediately start drawing fresh entities on the next tick.
+   */
+  resetVisuals(): void {
+    this.clearAllMarkers();
+    this.clearAllPolylines();
+    this.interceptorStates.clear();
+    this.lastPruneTime = 0;
+  }
+
   // ---------------------------------------------------------------------------
   // Public API
   // ---------------------------------------------------------------------------
@@ -190,9 +202,13 @@ export class LeafletRenderer {
     this.scheduleFrame();
 
     const state = getState();
-    if (state.status === 'idle') return;
-
     const t = state.simulationTime;
+
+    // Always keep defense markers visible (even while idle/paused)
+    this.ensureAllDefenseMarkers(state.launchers);
+
+    // Only advance simulation visuals when running or paused (not idle)
+    if (state.status === 'idle') return;
 
     // 1. Advance VisualEventQueue lifecycle
     visualEventQueue.tick(t);
@@ -206,16 +222,13 @@ export class LeafletRenderer {
     // 3. Render threats and threat routes
     this.renderThreats(state.threats);
 
-    // 4. Render defense systems
-    this.ensureAllDefenseMarkers(state.launchers);
-
-    // 5. Animate interceptors
+    // 4. Animate interceptors
     this.renderInterceptors(t);
 
-    // 6. Render visual events
+    // 5. Render visual events
     this.renderVisualEvents(t);
 
-    // 7. Cleanup inactive entities
+    // 6. Cleanup inactive entities
     this.removeInactiveEntities(state.threats);
   }
 
