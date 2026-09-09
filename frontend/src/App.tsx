@@ -74,7 +74,9 @@ export default function App() {
     axios
       .get("/CITIES.geojson")
       .then((response) => {
-        const citiesLayer = L.geoJSON(response.data);
+        const citiesLayer = L.geoJSON(response.data, {
+          interactive: false,
+        });
 
         layerControl.addOverlay(citiesLayer, "🏙️ ערים");
       })
@@ -104,7 +106,13 @@ export default function App() {
           },
         });
 
-        layerControl.addOverlay(sensitivesLayer, "🛡️ מיקומים רגישים");
+        map.on("overlayadd", (e: L.LayersControlEvent) => {
+          if (e.name === "🛡️ מיקומים רגישים") {
+            sensitivesLayer.bringToFront();
+          }
+        });
+
+        layerControl.addOverlay(sensitivesLayer, "🛡️ אתרים רגישים");
       })
       .catch((error) => {
         console.error("Failed to load sensitives layer:", error);
