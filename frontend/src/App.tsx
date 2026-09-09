@@ -44,7 +44,7 @@ const systems: SystemType[] = [
       iconSize: [25, 41],
       iconAnchor: [12, 41],
     }),
-    remaining: 10,
+    remaining: 16,
   },
   {
     id: 'IronHook-SR',
@@ -54,7 +54,7 @@ const systems: SystemType[] = [
       iconSize: [25, 41],
       iconAnchor: [12, 41],
     }),
-    remaining: 20,
+    remaining: 12,
   },
   {
     id: 'HorizonEye-MX	',
@@ -64,7 +64,7 @@ const systems: SystemType[] = [
       iconSize: [25, 41],
       iconAnchor: [12, 41],
     }),
-    remaining: 30,
+    remaining: 8,
   },
    {
     id: 'CloudFence-Area',
@@ -74,7 +74,7 @@ const systems: SystemType[] = [
       iconSize: [25, 41],
       iconAnchor: [12, 41],
     }),
-    remaining: 30,
+    remaining: 20,
   },
 ];
 
@@ -145,7 +145,7 @@ const markerMenu = createContextMenu();
 
 function buildMapMenuItems(latlng: L.LatLng): MenuItem[] {
   return systems.map((system) => ({
-    label: `${system.label} (נותרו: ${system.remaining})`,
+    label: `${system.label} (left: ${system.remaining})`,
     disabled: system.remaining <= 0,
     action: () => {
       if (system.remaining <= 0) return; // safety check
@@ -169,7 +169,7 @@ function attachRemoveMenu(marker: L.Marker, systemId: string) {
 
     const items: MenuItem[] = [
       {
-        label: '✕ הסר מערכת',
+        label: '✕ Remove item',
         action: () => {
           map.removeLayer(marker);
 
