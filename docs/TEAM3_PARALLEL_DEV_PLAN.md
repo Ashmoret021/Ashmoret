@@ -114,23 +114,23 @@
 תרגום החלטות אלגוריתם לאירועים ויזואליים, חישוב נקודת הצטלבות ויזואלית (`interceptPoint`), ניהול תור האירועים הוויזואליים, ומימוש רכיב הרנדור הבלעדי ב-Leaflet ברמת 60 FPS.
 
 #### משימות לביצוע:
-- [ ] **3.1 הגדרת טיפוסים ויזואליים (`src/visual/types.ts`)**
+- [V] **3.1 הגדרת טיפוסים ויזואליים (`src/visual/types.ts`)**
   - [ ] הגדרת `VisualEvent`, `VisualStatus` (`pending`, `active`, `finished`).
   - [ ] סוגי אירועים: `launch`, `interception`, `impact`, `miss`.
-- [ ] **3.2 מימוש בונה אירועים ויזואליים (`src/visual/VisualEventBuilder.ts`)**
+- [V] **3.2 מימוש בונה אירועים ויזואליים (`src/visual/VisualEventBuilder.ts`)**
   - [ ] קבלת `EngagementDecision` והפיכתו ל-`InterceptorState` + `VisualEvent`.
   - [ ] חישוב דטרמיניסטי לנקודת יירוט: `interceptPoint = getThreatPositionAtTime(simulationTime + 3s)`.
-- [ ] **3.3 מימוש תור אירועים ויזואליים (`src/visual/VisualEventQueue.ts`)**
+- [V] **3.3 מימוש תור אירועים ויזואליים (`src/visual/VisualEventQueue.ts`)**
   - [ ] תור ממוין לפי `startTime` ו-`endTime`.
   - [ ] מנגנון עדכון וניקוי אירועים שסתיימו.
-- [ ] **3.4 מימוש Leaflet Renderer המרכזי (`src/map/LeafletRenderer.ts`)**
+- [V] **3.4 מימוש Leaflet Renderer המרכזי (`src/map/LeafletRenderer.ts`)**
   - [ ] אתחול מפה עם `preferCanvas: true` לביצועים גבוהים.
   - [ ] ניהול `Map<string, L.Marker>` עבור threats, interceptors, defense systems, impacts.
   - [ ] עדכון מיקומים בלבד (`marker.setLatLng()`) ללא יצירת/מחיקת Markers בכל Frame.
   - [ ] לולאת רנדור 60 FPS (`requestAnimationFrame`) הנפרדת מהלוגיקה.
-- [ ] **3.5 מימוש שכבות ואייקונים (`src/map/icons.ts`, `src/map/*Layer.ts`)**
-  - [ ] יצירת SVG Icons מותאמים לכל סוג יישות (איום 🔴, מיירט 🔵, סוללה 🟦, פיצוץ ✴, פגיעה 💥).
-  - [ ] שכבות Polylines עבור מסלולי איומים ומיירטים (כולל toggle להצגה/הסתרה).
+- [V] **3.5 מימוש שכבות ואייקונים (`src/map/icons.ts`, `src/map/*Layer.ts`)**
+  - [x] יצירת SVG Icons מותאמים לכל סוג יישות (איום 🔴, מיירט 🔵, סוללה 🟦, פיצוץ ✴, פגיעה 💥).
+  - [x] שכבות Polylines עבור מסלולי איומים ומיירטים (כולל toggle להצגה/הסתרה).
 
 ---
 
@@ -140,23 +140,23 @@
 בניית סרגל הבקרה, הצגת סטיסטיקות בזמן אמת, Event Log כרונולוגי, מקרא מפה (Legend), וחיבור כל הרכיבים באפליקציית React.
 
 #### משימות לביצוע:
-- [ ] **4.1 מימוש סרגל בקרת סימולציה (`src/ui/SimulationControls.tsx`)**
-  - [ ] כפתורי Play / Pause / Restart.
-  - [ ] בחירת מהירות (`x1`, `x2`, `x5`, `x10`).
-  - [ ] הצגת זמן סימולציה נוכחי בדיוק רב.
-- [ ] **4.2 מימוש לוח סטטיסטיקות HUD (`src/ui/SimulationStats.tsx`)**
-  - [ ] מונים בזמן אמת: איומים פעילים, מיירטים באוויר, יורטו בהצלחה, נפלו בשטח.
-  - [ ] אינדיקטור סטטוס חיבור לאלגוריתם (Connected / Fallback).
-- [ ] **4.3 מימוש יומן אירועים כרונולוגי (`src/ui/EventLog.tsx`)**
-  - [ ] רשימת אירועים נגללת המציגה שיגורים, יירוטים ופגיעות לפי שעון הסימולציה.
-  - [ ] סגנון ויזואלי מובחן לפי סוג האירוע.
-- [ ] **4.4 מימוש מקרא מפה ותפריט הגדרות (`src/ui/MapLegend.tsx`)**
-  - [ ] מקרא סמלים ברור ומפורט (סוגי עצמים וצבעים/צורות).
-  - [ ] מתגי הצגה/הסתרה של מסלולים (Threat Routes, Interceptor Routes).
-- [ ] **4.5 אינטגרציה מרכזית (`src/App.tsx`, `src/ui/MapView.tsx`)**
-  - [ ] טעינת תרחיש ראשוני (`Scenario`) והזנתו למנוע.
-  - [ ] חיבור עטיפת Leaflet React לרנדרר האימפרטיבי.
-  - [ ] עיצוב Responsive ומודרני (Glassmorphism, Dark Theme).
+- [x] **4.1 מימוש סרגל בקרת סימולציה (`src/ui/SimulationControls.tsx`)**
+  - [x] כפתורי Play / Pause / Restart.
+  - [x] בחירת מהירות (`x1`, `x2`, `x5`, `x10`).
+  - [x] הצגת זמן סימולציה נוכחי בדיוק רב.
+- [x] **4.2 מימוש לוח סטטיסטיקות HUD (`src/ui/SimulationStats.tsx`)**
+  - [x] מונים בזמן אמת: איומים פעילים, מיירטים באוויר, יורטו בהצלחה, נפלו בשטח.
+  - [x] אינדיקטור סטטוס חיבור לאלגוריתם (Connected / Fallback).
+- [x] **4.3 מימוש יומן אירועים כרונולוגי (`src/ui/EventLog.tsx`)**
+  - [x] רשימת אירועים נגללת המציגה שיגורים, יירוטים ופגיעות לפי שעון הסימולציה.
+  - [x] סגנון ויזואלי מובחן לפי סוג האירוע.
+- [x] **4.4 מימוש מקרא מפה ותפריט הגדרות (`src/ui/MapLegend.tsx`)**
+  - [x] מקרא סמלים ברור ומפורט (סוגי עצמים וצבעים/צורות).
+  - [x] מתגי הצגה/הסתרה של מסלולים (Threat Routes, Interceptor Routes).
+- [x] **4.5 אינטגרציה מרכזית (`src/App.tsx`, `src/ui/MapView.tsx`)**
+  - [x] טעינת תרחיש ראשוני (`Scenario`) והזנתו למנוע.
+  - [x] חיבור עטיפת Leaflet React לרנדרר האימפרטיבי.
+  - [x] עיצוב Responsive ומודרני (Glassmorphism, Dark Theme).
 
 ---
 
