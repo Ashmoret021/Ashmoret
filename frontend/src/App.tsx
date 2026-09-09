@@ -10,6 +10,10 @@ import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { useSimulation } from "./simulation/useSimulation";
 import axios from "axios";
+import { SimulationControls } from "./ui/SimulationControls";
+import { SimulationStats } from "./ui/SimulationStats";
+import { Drone, DroneType } from "./types/types";
+import DroneModal from "./components/DroneModal/DroneModal";
 
 export default function App() {
   const mapRef = useRef<HTMLDivElement | null>(null);
@@ -17,10 +21,6 @@ export default function App() {
   const { state, pauseClock, resumeClock, setSpeed, startClock } =
     useSimulation();
   const [layers, setLayers] = useState<string[]>(["🗺️ מפה רגילה"]);
-
-  useEffect(() => {
-    console.log("Active layers:", layers);
-  }, [layers]);
 
   useEffect(() => {
     if (!mapRef.current) {
@@ -76,6 +76,11 @@ export default function App() {
       .then((response) => {
         const citiesLayer = L.geoJSON(response.data, {
           interactive: false,
+          style: {
+            color: "#4196f8",
+            fillColor: "#4196f8",
+            fillOpacity: 0.35,
+          },
         });
 
         layerControl.addOverlay(citiesLayer, "🏙️ ערים");
@@ -137,6 +142,16 @@ export default function App() {
     }
   };
 
+  const drone: Drone = {
+    id: 1,
+    location: { agl: 1, asl: 1, latitude: 31, longitude: 34 },
+    type: DroneType.FalconLongX4,
+    velocity: 67,
+    heading: 3,
+  };
+
+  const [selectedDrone, setSelectedDrone] = useState<Drone | null>(drone);
+
   return (
     <>
       <style>
@@ -148,7 +163,24 @@ export default function App() {
           }
         `}
       </style>
-      <div style={{ height: "100vh", position: "relative", width: "100vw" }}>
+      <div
+        style={{
+          height: "100vh",
+          position: "relative",
+          width: "100vw",
+          overflow: "hidden",
+        }}
+      >
+        {selectedDrone && (
+          <DroneModal
+            drone={selectedDrone}
+            estimatedDamage="1"
+            flightDistance={300}
+            droneName="meofefi"
+            hebrewName="מעופפי"
+            onClose={() => setSelectedDrone(null)}
+          />
+        )}
         <div ref={mapRef} style={{ height: "100%", width: "100%" }} />
         <Button
           onClick={() => setIsStateDialogOpen(true)}
@@ -157,6 +189,13 @@ export default function App() {
         >
           View simulation state
         </Button>
+
+        {/* Mission 4.2: Simulation Stats HUD */}
+        <SimulationStats />
+
+        {/* Mission 4.1: Simulation Control Bar */}
+        <SimulationControls />
+
         <Dialog
           fullWidth
           maxWidth="md"
