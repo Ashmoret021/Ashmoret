@@ -10,15 +10,15 @@ import {
   LayoutGrid,
 } from 'lucide-react';
 import { InterceptorItem } from '../../types/simulation';
-import './EventsPanel.css';
+import './InterceptorsPanel.css';
 
-interface EventCardProps {
+interface InterceptorCardProps {
   item: InterceptorItem;
   isSelected?: boolean;
   onSelect?: (id: string) => void;
 }
 
-export const EventCard: React.FC<EventCardProps> = ({ item, isSelected, onSelect }) => {
+export const InterceptorCard: React.FC<InterceptorCardProps> = ({ item, isSelected, onSelect }) => {
   const renderIcon = () => {
     const size = 18;
     switch (item.icon) {
@@ -46,7 +46,7 @@ export const EventCard: React.FC<EventCardProps> = ({ item, isSelected, onSelect
 
   return (
     <div
-      className={`event-card ${isSelected ? 'selected' : ''} ${isDepleted ? 'depleted' : ''}`}
+      className={`interceptor-card ${isSelected ? 'selected' : ''} ${isDepleted ? 'depleted' : ''}`}
       onClick={() => onSelect && onSelect(item.id)}
       role="button"
       tabIndex={0}

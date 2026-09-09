@@ -57,306 +57,327 @@
   overflow: hidden;
 }
 
-/* Top Scenario Banner */
-.panel-header-banner {
+/* Top Header */
+.events-top-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding-bottom: 12px;
   border-bottom: 1px solid #16243d;
-  margin-bottom: 12px;
 }
 
-.panel-scenario-title {
+.create-scenario-btn {
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 13px;
-}
-
-.banner-scenario-label {
-  color: #64748b;
-}
-
-.banner-scenario-val {
-  color: #e2e8f0;
+  background: #1d4ed8;
+  border: 1px solid #3b82f6;
+  color: #ffffff;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
   font-weight: 600;
-}
-
-.panel-safe-badge {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  font-size: 11.5px;
-  color: #38bdf8;
-  background: rgba(56, 189, 248, 0.08);
-  padding: 3px 8px;
-  border-radius: 4px;
-  border: 1px solid rgba(56, 189, 248, 0.2);
-}
-
-/* Card list */
-.events-card-list {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  overflow-y: auto;
-  flex: 1;
-  padding-left: 4px;
-  margin-bottom: 12px;
-}
-
-/* Event Card Item */
-.event-card {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background: #0d172b;
-  border: 1px solid #182845;
-  border-radius: 8px;
-  padding: 9px 12px;
   cursor: pointer;
-  transition: all 0.18s ease;
+  transition: all 0.2s ease;
+  font-family: inherit;
 }
 
-.event-card:hover {
-  background: #12203b;
-  border-color: #2b4573;
+.create-scenario-btn:hover {
+  background: #2563eb;
+  box-shadow: 0 0 10px rgba(59, 130, 246, 0.4);
 }
 
-.event-card.selected {
-  background: #142547;
-  border-color: #38bdf8;
-  box-shadow: 0 0 10px rgba(56, 189, 248, 0.18);
-}
-
-.event-card.depleted {
-  opacity: 0.65;
-}
-
-/* Card counter (Left in RTL visual appearance) */
-.card-counter {
+.scenarios-title-block {
   display: flex;
-  align-items: baseline;
-  gap: 3px;
-  font-family: 'JetBrains Mono', 'Segoe UI', monospace;
-  direction: ltr;
+  align-items: center;
+  gap: 8px;
 }
 
-.count-current {
+.scenarios-heading {
   font-size: 15px;
   font-weight: 700;
   color: #f1f5f9;
 }
 
-.count-divider {
-  font-size: 12px;
-  color: #64748b;
+.scenarios-icon {
+  color: #38bdf8;
 }
 
-.count-total {
-  font-size: 11.5px;
-  color: #64748b;
-}
-
-/* Card Details (Right in RTL visual appearance) */
-.card-details {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.card-main-info {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.status-bullet {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  display: inline-block;
-}
-
-.status-bullet.ready {
-  background-color: #22c55e;
-  box-shadow: 0 0 6px rgba(34, 197, 94, 0.6);
-}
-
-.status-bullet.depleted {
-  background-color: #ef4444;
-  box-shadow: 0 0 6px rgba(239, 68, 68, 0.6);
-}
-
-.card-name {
-  font-size: 13.5px;
-  font-weight: 600;
-  color: #e2e8f0;
-}
-
-.card-category {
-  font-size: 11.5px;
-  color: #64748b;
-}
-
-.card-icon {
-  color: #60a5fa;
-  display: flex;
-  align-items: center;
-}
-
-.event-card.depleted .card-icon {
-  color: #64748b;
-}
-
-/* Bottom Controls Section */
-.events-panel-footer {
-  border-top: 1px solid #16243d;
-  padding-top: 12px;
-}
-
-.placement-controls-container {
+/* Filter Section */
+.events-filter-container {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
+  padding: 10px 0;
+  border-bottom: 1px solid #16243d;
+  margin-bottom: 10px;
 }
 
-.placement-header {
+.filter-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #64748b;
+  font-size: 12px;
+  justify-content: flex-start;
+}
+
+.filter-title {
+  font-weight: 600;
+}
+
+.filter-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
 }
 
-.placement-title-wrap {
+.filter-row-label {
+  font-size: 11.5px;
+  color: #64748b;
+  font-weight: 500;
+  min-width: 65px;
+  text-align: right;
+}
+
+.filter-options-group {
   display: flex;
   align-items: center;
-  gap: 7px;
-}
-
-.placement-title-icon {
-  color: #38bdf8;
-}
-
-.placement-title {
-  font-size: 14px;
-  font-weight: 700;
-  color: #f1f5f9;
-}
-
-/* Segmented Buttons */
-.placement-toggle-group {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+  gap: 3px;
   background: #09101f;
   border: 1px solid #16243d;
-  border-radius: 8px;
-  padding: 3px;
-  gap: 3px;
+  border-radius: 6px;
+  padding: 2px;
 }
 
-.toggle-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  padding: 8px 10px;
+.filter-btn {
   background: transparent;
   border: none;
-  border-radius: 6px;
   color: #94a3b8;
-  font-size: 12.5px;
-  font-weight: 500;
+  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: 4px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.15s ease;
   font-family: inherit;
 }
 
-.toggle-btn:hover {
+.filter-btn:hover {
   color: #f1f5f9;
-  background: rgba(255, 255, 255, 0.04);
+  background: rgba(255, 255, 255, 0.05);
 }
 
-.toggle-btn.active {
+.filter-btn.active {
   background: #1d4ed8;
   color: #ffffff;
   font-weight: 600;
-  box-shadow: 0 2px 8px rgba(29, 78, 216, 0.4);
+  box-shadow: 0 1px 4px rgba(29, 78, 216, 0.4);
 }
 
-/* Info Box */
-.placement-info-box {
+/* Scenarios List */
+.scenarios-card-list {
   display: flex;
-  align-items: flex-start;
-  gap: 8px;
-  background: rgba(15, 23, 42, 0.7);
-  border: 1px solid #1e293b;
-  border-radius: 6px;
-  padding: 8px 10px;
+  flex-direction: column;
+  gap: 10px;
+  overflow-y: auto;
+  flex: 1;
+  padding-left: 4px;
 }
 
-.info-icon {
-  color: #38bdf8;
-  flex-shrink: 0;
-  margin-top: 2px;
+.no-scenarios-empty {
+  padding: 30px 10px;
+  text-align: center;
+  color: #64748b;
+  font-size: 13px;
 }
 
-.info-text {
-  font-size: 11.5px;
-  color: #94a3b8;
-  line-height: 1.4;
-  margin: 0;
-}
-
-/* Start Sim Button */
-.start-sim-button {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  width: 100%;
-  padding: 10px;
+/* Scenario Card */
+.scenario-card {
+  background: #0d172b;
+  border: 1px solid #182845;
   border-radius: 8px;
-  font-size: 13.5px;
-  font-weight: 600;
-  font-family: inherit;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
   cursor: pointer;
   transition: all 0.2s ease;
-  border: 1px solid #1e2d4d;
-  background: #101c33;
-  color: #64748b;
 }
 
-.start-sim-button:not(:disabled) {
-  background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 100%);
-  color: #ffffff;
-  border-color: #3b82f6;
-  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
+.scenario-card:hover {
+  background: #12203b;
+  border-color: #2b4573;
 }
 
-.start-sim-button:not(:disabled):hover {
-  background: #1e40af;
+.scenario-card.selected {
+  background: #132445;
+  border-color: #38bdf8;
+  box-shadow: 0 0 14px rgba(56, 189, 248, 0.22);
 }
 
-.start-sim-button:disabled {
-  cursor: not-allowed;
-  opacity: 0.6;
+/* Card Top Row */
+.card-top-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
-.play-icon {
-  fill: currentColor;
-}
-
-/* Warning Note */
-.placement-warning-note {
+.scenario-title-wrap {
   display: flex;
   align-items: center;
   gap: 6px;
-  color: #eab308;
-  font-size: 11px;
-  justify-content: center;
 }
 
-.warning-icon {
-  flex-shrink: 0;
+.selected-chevron {
+  color: #38bdf8;
+}
+
+.scenario-title {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #f1f5f9;
+  margin: 0;
+}
+
+/* Severity Tag */
+.severity-tag {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 4px;
+}
+
+.severity-low {
+  background: rgba(34, 197, 94, 0.12);
+  border: 1px solid rgba(34, 197, 94, 0.35);
+  color: #4ade80;
+}
+
+.severity-high {
+  background: rgba(245, 158, 11, 0.12);
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  color: #fbbf24;
+}
+
+.severity-extreme {
+  background: rgba(239, 68, 68, 0.14);
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  color: #f87171;
+}
+
+/* Meta Row */
+.card-meta-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12px;
+}
+
+.scenario-kind {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.meta-label {
+  color: #64748b;
+  font-size: 11.5px;
+}
+
+.meta-value {
+  color: #94a3b8;
+  font-weight: 500;
+}
+
+.drone-count-indicator {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: #94a3b8;
+  font-weight: 500;
+}
+
+.meta-icon {
+  color: #38bdf8;
+}
+
+/* Locations Row */
+.card-locations-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 11.5px;
+}
+
+.entry-point-label-wrap {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.entry-point-tags {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.location-tag {
+  background: rgba(239, 68, 68, 0.18);
+  border: 1px solid rgba(239, 68, 68, 0.45);
+  color: #fca5a5;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 1px 7px;
+  border-radius: 4px;
+}
+
+/* Drone Types Row */
+.card-drone-types-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.drone-type-badges {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.drone-type-badge {
+  width: 19px;
+  height: 19px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10.5px;
+  font-weight: 700;
+  color: #ffffff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.badge-type-a {
+  background: #ea580c; /* Orange */
+  border: 1px solid #f97316;
+}
+
+.badge-type-b {
+  background: #dc2626; /* Red */
+  border: 1px solid #ef4444;
+}
+
+.badge-type-c {
+  background: #9333ea; /* Purple */
+  border: 1px solid #a855f7;
+}
+
+.badge-type-d {
+  background: #db2777; /* Pink */
+  border: 1px solid #ec4899;
+}
+
+.badge-type-default {
+  background: #475569;
+  border: 1px solid #64748b;
 }

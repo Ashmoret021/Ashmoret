@@ -8,7 +8,7 @@ import {
   AlertTriangle,
 } from 'lucide-react';
 import { PlacementMode } from '../../types/simulation';
-import './EventsPanel.css';
+import './InterceptorsPanel.css';
 
 interface PlacementControlsProps {
   mode: PlacementMode;
