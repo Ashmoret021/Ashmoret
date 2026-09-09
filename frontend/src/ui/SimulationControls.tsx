@@ -68,15 +68,16 @@ export const SimulationControls: React.FC = () => {
   };
 
   const getStatusLabel = (): string => {
-    if (isRunning) return 'פועל (Running)';
-    if (isPaused) return 'מושהה (Paused)';
-    if (isFinished) return 'הסתיים (Finished)';
-    return 'מוכן (Idle)';
+    if (isRunning) return 'פועל';
+    if (isPaused) return 'מושהה';
+    if (isFinished) return 'הסתיים';
+    return 'מוכן';
   };
 
   return (
     <Paper
       elevation={8}
+      dir="rtl"
       sx={{
         position: 'absolute',
         bottom: 24,
@@ -115,7 +116,7 @@ export const SimulationControls: React.FC = () => {
 
       {/* Play / Pause / Restart Controls */}
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-        <Tooltip title={isRunning ? 'השהה (Pause)' : 'הפעל (Play)'}>
+        <Tooltip title={isRunning ? 'השהה' : 'הפעל'}>
           <IconButton
             onClick={handlePlayPause}
             sx={{
@@ -132,7 +133,7 @@ export const SimulationControls: React.FC = () => {
           </IconButton>
         </Tooltip>
 
-        <Tooltip title="אפס (Restart)">
+        <Tooltip title="אפס">
           <IconButton
             onClick={handleRestart}
             disabled={isIdle && state.simulationTime === 0}

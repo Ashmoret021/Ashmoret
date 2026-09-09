@@ -4,6 +4,7 @@ import 'leaflet/dist/leaflet.css';
 import { SimulationControls } from './ui/SimulationControls';
 import { SimulationStats } from './ui/SimulationStats';
 import { EventLog } from './ui/EventLog';
+import { MapLegend } from './ui/MapLegend';
 
 export default function App() {
   const mapRef = useRef<HTMLDivElement | null>(null);
@@ -52,6 +53,9 @@ export default function App() {
   return (
     <div style={{ height: '100vh', position: 'relative', width: '100vw', overflow: 'hidden' }}>
       <div ref={mapRef} style={{ height: '100%', width: '100%' }} />
+
+      {/* Mission 4.4: Map Legend and Settings */}
+      <MapLegend />
 
       {/* Mission 4.3: Chronological Event Log */}
       <EventLog />
