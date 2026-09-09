@@ -6,22 +6,31 @@ export default function App() {
   const mapRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    if (!mapRef.current) {
-      return;
-    }
+  if (!mapRef.current) {
+    return;
+  }
 
-    const map = L.map(mapRef.current).setView([31.0461, 34.8516], 6);
+  const map = L.map(mapRef.current).setView([31.0461, 34.8516], 6);
 
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '&copy; OpenStreetMap contributors',
-    }).addTo(map);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; OpenStreetMap contributors',
+  }).addTo(map);
 
-    return () => {
-      map.remove();
-    };  
-  }, []);
+  fetch('/CITIES.geojson')
+    .then((response) => response.json())
+    .then((data) => {
+      L.geoJSON(data).addTo(map);
+    });
 
-  console.log(5)
+  return () => {
+    map.remove();
+  };
+}, []);
 
-  return <div ref={mapRef} style={{ height: '100vh', width: '100vw' }} />; 
+  return (
+    <div
+      ref={mapRef}
+      style={{ height: '100vh', width: '100vw' }}
+    />
+  );
 }
