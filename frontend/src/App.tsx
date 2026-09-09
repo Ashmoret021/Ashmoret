@@ -21,5 +21,5 @@ export default function App() {
     };
   }, []);
 
-  return <div ref={mapRef} style={{ height: "100vh", width: "100vw" }} />;
+  return <div ref={mapRef} style={{ height: "100vh", width: "100vw" }} ></div>;
 }
