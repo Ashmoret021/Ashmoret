@@ -41,9 +41,21 @@ export default function App() {
       },
     );
 
-    streetLayer.addTo(map);
+    const darkLayer = L.tileLayer(
+      "https://tiles.stadiamaps.com/tiles/stamen_toner_dark/{z}/{x}/{y}{r}.png",
+      {
+        maxZoom: 20,
+        attribution:
+          '&copy; <a href="https://stadiamaps.com/">Stadia Maps</a> ' +
+          '&copy; <a href="https://stamen.com/">Stamen Design</a> ' +
+          '&copy; <a href="https://openstreetmap.org/">OpenStreetMap</a>',
+      },
+    );
+
+    darkLayer.addTo(map);
 
     const baseMaps = {
+      "🌙 מפה כהה": darkLayer,
       "🗺️ מפה רגילה": streetLayer,
       "🛰️ צילום לווייני": satelliteLayer,
     };
