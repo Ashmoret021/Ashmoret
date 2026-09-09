@@ -1,6 +1,8 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import { Drone, DroneType } from './types/types';
+import DroneModal from './components/DroneModal/DroneModal';
 
 export default function App() {
   const mapRef = useRef<HTMLDivElement | null>(null);
@@ -21,5 +23,14 @@ export default function App() {
     };
   }, []);
 
-  return <div ref={mapRef} style={{ height: '100vh', width: '100vw' }} />;
+  const drone: Drone = {id: 1, location : {agl : 1, asl : 1, latitude : 31, longitude : 34}, type: DroneType.FalconLongX4, velocity: 67, heading: 3};
+
+  const [selectedDrone, setSelectedDrone] = useState<Drone | null>(drone);
+
+  return (
+    <>
+    {selectedDrone && <DroneModal drone={selectedDrone} estimatedDamage='1' flightDistance={300} droneName='meofefi' hebrewName='מעופפי' onClose={() => setSelectedDrone(null)}/>}
+    <div ref={mapRef} style={{ height: '100vh', width: '100vw' }} />
+    </>
+  );
 }
