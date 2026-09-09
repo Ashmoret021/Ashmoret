@@ -7,6 +7,7 @@ import {
   useState,
   ReactNode,
 } from "react";
+import { Attacker } from "../../types";
 
 type AttackerContextType = {
   attackers: Attacker[];

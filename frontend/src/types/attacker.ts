@@ -1,5 +1,5 @@
 //TODO: change the attacker type to match server return
-type Attacker = {
+export type Attacker = {
   id: string;
   name: string;
 };
