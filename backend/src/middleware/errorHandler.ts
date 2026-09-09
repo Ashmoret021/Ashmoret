@@ -1,6 +1,6 @@
 import { ErrorRequestHandler } from 'express';
 import { StatusCodes } from 'http-status-codes';
-import { logger } from '../utils/logger';
+import { logger } from './logger';
 
 export const errorHandler: ErrorRequestHandler = (err, req, res, _next) => {
   const statusCode =

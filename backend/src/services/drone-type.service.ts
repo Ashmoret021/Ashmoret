@@ -1,6 +1,6 @@
 import { AppDataSource } from '../config/db';
 import { DroneType } from '../Entities';
-import { logger } from '../utils/logger';
+import { logger } from '../middleware/logger';
 
 export const getDroneTypeRepository = () => AppDataSource.getRepository(DroneType);
 

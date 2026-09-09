@@ -2,7 +2,7 @@ import 'reflect-metadata';
 import 'dotenv/config';
 import http from 'http';
 import app from './app';
-import { logger } from './utils/logger';
+import { logger } from './middleware/logger';
 import { initializeDatabase } from './config/db';
 
 const normalizePort = (val: string): number | string | false => {

@@ -4,7 +4,7 @@ import cors from 'cors';
 import morgan from 'morgan';
 import apiRouter from './routes';
 import { errorHandler } from './middleware/errorHandler';
-import { morganStream } from './utils/logger';
+import { morganStream } from './middleware/logger';
 
 const app = express();
 

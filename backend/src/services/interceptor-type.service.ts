@@ -1,6 +1,6 @@
 import { AppDataSource } from '../config/db';
 import { InterceptorType } from '../Entities';
-import { logger } from '../utils/logger';
+import { logger } from '../middleware/logger';
 
 export const getInterceptorTypeRepository = () => AppDataSource.getRepository(InterceptorType);
 

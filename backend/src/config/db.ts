@@ -3,7 +3,7 @@ import 'dotenv/config';
 import { DataSource } from 'typeorm';
 import { Pool } from 'pg';
 import * as entities from '../Entities';
-import { logger } from '../utils/logger';
+import { logger } from '../middleware/logger';
 
 export const AppDataSource = new DataSource({
   type: 'postgres',
