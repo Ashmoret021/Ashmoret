@@ -57,7 +57,6 @@ export const sampleScenario: Scenario = {
       },
       route: [
         { latitude: 32.4000, longitude: 34.9000, asl: 500, agl: 500 },
-        { latitude: 32.2000, longitude: 34.8500, asl: 450, agl: 450 },
         { latitude: 32.0853, longitude: 34.7818, asl: 400, agl: 400 },
       ],
     },
@@ -75,7 +74,6 @@ export const sampleScenario: Scenario = {
       },
       route: [
         { latitude: 32.3500, longitude: 35.1000, asl: 800, agl: 800 },
-        { latitude: 32.0000, longitude: 35.0000, asl: 700, agl: 700 },
         { latitude: 31.7683, longitude: 35.2137, asl: 600, agl: 600 },
       ],
     },
