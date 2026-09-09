@@ -90,21 +90,21 @@
 בניית ה-Snapshot של מצב העולם, תקשורת אסינכרונית מול האלגוריתם, שמירה על עקביות (`tickId`), מניעת שיגורים כפולים, ומימוש Mock Server לצורכי פיתוח ובדיקות.
 
 #### משימות לביצוע:
-- [ ] **2.1 הגדרת חוזי תקשורת (`src/algorithm/types.ts`)**
-  - [ ] הגדרת `WorldSnapshot`, `AlgorithmResponse`, `EngagementDecision`.
-  - [ ] הגדרת מבנה ההודעות עבור `/simulation/step`.
-- [ ] **2.2 מימוש בונה Snapshot (`src/algorithm/WorldSnapshotBuilder.ts`)**
-  - [ ] חילוץ איומים פעילים בלבד מתוך `SimulationState`.
-  - [ ] חילוץ מערכות הגנה ומלאי מיירטים זמין.
-  - [ ] שמירת מידע על איומים שרודפים אחריהם כרגע (`activeEngagements` / `engagementStatus`) למניעת הקצאות כפולות.
-- [ ] **2.3 מימוש לקוח API (`src/algorithm/AlgorithmClient.ts`)**
-  - [ ] ביצוע קריאות `POST /simulation/step` בקצב מוגדר (1 לשניית סימולציה).
-  - [ ] שיוך וניהול `tickId` לכל קריאה ותשובה.
-  - [ ] סינון תשובות ישנות/לא מסונכרנות (`response.tickId < latestProcessedTick`).
-  - [ ] טיפול בשגיאות תקשורת והתאוששות (Graceful fallback כשהאלגוריתם אינו זמין).
-- [ ] **2.4 מימוש Mock Algorithm Server (`src/algorithm/mockServer.ts`)**
-  - [ ] שירות סימולטיבי מקומי המקבל `WorldSnapshot` ומחזיר החלטות יירוט הגיוניות.
-  - [ ] סימולציית אחוז הצלחה / כשל ביירוטים למבחני קצה.
+- [v] **2.1 הגדרת חוזי תקשורת (`src/algorithm/types.ts`)**
+  - [v] הגדרת `WorldSnapshot`, `AlgorithmResponse`, `EngagementDecision`.
+  - [v] הגדרת מבנה ההודעות עבור `/simulation/step`.
+- [v] **2.2 מימוש בונה Snapshot (`src/algorithm/WorldSnapshotBuilder.ts`)**
+  - [v] חילוץ איומים פעילים בלבד מתוך `SimulationState`.
+  - [v] חילוץ מערכות הגנה ומלאי מיירטים זמין.
+  - [v] שמירת מידע על איומים שרודפים אחריהם כרגע (`activeEngagements` / `engagementStatus`) למניעת הקצאות כפולות.
+- [v] **2.3 מימוש לקוח API (`src/algorithm/AlgorithmClient.ts`)**
+  - [v] ביצוע קריאות `POST /simulation/step` בקצב מוגדר (1 לשניית סימולציה).
+  - [v] שיוך וניהול `tickId` לכל קריאה ותשובה.
+  - [v] סינון תשובות ישנות/לא מסונכרנות (`response.tickId < latestProcessedTick`).
+  - [v] טיפול בשגיאות תקשורת והתאוששות (Graceful fallback כשהאלגוריתם אינו זמין).
+- [v] **2.4 מימוש Mock Algorithm Server (`src/algorithm/mockServer.ts`)**
+  - [v] שירות סימולטיבי מקומי המקבל `WorldSnapshot` ומחזיר החלטות יירוט הגיוניות.
+  - [v] סימולציית אחוז הצלחה / כשל ביירוטים למבחני קצה.
 
 ---
 
