@@ -1,25 +1,17 @@
-import { useEffect, useRef } from 'react';
-import L from 'leaflet';
-import 'leaflet/dist/leaflet.css';
+import React from 'react';
+import { MainLayout } from './layouts/MainLayout';
 
 export default function App() {
-  const mapRef = useRef<HTMLDivElement | null>(null);
+  const handleStartSimulation = () => {
+    console.log('Simulation initiated');
+  };
 
-  useEffect(() => {
-    if (!mapRef.current) {
-      return;
-    }
-
-    const map = L.map(mapRef.current).setView([31.0461, 34.8516], 6);
-
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '&copy; OpenStreetMap contributors',
-    }).addTo(map);
-
-    return () => {
-      map.remove();
-    };
-  }, []);
-
-  return <div ref={mapRef} style={{ height: '100vh', width: '100vw' }} />;
+  return (
+    <MainLayout
+      scenarioName="רב-זירתי - צפון ומזרח"
+      simId="SIM-01"
+      onStartSimulation={handleStartSimulation}
+    />
+  );
 }
+

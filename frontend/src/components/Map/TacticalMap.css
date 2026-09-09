@@ -1,0 +1,246 @@
+/* Tactical Map Outer Container */
+.tactical-map-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background-color: #060912;
+}
+
+.map-canvas {
+  width: 100%;
+  height: 100%;
+}
+
+/* Custom dark tile filter if base tiles need slight deepening */
+.map-canvas .leaflet-tile-pane {
+  filter: brightness(0.85) contrast(1.15) saturate(1.1);
+}
+
+/* Top-Left Legend Overlay */
+.tactical-map-legend {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  z-index: 500;
+  background: rgba(10, 16, 28, 0.85);
+  backdrop-filter: blur(8px);
+  border: 1px solid #1b2942;
+  border-radius: 8px;
+  padding: 10px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  direction: rtl;
+  pointer-events: auto;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11.5px;
+  color: #cbd5e1;
+}
+
+.legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.dot-system-rec {
+  background-color: #38bdf8;
+  box-shadow: 0 0 6px #38bdf8;
+}
+
+.legend-diamond {
+  width: 8px;
+  height: 8px;
+  transform: rotate(45deg);
+  display: inline-block;
+}
+
+.diamond-manual {
+  background-color: #eab308;
+  box-shadow: 0 0 6px #eab308;
+}
+
+.diamond-drone {
+  background-color: #ef4444;
+  box-shadow: 0 0 6px #ef4444;
+}
+
+.legend-circle {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.circle-entry {
+  background-color: #d946ef;
+  box-shadow: 0 0 6px #d946ef;
+}
+
+.legend-label {
+  font-weight: 500;
+}
+
+/* Bottom-Left Map Controls */
+.tactical-map-controls {
+  position: absolute;
+  bottom: 24px;
+  left: 16px;
+  z-index: 500;
+  display: flex;
+  flex-direction: column;
+  background: rgba(10, 16, 28, 0.88);
+  border: 1px solid #1a273d;
+  border-radius: 6px;
+  overflow: hidden;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45);
+}
+
+.map-ctrl-btn {
+  width: 32px;
+  height: 32px;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid #1a273d;
+  color: #94a3b8;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+}
+
+.map-ctrl-btn:last-child {
+  border-bottom: none;
+}
+
+.map-ctrl-btn:hover {
+  background: #182845;
+  color: #38bdf8;
+}
+
+/* Tactical Leaflet Marker Styles */
+.tactical-div-icon {
+  background: transparent;
+  border: none;
+}
+
+.tactical-marker-threat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-family: 'Assistant', sans-serif;
+}
+
+.threat-header {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  color: #ef4444;
+  font-size: 11px;
+  font-weight: 700;
+  text-shadow: 0 0 4px rgba(0, 0, 0, 0.8);
+}
+
+.threat-arrow {
+  color: #ef4444;
+  font-size: 12px;
+}
+
+.threat-arrow-down {
+  color: #ef4444;
+  font-size: 12px;
+  transform: rotate(90deg);
+}
+
+.threat-badge-outer {
+  margin-top: 2px;
+}
+
+.threat-badge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 1px 4px;
+  border-radius: 3px;
+}
+
+.threat-badge.pink {
+  color: #f472b6;
+  border: 1px solid #ec4899;
+  background: rgba(236, 72, 153, 0.2);
+}
+
+.threat-badge.red {
+  color: #f87171;
+  border: 1px solid #ef4444;
+  background: rgba(239, 68, 68, 0.2);
+}
+
+.threat-badge.yellow {
+  color: #facc15;
+  border: 1px solid #eab308;
+  background: rgba(234, 179, 8, 0.2);
+}
+
+.tactical-marker-threat.single {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 4px;
+}
+
+.threat-diamond {
+  width: 9px;
+  height: 9px;
+  transform: rotate(45deg);
+}
+
+.threat-diamond.red {
+  background-color: #ef4444;
+  box-shadow: 0 0 6px #ef4444;
+}
+
+.threat-diamond.yellow {
+  background-color: #eab308;
+  box-shadow: 0 0 6px #eab308;
+}
+
+.threat-id {
+  font-size: 10.5px;
+  font-weight: 600;
+  color: #cbd5e1;
+}
+
+/* Tactical Outpost Labels & Target Rings */
+.tactical-outpost-node {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  direction: rtl;
+}
+
+.outpost-target-ring {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: 1.5px solid #60a5fa;
+  background-color: rgba(96, 165, 250, 0.3);
+  box-shadow: 0 0 6px #3b82f6;
+  flex-shrink: 0;
+}
+
+.outpost-label {
+  font-size: 10px;
+  font-weight: 500;
+  color: #94a3b8;
+  white-space: nowrap;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9);
+}
