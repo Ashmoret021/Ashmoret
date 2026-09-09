@@ -4,6 +4,7 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { useSimulation } from './simulation/useSimulation';
 import { SimulationControls } from './ui/SimulationControls';
+import { SimulationStats } from './ui/SimulationStats';
 
 export default function App() {
   const mapRef = useRef<HTMLDivElement | null>(null);
@@ -76,6 +77,9 @@ export default function App() {
       >
         View simulation state
       </Button>
+
+      {/* Mission 4.2: Simulation Stats HUD */}
+      <SimulationStats />
 
       {/* Mission 4.1: Simulation Control Bar */}
       <SimulationControls />
