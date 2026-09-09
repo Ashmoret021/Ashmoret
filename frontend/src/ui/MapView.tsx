@@ -11,6 +11,17 @@ export interface MapViewProps {
 const DEFAULT_CENTER: [number, number] = [31.0461, 34.8516];
 const DEFAULT_ZOOM = 6;
 
+/**
+ * Geographic bounds that constrain the map view to the Middle East region.
+ * SW corner: ~Egypt/Sudan/Red Sea; NE corner: ~Turkey/Iran border.
+ * A bit of padding is added so the UI edges don't feel too tight.
+ */
+const MIDDLE_EAST_BOUNDS: L.LatLngBoundsExpression = [
+  [22.0, 25.0],   // SW – south of Egypt / Red Sea
+  [42.5, 60.0],   // NE – Turkey / Iran
+];
+const MIN_ZOOM = 5;
+
 export const MapView: React.FC<MapViewProps> = React.memo(({
   center = DEFAULT_CENTER,
   zoom = DEFAULT_ZOOM,
@@ -26,7 +37,13 @@ export const MapView: React.FC<MapViewProps> = React.memo(({
       return;
     }
 
-    const map = L.map(mapRef.current, { preferCanvas: true }).setView(center, zoom);
+    const map = L.map(mapRef.current, {
+      preferCanvas: true,
+      // Hard-lock panning to the Middle East; viscosity=1 creates a solid wall
+      maxBounds: MIDDLE_EAST_BOUNDS,
+      maxBoundsViscosity: 1.0,
+      minZoom: MIN_ZOOM,
+    }).setView(center, zoom);
     mapInstanceRef.current = map;
 
     const streetLayer = L.tileLayer(
