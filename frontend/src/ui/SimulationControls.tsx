@@ -29,7 +29,7 @@ function formatSimulationTime(seconds: number): string {
 
 const SPEED_OPTIONS: SpeedMultiplier[] = [1, 2, 5, 10];
 
-export const SimulationControls: React.FC = () => {
+export const SimulationControls: React.FC<{ onRestart?: () => void }> = ({ onRestart }) => {
   const {
     state,
     startClock,
@@ -56,8 +56,13 @@ export const SimulationControls: React.FC = () => {
   };
 
   const handleRestart = () => {
-    stopClock();
-    setState({ simulationTime: 0 });
+    if (onRestart) {
+      onRestart();
+    } else {
+      // Fallback: basic stop if no callback provided
+      stopClock();
+      setState({ simulationTime: 0 });
+    }
   };
 
   const getStatusColor = (): 'default' | 'success' | 'warning' | 'info' => {
@@ -136,7 +141,6 @@ export const SimulationControls: React.FC = () => {
         <Tooltip title="אפס">
           <IconButton
             onClick={handleRestart}
-            disabled={isIdle && state.simulationTime === 0}
             sx={{
               backgroundColor: 'rgba(255, 255, 255, 0.1)',
               color: '#f8fafc',

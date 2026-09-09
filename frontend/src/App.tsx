@@ -5,7 +5,7 @@ import { SimulationControls } from './ui/SimulationControls';
 import { SimulationStats } from './ui/SimulationStats';
 import { EventLog } from './ui/EventLog';
 import { MapLegend } from './ui/MapLegend';
-import { getState, loadScenario, onTick, setState } from './simulation/SimulationContext';
+import { getState, loadScenario, onTick, setState, stopClock } from './simulation/SimulationContext';
 import { sampleScenario } from './simulation/sampleScenario';
 import { LeafletRenderer } from './map/LeafletRenderer';
 import { visualEventQueue } from './visual/VisualEventQueue';
@@ -151,6 +151,33 @@ export default function App() {
     renderer.start();
   }, []);
 
+  // ── Restart Handler ────────────────────────────────────────────────────────
+  // Called by SimulationControls restart button.
+  // Fully resets simulation state, visual state, and engaged-drones tracking.
+  const handleRestart = useCallback(() => {
+    stopClock();
+
+    // Clear engaged-drones set so they can be re-engaged on next run
+    engagedDronesRef.current.clear();
+
+    // Clear all visual events
+    visualEventQueue.clear();
+
+    // Reset renderer (clears all map markers & interceptor states)
+    const renderer = rendererRef.current;
+    if (renderer) {
+      renderer.resetVisuals();
+    }
+
+    // Reload scenario — resets all threats back to 'waiting' and launchers to initial state
+    loadScenario(sampleScenario);
+
+    // Re-initialize defense markers (launchers) after scenario reload
+    if (renderer) {
+      renderer.initDefenseSystems();
+    }
+  }, []);
+
   useEffect(() => {
     return () => {
       if (rendererRef.current) {
@@ -178,7 +205,7 @@ export default function App() {
       <SimulationStats />
 
       {/* Mission 4.1: Simulation Control Bar */}
-      <SimulationControls />
+      <SimulationControls onRestart={handleRestart} />
     </div>
   );
 }
