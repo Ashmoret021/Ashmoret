@@ -123,7 +123,7 @@
 - [V] **3.3 מימוש תור אירועים ויזואליים (`src/visual/VisualEventQueue.ts`)**
   - [ ] תור ממוין לפי `startTime` ו-`endTime`.
   - [ ] מנגנון עדכון וניקוי אירועים שסתיימו.
-- [ ] **3.4 מימוש Leaflet Renderer המרכזי (`src/map/LeafletRenderer.ts`)**
+- [V] **3.4 מימוש Leaflet Renderer המרכזי (`src/map/LeafletRenderer.ts`)**
   - [ ] אתחול מפה עם `preferCanvas: true` לביצועים גבוהים.
   - [ ] ניהול `Map<string, L.Marker>` עבור threats, interceptors, defense systems, impacts.
   - [ ] עדכון מיקומים בלבד (`marker.setLatLng()`) ללא יצירת/מחיקת Markers בכל Frame.
