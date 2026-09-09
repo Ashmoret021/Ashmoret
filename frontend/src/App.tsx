@@ -41,7 +41,10 @@ export default function App() {
       <MapView onMapReady={handleMapReady} />
 
       {/* Mission 4.4: Map Legend and Settings */}
-      <MapLegend />
+      <MapLegend
+        onToggleThreatRoutes={(show) => rendererRef.current?.setShowThreatRoutes(show)}
+        onToggleInterceptorRoutes={(show) => rendererRef.current?.setShowInterceptorRoutes(show)}
+      />
 
       {/* Mission 4.3: Chronological Event Log */}
       <EventLog />

@@ -26,23 +26,36 @@ import type { DroneSimState, LauncherSimState } from '../simulation/SimulationCo
 import { visualEventQueue } from '../visual/VisualEventQueue';
 import type { InterceptorVisualState, LatLng } from '../visual/types';
 import { VISUAL_INTERCEPT_DURATION_S } from '../visual/types';
-
-// ---------------------------------------------------------------------------
-// Colour palette for placeholder markers (replaced by icons.ts in Mission 3.5)
-// ---------------------------------------------------------------------------
-const COLOURS = {
-  threat: '#ef4444',        // red-500
-  interceptor: '#3b82f6',   // blue-500
-  defense: '#22c55e',       // green-500
-  impact: '#f97316',        // orange-500
-  intercept: '#facc15',     // yellow-400  (explosion flash)
-} as const;
+import {
+  createDefenseIcon,
+  createImpactIcon,
+  createInterceptionFlashIcon,
+  createInterceptorIcon,
+  createThreatIcon,
+} from './icons';
 
 // ---------------------------------------------------------------------------
 // Helper: convert project Location / LatLng to Leaflet LatLng tuple
 // ---------------------------------------------------------------------------
-function toLeaflet(pos: LatLng): L.LatLngExpression {
+function toLeaflet(pos: LatLng): L.LatLngTuple {
   return [pos.latitude, pos.longitude];
+}
+
+// ---------------------------------------------------------------------------
+// Helper: calculate heading / bearing in degrees between two points
+// ---------------------------------------------------------------------------
+function calculateBearing(start: LatLng, end: LatLng): number {
+  const lat1 = (start.latitude * Math.PI) / 180;
+  const lat2 = (end.latitude * Math.PI) / 180;
+  const dLon = ((end.longitude - start.longitude) * Math.PI) / 180;
+
+  const y = Math.sin(dLon) * Math.cos(lat2);
+  const x =
+    Math.cos(lat1) * Math.sin(lat2) -
+    Math.sin(lat1) * Math.cos(lat2) * Math.cos(dLon);
+
+  const brng = (Math.atan2(y, x) * 180) / Math.PI;
+  return (brng + 360) % 360;
 }
 
 // ---------------------------------------------------------------------------
@@ -50,21 +63,25 @@ function toLeaflet(pos: LatLng): L.LatLngExpression {
 // ---------------------------------------------------------------------------
 
 export class LeafletRenderer {
-  // The Leaflet map instance — owned by the React component, passed in here.
+  // The Leaflet map instance
   private readonly map: L.Map;
 
   // ── Marker pools (keyed by entity ID) ────────────────────────────────────
-  // We use L.CircleMarker because it renders efficiently on the Canvas renderer.
-  // Mission 3.5 will swap these for SVG DivIcon markers.
-  private threatMarkers = new Map<string, L.CircleMarker>();
-  private interceptorMarkers = new Map<string, L.CircleMarker>();
-  private defenseMarkers = new Map<string, L.CircleMarker>();
-  private impactMarkers = new Map<string, L.CircleMarker>();
-  /** Temporary "explosion flash" circles at intercept points */
-  private flashMarkers = new Map<string, L.CircleMarker>();
+  private threatMarkers = new Map<string, L.Marker>();
+  private interceptorMarkers = new Map<string, L.Marker>();
+  private defenseMarkers = new Map<string, L.Marker>();
+  private impactMarkers = new Map<string, L.Marker>();
+  private flashMarkers = new Map<string, L.Marker>();
+
+  // ── Polyline trajectory pools (Mission 3.5) ──────────────────────────────
+  private threatPolylines = new Map<string, L.Polyline>();
+  private interceptorPolylines = new Map<string, L.Polyline>();
+
+  // ── Layer visibility toggles (spec §25) ──────────────────────────────────
+  private showThreatRoutes = true;
+  private showInterceptorRoutes = true;
 
   // ── Interceptor visual state ──────────────────────────────────────────────
-  // Owned here because visual progress is a render concern, not a logic concern.
   private interceptorStates = new Map<string, InterceptorVisualState>();
 
   // ── RAF loop ──────────────────────────────────────────────────────────────
@@ -72,30 +89,47 @@ export class LeafletRenderer {
 
   // ── Prune timer ───────────────────────────────────────────────────────────
   private lastPruneTime = 0;
-  private readonly PRUNE_INTERVAL_S = 5; // prune finished events every 5 sim-seconds
+  private readonly PRUNE_INTERVAL_S = 5;
 
-  // ---------------------------------------------------------------------------
   constructor(map: L.Map) {
     this.map = map;
+  }
+
+  // ---------------------------------------------------------------------------
+  // Layer Toggles
+  // ---------------------------------------------------------------------------
+
+  setShowThreatRoutes(show: boolean): void {
+    this.showThreatRoutes = show;
+    for (const poly of this.threatPolylines.values()) {
+      if (show) {
+        if (!this.map.hasLayer(poly)) poly.addTo(this.map);
+      } else {
+        poly.remove();
+      }
+    }
+  }
+
+  setShowInterceptorRoutes(show: boolean): void {
+    this.showInterceptorRoutes = show;
+    for (const poly of this.interceptorPolylines.values()) {
+      if (show) {
+        if (!this.map.hasLayer(poly)) poly.addTo(this.map);
+      } else {
+        poly.remove();
+      }
+    }
   }
 
   // ---------------------------------------------------------------------------
   // Lifecycle
   // ---------------------------------------------------------------------------
 
-  /**
-   * Starts the 60 FPS render loop.
-   * Safe to call multiple times — will not start a second loop.
-   */
   start(): void {
     if (this.rafHandle !== null) return;
     this.scheduleFrame();
   }
 
-  /**
-   * Stops the render loop without clearing markers.
-   * Call on Pause (the map stays visible, it's just frozen).
-   */
   stop(): void {
     if (this.rafHandle !== null) {
       cancelAnimationFrame(this.rafHandle);
@@ -103,41 +137,40 @@ export class LeafletRenderer {
     }
   }
 
-  /**
-   * Full reset: clears all markers and interceptor states, resets prune timer.
-   * Must be called on Restart (spec §29).
-   */
   reset(): void {
     this.stop();
     this.clearAllMarkers();
+    this.clearAllPolylines();
     this.interceptorStates.clear();
     visualEventQueue.clear();
     this.lastPruneTime = 0;
   }
 
   // ---------------------------------------------------------------------------
-  // Public API — called by simulation engine / VisualEventBuilder consumer
+  // Public API
   // ---------------------------------------------------------------------------
 
-  /**
-   * Registers a new in-flight interceptor for the renderer to animate.
-   * Called immediately after processEngagementDecision() returns a bundle.
-   *
-   * @example
-   * const bundle = processEngagementDecision(decision, getState());
-   * if (bundle) {
-   *   visualEventQueue.enqueue(bundle.visualEvent);
-   *   renderer.registerInterceptorVisualState(bundle.interceptorState);
-   * }
-   */
   registerInterceptorVisualState(ivs: InterceptorVisualState): void {
     this.interceptorStates.set(ivs.id, { ...ivs });
+
+    // Build interceptor route polyline
+    const path: L.LatLngTuple[] = [
+      toLeaflet(ivs.startPosition),
+      toLeaflet(ivs.interceptPoint),
+    ];
+    const polyline = L.polyline(path, {
+      color: '#38bdf8',
+      weight: 2,
+      dashArray: '4, 4',
+      opacity: 0.8,
+    });
+
+    if (this.showInterceptorRoutes) {
+      polyline.addTo(this.map);
+    }
+    this.interceptorPolylines.set(ivs.id, polyline);
   }
 
-  /**
-   * Initialises static defense-system markers.
-   * Call once after loadScenario(), before start().
-   */
   initDefenseSystems(): void {
     const state = getState();
     for (const [id, launcher] of Object.entries(state.launchers)) {
@@ -154,43 +187,40 @@ export class LeafletRenderer {
   }
 
   private renderFrame(): void {
-    // Always reschedule first so we never lose the loop on an error.
     this.scheduleFrame();
 
     const state = getState();
-
-    // Only render when the simulation is running or paused (not idle).
     if (state.status === 'idle') return;
 
     const t = state.simulationTime;
 
-    // ── 1. Advance VisualEventQueue lifecycle ────────────────────────────
+    // 1. Advance VisualEventQueue lifecycle
     visualEventQueue.tick(t);
 
-    // ── 2. Periodic prune ───────────────────────────────────────────────
+    // 2. Periodic prune
     if (t - this.lastPruneTime >= this.PRUNE_INTERVAL_S) {
       visualEventQueue.pruneFinished();
       this.lastPruneTime = t;
     }
 
-    // ── 3. Render threats ────────────────────────────────────────────────
+    // 3. Render threats and threat routes
     this.renderThreats(state.threats);
 
-    // ── 4. Render defense systems (static — only ensure they exist) ──────
+    // 4. Render defense systems
     this.ensureAllDefenseMarkers(state.launchers);
 
-    // ── 5. Animate interceptors ──────────────────────────────────────────
+    // 5. Animate interceptors
     this.renderInterceptors(t);
 
-    // ── 6. Render active visual events (impacts, flashes) ───────────────
+    // 6. Render visual events
     this.renderVisualEvents(t);
 
-    // ── 7. Garbage-collect removed entities ─────────────────────────────
+    // 7. Cleanup inactive entities
     this.removeInactiveEntities(state.threats);
   }
 
   // ---------------------------------------------------------------------------
-  // Private — Threats
+  // Private — Threats & Routes
   // ---------------------------------------------------------------------------
 
   private renderThreats(threats: Record<number, DroneSimState>): void {
@@ -207,20 +237,28 @@ export class LeafletRenderer {
         longitude: threat.location.longitude,
       };
 
-      if (this.threatMarkers.has(id)) {
-        // Entity already on map — just update position (spec §24)
-        this.threatMarkers.get(id)!.setLatLng(toLeaflet(pos));
-      } else {
-        // New threat — create marker once
-        const marker = L.circleMarker(toLeaflet(pos), {
-          radius: 7,
-          color: COLOURS.threat,
-          fillColor: COLOURS.threat,
-          fillOpacity: 0.9,
-          weight: 2,
+      // Ensure planned flight route polyline is displayed
+      if (!this.threatPolylines.has(id) && threat.route && threat.route.length > 0) {
+        const polyPoints: L.LatLngTuple[] = threat.route.map((p) => [p.latitude, p.longitude]);
+        const polyline = L.polyline(polyPoints, {
+          color: '#ef4444',
+          weight: 2.5,
+          opacity: 0.65,
+          dashArray: '6, 6',
         });
-        // Tooltip shows threat ID for debugging (removed in production polish)
-        marker.bindTooltip(`Threat ${id}`, { permanent: false, direction: 'top' });
+        if (this.showThreatRoutes) {
+          polyline.addTo(this.map);
+        }
+        this.threatPolylines.set(id, polyline);
+      }
+
+      if (this.threatMarkers.has(id)) {
+        const marker = this.threatMarkers.get(id)!;
+        marker.setLatLng(toLeaflet(pos));
+      } else {
+        const marker = L.marker(toLeaflet(pos), {
+          icon: createThreatIcon(threat.heading, `איום ${id}`),
+        });
         marker.addTo(this.map);
         this.threatMarkers.set(id, marker);
       }
@@ -228,7 +266,7 @@ export class LeafletRenderer {
   }
 
   private removeInactiveEntities(threats: Record<number, DroneSimState>): void {
-    // Remove threat markers for entities that are now intercepted or impacted
+    // Remove threat markers and route polylines when intercepted/impacted
     for (const [id, marker] of this.threatMarkers) {
       const threat = threats[Number(id)];
       const shouldRemove =
@@ -239,14 +277,27 @@ export class LeafletRenderer {
       if (shouldRemove) {
         marker.remove();
         this.threatMarkers.delete(id);
+
+        const poly = this.threatPolylines.get(id);
+        if (poly) {
+          poly.remove();
+          this.threatPolylines.delete(id);
+        }
       }
     }
 
-    // Remove interceptor markers for finished visual states
+    // Remove interceptor markers and polylines for finished visual states
     for (const [id, ivs] of this.interceptorStates) {
       if (ivs.visualStatus === 'finished') {
         this.interceptorMarkers.get(id)?.remove();
         this.interceptorMarkers.delete(id);
+
+        const poly = this.interceptorPolylines.get(id);
+        if (poly) {
+          poly.remove();
+          this.interceptorPolylines.delete(id);
+        }
+
         this.interceptorStates.delete(id);
       }
     }
@@ -264,14 +315,9 @@ export class LeafletRenderer {
       longitude: launcher.location.longitude,
     };
 
-    const marker = L.circleMarker(toLeaflet(pos), {
-      radius: 10,
-      color: COLOURS.defense,
-      fillColor: COLOURS.defense,
-      fillOpacity: 0.85,
-      weight: 3,
+    const marker = L.marker(toLeaflet(pos), {
+      icon: createDefenseIcon(`סוללה ${id}`),
     });
-    marker.bindTooltip(`Defense ${id}`, { permanent: true, direction: 'top' });
     marker.addTo(this.map);
     this.defenseMarkers.set(id, marker);
   }
@@ -290,39 +336,30 @@ export class LeafletRenderer {
     for (const [id, ivs] of this.interceptorStates) {
       if (ivs.visualStatus === 'finished') continue;
 
-      // ── Compute progress ───────────────────────────────────────────
       const elapsed = simulationTime - ivs.launchTime;
       const progress = Math.min(1, elapsed / VISUAL_INTERCEPT_DURATION_S);
       ivs.progress = progress;
 
-      // ── Interpolate position ────────────────────────────────────────
       const pos = lerpLatLng(ivs.startPosition, ivs.interceptPoint, progress);
       ivs.position = pos;
 
-      // ── Lifecycle transitions ───────────────────────────────────────
       if (progress >= 1 && ivs.visualStatus === 'flying') {
         ivs.visualStatus = ivs.outcome === 'success' ? 'exploding' : 'missing';
         this.handleInterceptorArrival(id, ivs);
       } else if (ivs.visualStatus === 'exploding' || ivs.visualStatus === 'missing') {
-        // Brief animation frame — transition to finished after 0.5s sim time
         if (elapsed >= VISUAL_INTERCEPT_DURATION_S + 0.5) {
           ivs.visualStatus = 'finished';
         }
       }
 
-      // ── Update marker position ──────────────────────────────────────
       if (ivs.visualStatus === 'flying') {
+        const bearing = calculateBearing(ivs.startPosition, ivs.interceptPoint);
         if (this.interceptorMarkers.has(id)) {
           this.interceptorMarkers.get(id)!.setLatLng(toLeaflet(pos));
         } else {
-          const marker = L.circleMarker(toLeaflet(ivs.startPosition), {
-            radius: 5,
-            color: COLOURS.interceptor,
-            fillColor: COLOURS.interceptor,
-            fillOpacity: 0.9,
-            weight: 2,
+          const marker = L.marker(toLeaflet(ivs.startPosition), {
+            icon: createInterceptorIcon(bearing),
           });
-          marker.bindTooltip(`→ ${ivs.targetId}`, { permanent: false, direction: 'top' });
           marker.addTo(this.map);
           this.interceptorMarkers.set(id, marker);
         }
@@ -330,32 +367,21 @@ export class LeafletRenderer {
     }
   }
 
-  /**
-   * Called once when an interceptor reaches its intercept point.
-   * Shows a flash marker (success = yellow, failure = grey).
-   */
   private handleInterceptorArrival(id: string, ivs: InterceptorVisualState): void {
-    // Remove the interceptor travel marker
     this.interceptorMarkers.get(id)?.remove();
     this.interceptorMarkers.delete(id);
 
-    // Show a flash circle at the intercept point
-    const flashColour = ivs.outcome === 'success' ? COLOURS.intercept : '#94a3b8';
-    const flash = L.circleMarker(toLeaflet(ivs.interceptPoint), {
-      radius: ivs.outcome === 'success' ? 16 : 10,
-      color: flashColour,
-      fillColor: flashColour,
-      fillOpacity: 0.7,
-      weight: 2,
+    // Show flash explosion icon
+    const flash = L.marker(toLeaflet(ivs.interceptPoint), {
+      icon: createInterceptionFlashIcon(),
     });
     flash.addTo(this.map);
     this.flashMarkers.set(id, flash);
 
-    // Auto-remove flash after 1 second (wall clock, not sim time — it's UX)
     setTimeout(() => {
       flash.remove();
       this.flashMarkers.delete(id);
-    }, 1000);
+    }, 900);
   }
 
   // ---------------------------------------------------------------------------
@@ -370,30 +396,11 @@ export class LeafletRenderer {
       const id = event.id;
 
       if (!this.impactMarkers.has(id)) {
-        // Create a persistent impact marker (lingers until Restart per spec §22)
-        const marker = L.circleMarker(toLeaflet(event.position), {
-          radius: 12,
-          color: COLOURS.impact,
-          fillColor: COLOURS.impact,
-          fillOpacity: 0.6,
-          weight: 3,
-        });
-        // Outer ring effect via a second, larger transparent circle
-        const ring = L.circleMarker(toLeaflet(event.position), {
-          radius: 20,
-          color: COLOURS.impact,
-          fillColor: 'transparent',
-          fillOpacity: 0,
-          weight: 1.5,
-        });
-        marker.bindTooltip(`💥 ${event.targetId ?? 'Impact'} @${Math.floor(simulationTime)}s`, {
-          permanent: false,
+        const marker = L.marker(toLeaflet(event.position), {
+          icon: createImpactIcon(`נפילה T+${Math.floor(simulationTime)}s`),
         });
         marker.addTo(this.map);
-        ring.addTo(this.map);
         this.impactMarkers.set(id, marker);
-        // Store ring under a derived key so it's cleaned up on reset
-        this.impactMarkers.set(`${id}__ring`, ring);
       }
     }
   }
@@ -401,6 +408,13 @@ export class LeafletRenderer {
   // ---------------------------------------------------------------------------
   // Private — cleanup
   // ---------------------------------------------------------------------------
+
+  private clearAllPolylines(): void {
+    for (const p of this.threatPolylines.values()) p.remove();
+    for (const p of this.interceptorPolylines.values()) p.remove();
+    this.threatPolylines.clear();
+    this.interceptorPolylines.clear();
+  }
 
   private clearAllMarkers(): void {
     for (const m of this.threatMarkers.values()) m.remove();
@@ -413,7 +427,6 @@ export class LeafletRenderer {
     this.interceptorMarkers.clear();
     this.defenseMarkers.clear();
     this.impactMarkers.clear();
-    this.flashMarkers.clear();
   }
 }
 

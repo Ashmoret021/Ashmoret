@@ -128,9 +128,9 @@
   - [ ] ניהול `Map<string, L.Marker>` עבור threats, interceptors, defense systems, impacts.
   - [ ] עדכון מיקומים בלבד (`marker.setLatLng()`) ללא יצירת/מחיקת Markers בכל Frame.
   - [ ] לולאת רנדור 60 FPS (`requestAnimationFrame`) הנפרדת מהלוגיקה.
-- [ ] **3.5 מימוש שכבות ואייקונים (`src/map/icons.ts`, `src/map/*Layer.ts`)**
-  - [ ] יצירת SVG Icons מותאמים לכל סוג יישות (איום 🔴, מיירט 🔵, סוללה 🟦, פיצוץ ✴, פגיעה 💥).
-  - [ ] שכבות Polylines עבור מסלולי איומים ומיירטים (כולל toggle להצגה/הסתרה).
+- [V] **3.5 מימוש שכבות ואייקונים (`src/map/icons.ts`, `src/map/*Layer.ts`)**
+  - [x] יצירת SVG Icons מותאמים לכל סוג יישות (איום 🔴, מיירט 🔵, סוללה 🟦, פיצוץ ✴, פגיעה 💥).
+  - [x] שכבות Polylines עבור מסלולי איומים ומיירטים (כולל toggle להצגה/הסתרה).
 
 ---
 
