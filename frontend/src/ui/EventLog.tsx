@@ -23,18 +23,10 @@ import ReportProblemIcon from '@mui/icons-material/ReportProblem';
 import RadarIcon from '@mui/icons-material/Radar';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import { useSimulation } from '../simulation/useSimulation';
+import type { LogEntry } from '../simulation/SimulationContext';
 import type { Location } from '../../../types/types';
 
 export type EventCategory = 'all' | 'launch' | 'interception' | 'impact' | 'detection';
-
-export interface LogEntry {
-  id: string;
-  time: number;
-  category: 'launch' | 'interception' | 'impact' | 'detection';
-  title: string;
-  description: string;
-  location?: Location;
-}
 
 function formatEventTime(seconds: number): string {
   const mins = Math.floor(seconds / 60);
@@ -51,72 +43,12 @@ export const EventLog: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState<EventCategory>('all');
 
   const logEntries = useMemo<LogEntry[]>(() => {
-    const entries: LogEntry[] = [];
-
-    // 1. Process visualEvents from state
-    for (const ve of state.visualEvents) {
-      let category: LogEntry['category'] = 'detection';
-      if (ve.type.includes('launch')) category = 'launch';
-      else if (ve.type.includes('intercept')) category = 'interception';
-      else if (ve.type.includes('impact') || ve.type.includes('explosion')) category = 'impact';
-
-      entries.push({
-        id: `ve-${ve.id}`,
-        time: ve.createdAt,
-        category,
-        title: ve.type.toUpperCase(),
-        description: `אירוע ${ve.type} במיקום [${ve.location.latitude.toFixed(2)}, ${ve.location.longitude.toFixed(2)}]`,
-        location: ve.location,
-      });
-    }
-
-    // 2. Process threat statuses
-    for (const drone of Object.values(state.threats)) {
-      if (drone.logicalStatus === 'intercepted') {
-        entries.push({
-          id: `threat-intercepted-${drone.id}`,
-          time: state.simulationTime,
-          category: 'interception',
-          title: 'יירוט מוצלח',
-          description: `איום #${drone.id} (סוג: ${drone.type ?? 'אויב'}) יורט בהצלחה`,
-          location: drone.location,
-        });
-      } else if (drone.logicalStatus === 'impacted') {
-        entries.push({
-          id: `threat-impacted-${drone.id}`,
-          time: state.simulationTime,
-          category: 'impact',
-          title: 'פגיעה בשטח',
-          description: `איום #${drone.id} (סוג: ${drone.type ?? 'אויב'}) פגע בשטח`,
-          location: drone.location,
-        });
-      } else if (drone.logicalStatus === 'active' || drone.logicalStatus === 'interceptPending') {
-        entries.push({
-          id: `threat-active-${drone.id}`,
-          time: drone.startTime || 0,
-          category: 'detection',
-          title: 'זיהוי איום',
-          description: `איום #${drone.id} זוהה באוויר`,
-          location: drone.location,
-        });
-      }
-    }
-
-    // 3. Process interceptor launches
-    for (const interceptor of Object.values(state.interceptors)) {
-      entries.push({
-        id: `interceptor-${interceptor.id}`,
-        time: interceptor.launchedAt || 0,
-        category: 'launch',
-        title: 'שיגור מיירט',
-        description: `מיירט ${interceptor.type} שוגר מסוללה #${interceptor.launcherId} לעבר איום #${interceptor.targetDroneId}`,
-        location: interceptor.location,
-      });
-    }
-
+    const history = state.logHistory || [];
+    // Only entries that occurred at or before current scrub time
+    const visible = history.filter((e) => e.time <= state.simulationTime + 0.05);
     // Sort newest first
-    return entries.sort((a, b) => b.time - a.time);
-  }, [state.visualEvents, state.threats, state.interceptors, state.simulationTime]);
+    return [...visible].sort((a, b) => b.time - a.time);
+  }, [state.logHistory, state.simulationTime]);
 
   const filteredEntries = useMemo(() => {
     if (selectedCategory === 'all') return logEntries;

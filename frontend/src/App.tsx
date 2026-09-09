@@ -4,7 +4,7 @@ import { MapView } from './ui/MapView';
 import { SimulationControls } from './ui/SimulationControls';
 import { SimulationStats } from './ui/SimulationStats';
 import { EventLog } from './ui/EventLog';
-import { getState, loadScenario, onTick, setState, stopClock } from './simulation/SimulationContext';
+import { appendLog, finishClock, getState, loadScenario, onTick, setState, stopClock } from './simulation/SimulationContext';
 import { sampleScenario } from './simulation/sampleScenario';
 import { LeafletRenderer } from './map/LeafletRenderer';
 import { visualEventQueue } from './visual/VisualEventQueue';
@@ -43,6 +43,13 @@ export default function App() {
             location: threat.route[0],
           };
           changed = true;
+
+          appendLog(
+            'detection',
+            'זיהוי איום',
+            `איום #${id} זוהה באוויר`,
+            threat.route[0],
+          );
         }
         // B. Threat Straight-Line Movement
         else if (threat.logicalStatus === 'active' || threat.logicalStatus === 'interceptPending') {
@@ -80,6 +87,27 @@ export default function App() {
                 position: currentPos,
                 status: 'pending',
               });
+
+              appendLog(
+                'impact',
+                'פגיעה בשטח',
+                `איום #${id} (סוג: ${threat.type ?? 'אויב'}) פגע בשטח`,
+                currentPos,
+              );
+              // Check if all threats are now finished via impact
+              const allThreats = Object.values(updatedThreats);
+              const allDone = allThreats.length > 0 && allThreats.every(
+                (t) => t.logicalStatus === 'intercepted' || t.logicalStatus === 'impacted',
+              );
+              if (allDone) {
+                const finishTime = simTime + 1.0;
+                const checkFinish = onTick((_dt, time) => {
+                  if (time >= finishTime) {
+                    finishClock();
+                    checkFinish();
+                  }
+                });
+              }
             }
           }
 
@@ -112,18 +140,46 @@ export default function App() {
               visualEventQueue.enqueue(bundle.visualEvent);
               rendererRef.current?.registerInterceptorVisualState(bundle.interceptorState);
 
+              appendLog(
+                'launch',
+                'שיגור מיירט',
+                `מיירט ${interceptorType} שוגר מסוללה #${launcherId} לעבר איום #${id}`,
+                bundle.interceptorState.startPosition,
+              );
+
               // Schedule threat interception removal when missile arrives (approx 3 seconds)
               const arrivalSimTime = simTime + 3;
               const checkRemoval = onTick((_dt, currentSimTime) => {
                 if (currentSimTime >= arrivalSimTime) {
                   const s = getState();
                   if (s.threats[id]) {
-                    setState({
-                      threats: {
-                        ...s.threats,
-                        [id]: { ...s.threats[id], logicalStatus: 'intercepted' },
-                      },
-                    });
+                    const nextThreats = {
+                      ...s.threats,
+                      [id]: { ...s.threats[id], logicalStatus: 'intercepted' as const },
+                    };
+                    setState({ threats: nextThreats });
+
+                    appendLog(
+                      'interception',
+                      'יירוט מוצלח',
+                      `איום #${id} (סוג: ${s.threats[id].type ?? 'אויב'}) יורט בהצלחה`,
+                      s.threats[id].location,
+                    );
+
+                    // Check if all threats are now finished
+                    const allThreats = Object.values(nextThreats);
+                    const allDone = allThreats.length > 0 && allThreats.every(
+                      (t) => t.logicalStatus === 'intercepted' || t.logicalStatus === 'impacted',
+                    );
+                    if (allDone) {
+                      const finishTime = currentSimTime + 1.0;
+                      const checkFinish = onTick((_dt, time) => {
+                        if (time >= finishTime) {
+                          finishClock();
+                          checkFinish();
+                        }
+                      });
+                    }
                   }
                   checkRemoval();
                 }
@@ -135,6 +191,15 @@ export default function App() {
 
       if (changed) {
         setState({ threats: updatedThreats });
+      }
+
+      // Check if all threats in current tick are finished
+      const allThreats = Object.values(updatedThreats);
+      const allDone = allThreats.length > 0 && allThreats.every(
+        (t) => t.logicalStatus === 'intercepted' || t.logicalStatus === 'impacted',
+      );
+      if (allDone && status === 'running') {
+        finishClock();
       }
     });
 

@@ -220,7 +220,7 @@ export class LeafletRenderer {
     }
 
     // 3. Render threats and threat routes
-    this.renderThreats(state.threats);
+    this.renderThreats(state.threats, t);
 
     // 4. Animate interceptors
     this.renderInterceptors(t);
@@ -236,14 +236,34 @@ export class LeafletRenderer {
   // Private — Threats & Routes
   // ---------------------------------------------------------------------------
 
-  private renderThreats(threats: Record<number, DroneSimState>): void {
+  private renderThreats(threats: Record<number, DroneSimState>, simulationTime: number): void {
+    // Build a set of threat IDs currently in their explosion boom window
+    const boomingThreatIds = new Set<string>();
+    const flightDuration = VISUAL_INTERCEPT_DURATION_S;
+    const explosionDuration = 1.2;
+    for (const [, ivs] of this.interceptorStates) {
+      if (ivs.outcome === 'success') {
+        const elapsed = simulationTime - ivs.launchTime;
+        if (elapsed >= flightDuration && elapsed < flightDuration + explosionDuration) {
+          boomingThreatIds.add(String(ivs.targetId));
+        }
+      }
+    }
+
     for (const threat of Object.values(threats)) {
       const id = String(threat.id);
       const isVisible =
-        threat.logicalStatus === 'active' ||
-        threat.logicalStatus === 'interceptPending';
+        (threat.logicalStatus === 'active' || threat.logicalStatus === 'interceptPending') &&
+        !boomingThreatIds.has(id); // Hide during boom phase
 
-      if (!isVisible) continue;
+      if (!isVisible) {
+        // Remove the marker if it exists (e.g. scrubbed into boom window)
+        if (this.threatMarkers.has(id)) {
+          this.threatMarkers.get(id)!.remove();
+          this.threatMarkers.delete(id);
+        }
+        continue;
+      }
 
       const pos: LatLng = {
         latitude: threat.location.latitude,
@@ -298,22 +318,6 @@ export class LeafletRenderer {
         }
       }
     }
-
-    // Remove interceptor markers and polylines for finished visual states
-    for (const [id, ivs] of this.interceptorStates) {
-      if (ivs.visualStatus === 'finished') {
-        this.interceptorMarkers.get(id)?.remove();
-        this.interceptorMarkers.delete(id);
-
-        const poly = this.interceptorPolylines.get(id);
-        if (poly) {
-          poly.remove();
-          this.interceptorPolylines.delete(id);
-        }
-
-        this.interceptorStates.delete(id);
-      }
-    }
   }
 
   // ---------------------------------------------------------------------------
@@ -342,59 +346,83 @@ export class LeafletRenderer {
   }
 
   // ---------------------------------------------------------------------------
-  // Private — Interceptors (animated)
+  // Private — Interceptors & Interception Explosions (animated & scrubbable)
   // ---------------------------------------------------------------------------
 
   private renderInterceptors(simulationTime: number): void {
+    const flightDuration = VISUAL_INTERCEPT_DURATION_S; // 3 seconds
+    const explosionDuration = 1.2; // 1.2 seconds explosion boom effect
+
     for (const [id, ivs] of this.interceptorStates) {
-      if (ivs.visualStatus === 'finished') continue;
-
       const elapsed = simulationTime - ivs.launchTime;
-      const progress = Math.min(1, elapsed / VISUAL_INTERCEPT_DURATION_S);
-      ivs.progress = progress;
 
-      const pos = lerpLatLng(ivs.startPosition, ivs.interceptPoint, progress);
-      ivs.position = pos;
-
-      if (progress >= 1 && ivs.visualStatus === 'flying') {
-        ivs.visualStatus = ivs.outcome === 'success' ? 'exploding' : 'missing';
-        this.handleInterceptorArrival(id, ivs);
-      } else if (ivs.visualStatus === 'exploding' || ivs.visualStatus === 'missing') {
-        if (elapsed >= VISUAL_INTERCEPT_DURATION_S + 0.5) {
-          ivs.visualStatus = 'finished';
+      // 1. Before launch: hide missile and explosion
+      if (elapsed < 0) {
+        if (this.interceptorMarkers.has(id)) {
+          this.interceptorMarkers.get(id)!.remove();
+          this.interceptorMarkers.delete(id);
         }
+        if (this.flashMarkers.has(id)) {
+          this.flashMarkers.get(id)!.remove();
+          this.flashMarkers.delete(id);
+        }
+        continue;
       }
 
-      if (ivs.visualStatus === 'flying') {
+      // 2. Flying phase: (0 <= elapsed < 3s)
+      if (elapsed >= 0 && elapsed < flightDuration) {
+        // Hide explosion flash if present
+        if (this.flashMarkers.has(id)) {
+          this.flashMarkers.get(id)!.remove();
+          this.flashMarkers.delete(id);
+        }
+
+        const progress = Math.min(1, elapsed / flightDuration);
+        ivs.progress = progress;
+        const pos = lerpLatLng(ivs.startPosition, ivs.interceptPoint, progress);
+        ivs.position = pos;
+
         const bearing = calculateBearing(ivs.startPosition, ivs.interceptPoint);
+
         if (this.interceptorMarkers.has(id)) {
           this.interceptorMarkers.get(id)!.setLatLng(toLeaflet(pos));
         } else {
-          const marker = L.marker(toLeaflet(ivs.startPosition), {
+          const marker = L.marker(toLeaflet(pos), {
             icon: createInterceptorIcon(bearing),
           });
           marker.addTo(this.map);
           this.interceptorMarkers.set(id, marker);
         }
       }
+      // 3. Explosion / Boom Flash phase: (3s <= elapsed < 4.2s)
+      else if (elapsed >= flightDuration && elapsed < flightDuration + explosionDuration && ivs.outcome === 'success') {
+        // Hide flying missile marker
+        if (this.interceptorMarkers.has(id)) {
+          this.interceptorMarkers.get(id)!.remove();
+          this.interceptorMarkers.delete(id);
+        }
+
+        // Show flash explosion icon
+        if (!this.flashMarkers.has(id)) {
+          const flash = L.marker(toLeaflet(ivs.interceptPoint), {
+            icon: createInterceptionFlashIcon(),
+          });
+          flash.addTo(this.map);
+          this.flashMarkers.set(id, flash);
+        }
+      }
+      // 4. After explosion: hide both missile and explosion
+      else {
+        if (this.interceptorMarkers.has(id)) {
+          this.interceptorMarkers.get(id)!.remove();
+          this.interceptorMarkers.delete(id);
+        }
+        if (this.flashMarkers.has(id)) {
+          this.flashMarkers.get(id)!.remove();
+          this.flashMarkers.delete(id);
+        }
+      }
     }
-  }
-
-  private handleInterceptorArrival(id: string, ivs: InterceptorVisualState): void {
-    this.interceptorMarkers.get(id)?.remove();
-    this.interceptorMarkers.delete(id);
-
-    // Show flash explosion icon
-    const flash = L.marker(toLeaflet(ivs.interceptPoint), {
-      icon: createInterceptionFlashIcon(),
-    });
-    flash.addTo(this.map);
-    this.flashMarkers.set(id, flash);
-
-    setTimeout(() => {
-      flash.remove();
-      this.flashMarkers.delete(id);
-    }, 900);
   }
 
   // ---------------------------------------------------------------------------
