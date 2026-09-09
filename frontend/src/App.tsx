@@ -5,6 +5,7 @@ import 'leaflet/dist/leaflet.css';
 import { useSimulation } from './simulation/useSimulation';
 import { SimulationControls } from './ui/SimulationControls';
 import { SimulationStats } from './ui/SimulationStats';
+import { AddScenerioModal } from './components';
 
 export default function App() {
   const mapRef = useRef<HTMLDivElement | null>(null);
@@ -70,6 +71,8 @@ export default function App() {
   return (
     <div style={{ height: '100vh', position: 'relative', width: '100vw', overflow: 'hidden' }}>
       <div ref={mapRef} style={{ height: '100%', width: '100%' }} />
+            
+      <AddScenerioModal />
       <Button
         onClick={() => setIsStateDialogOpen(true)}
         style={{ left: 16, position: 'absolute', top: 16, zIndex: 1000 }}

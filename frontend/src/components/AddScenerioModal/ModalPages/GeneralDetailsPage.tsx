@@ -1,60 +1,139 @@
-import { Box, FormControl, InputLabel, MenuItem, Select, SelectChangeEvent, Stack, TextField } from "@mui/material";
-import { useState } from "react";
+import {
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Select,
+  SelectChangeEvent,
+  Stack,
+  TextField,
+  Box,
+} from "@mui/material";
+import { ChangeEvent, FC, useState } from "react";
 
-interface ScenerioType {
-  value: string;
-  label: string;
+export interface GeneralDetailsData {
+  scenarioName: string;
+  scenarioType: string;
+  description?: string;
 }
-const SCENERIO_TYPES: ScenerioType[] = [
-  {
-    value: "Single",
-    label: "חד זירתי"
+
+export interface GeneralDetailsPageProps {
+  data?: GeneralDetailsData;
+  onChange?: (data: Partial<GeneralDetailsData>) => void;
+}
+
+const darkInputSx = {
+  "& .MuiOutlinedInput-root": {
+    backgroundColor: "rgba(15, 23, 42, 0.5)",
+    borderRadius: 1.5,
+    color: "#f8fafc",
+    "& fieldset": {
+      borderColor: "rgba(255, 255, 255, 0.15)",
+    },
+    "&:hover fieldset": {
+      borderColor: "rgba(255, 255, 255, 0.3)",
+    },
+    "&.Mui-focused fieldset": {
+      borderColor: "#38bdf8",
+    },
   },
-  {
-    value: "Multi",
-    label: "מולטי-זירתי"
-  }
-]
+  "& .MuiInputLabel-root": {
+    color: "#94a3b8",
+    "&.Mui-focused": {
+      color: "#38bdf8",
+    },
+  },
+  "& .MuiSelect-icon": {
+    color: "#94a3b8",
+  },
+};
 
-export const GeneralDetailsPage = () => {
+const menuPropsSx = {
+  PaperProps: {
+    sx: {
+      backgroundColor: "#1e293b",
+      color: "#f8fafc",
+      border: "1px solid rgba(255, 255, 255, 0.1)",
+      "& .MuiMenuItem-root:hover": {
+        backgroundColor: "rgba(255, 255, 255, 0.08)",
+      },
+      "& .MuiMenuItem-root.Mui-selected": {
+        backgroundColor: "rgba(56, 189, 248, 0.15)",
+        color: "#38bdf8",
+      },
+    },
+  },
+};
 
-  const [scenerioType, setScenerioType] = useState<string>("");
-  const handleSelectChange = (event: SelectChangeEvent) => {
-    setScenerioType(event.target.value);
+export const GeneralDetailsPage: FC<GeneralDetailsPageProps> = ({
+  data,
+  onChange,
+}) => {
+  const [internalName, setInternalName] = useState("");
+  const [internalType, setInternalType] = useState("Single");
+  const [internalDesc, setInternalDesc] = useState("");
+
+  const scenarioName = data?.scenarioName ?? internalName;
+  const scenarioType = data?.scenarioType ?? internalType;
+  const description = data?.description ?? internalDesc;
+
+  const handleNameChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const val = event.target.value;
+    setInternalName(val);
+    onChange?.({ scenarioName: val });
   };
 
-  const [scenarioName, setScenarioName] = useState<string>("");
-  const handleTextChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setScenarioName(event.target.value);
+  const handleSelectChange = (event: SelectChangeEvent) => {
+    const val = event.target.value;
+    setInternalType(val);
+    onChange?.({ scenarioType: val });
+  };
+
+  const handleDescChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const val = event.target.value;
+    setInternalDesc(val);
+    onChange?.({ description: val });
   };
 
   return (
-    <>
-      <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ width: '100%' }}>
+    <Box sx={{ width: "100%", dir: "rtl", pt: 1 }}>
+      <Stack spacing={2.5}>
         <TextField
           fullWidth
           variant="outlined"
           label="שם התרחיש"
+          placeholder="הזן שם לתרחיש"
           value={scenarioName}
-          onChange={handleTextChange}
+          onChange={handleNameChange}
+          sx={darkInputSx}
         />
-        <FormControl fullWidth>
+
+        <FormControl fullWidth sx={darkInputSx}>
           <InputLabel id="scenario-type-label">סוג תרחיש</InputLabel>
           <Select
             labelId="scenario-type-label"
             id="scenario-type-select"
-            value={scenerioType}
+            value={scenarioType}
             label="סוג תרחיש"
             onChange={handleSelectChange}
+            MenuProps={menuPropsSx}
           >
-            {SCENERIO_TYPES.map((type) => (
-              <MenuItem key={type.value} value={type.value}>
-                {type.label}
-              </MenuItem>
-            ))}
+            <MenuItem value="Single">חד זירתי</MenuItem>
+            <MenuItem value="Multi">רב-זירתי</MenuItem>
           </Select>
         </FormControl>
+
+        <TextField
+          fullWidth
+          multiline
+          rows={3}
+          variant="outlined"
+          label="תיאור (אופציונלי)"
+          placeholder="הערות או דגשים מבצעיים..."
+          value={description}
+          onChange={handleDescChange}
+          sx={darkInputSx}
+        />
       </Stack>
-    </>
+    </Box>
   );
 };
