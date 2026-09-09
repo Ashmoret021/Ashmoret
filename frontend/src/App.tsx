@@ -13,12 +13,17 @@ import { SimulationControls } from "./ui/SimulationControls";
 import { SimulationStats } from "./ui/SimulationStats";
 import { Drone, DroneType } from "./types/types";
 import DroneModal from "./components/DroneModal/DroneModal";
+import axios from 'axios';
 
 export default function App() {
   const mapRef = useRef<HTMLDivElement | null>(null);
   const [isStateDialogOpen, setIsStateDialogOpen] = useState(false);
-  const { state, pauseClock, resumeClock, setSpeed, startClock } =
-    useSimulation();
+  const { state, pauseClock, resumeClock, setSpeed, startClock } = useSimulation();
+  const [layers, setLayers] = useState<string[]>(["🗺️ מפה רגילה"]);
+
+  useEffect(() => {
+    console.log("Active layers:", layers);
+  }, [layers]);
 
   useEffect(() => {
     if (!mapRef.current) {
@@ -60,18 +65,43 @@ export default function App() {
       "🛰️ צילום לווייני": satelliteLayer,
     };
 
-    L.control.layers(baseMaps).addTo(map);
+    const layerControl = L.control
+      .layers(baseMaps)
+      .addTo(map);
 
-    fetch("/CITIES.geojson")
-      .then((response) => response.json())
-      .then((data) => {
-        L.geoJSON(data, {
-          style: {
-            color: "#d32f2f",
-            fillColor: "#d32f2f",
-            fillOpacity: 0.35,
-          },
-        }).addTo(map);
+    layerControl
+      .getContainer()
+      ?.classList.add("top-center-layer-control");
+
+    const baseLayerNames = Object.keys(baseMaps);
+
+    map.on("baselayerchange", (e: L.LayersControlEvent) => {
+      setLayers((prev) => [
+        ...prev.filter((name) => !baseLayerNames.includes(name)),
+        e.name,
+      ]);
+    });
+
+    map.on("overlayadd", (e: L.LayersControlEvent) => {
+      setLayers((prev) => [...prev.filter((name) => name !== e.name), e.name]);
+    });
+
+    map.on("overlayremove", (e: L.LayersControlEvent) => {
+      setLayers((prev) => prev.filter((name) => name !== e.name));
+    });
+
+    axios
+      .get("/CITIES.geojson")
+      .then((response) => {
+        const citiesLayer = L.geoJSON(response.data);
+
+        layerControl.addOverlay(
+          citiesLayer,
+          "🏙️ ערים",
+        );
+      })
+      .catch((error) => {
+        console.error("Failed to load cities layer:", error);
       });
 
     return () => {
@@ -104,6 +134,16 @@ export default function App() {
   const [selectedDrone, setSelectedDrone] = useState<Drone | null>(drone);
 
   return (
+    <>
+    <style>
+        {`
+          .top-center-layer-control {
+            position: fixed !important;
+            top: 20px !important;
+            left: 50% !important;
+          }
+        `}
+      </style>
     <div
       style={{
         height: "100vh",
@@ -183,5 +223,6 @@ export default function App() {
         </DialogActions>
       </Dialog>
     </div>
+    </>
   );
 }
