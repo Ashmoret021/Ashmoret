@@ -37,8 +37,8 @@ interface SystemType {
 
 const systems: SystemType[] = [
   {
-    id: 'radar',
-    label: 'מכ"ם',
+    id: 'ShieldNest-Lite',
+    label: 'ShieldNest-Lite',
     icon: L.icon({
       iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
       iconSize: [25, 41],
@@ -47,8 +47,8 @@ const systems: SystemType[] = [
     remaining: 10,
   },
   {
-    id: 'sensor',
-    label: 'חיישן',
+    id: 'IronHook-SR',
+    label: 'IronHook-SR',
     icon: L.icon({
       iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png',
       iconSize: [25, 41],
@@ -57,10 +57,20 @@ const systems: SystemType[] = [
     remaining: 20,
   },
   {
-    id: 'antenna',
-    label: 'אנטנה',
+    id: 'HorizonEye-MX	',
+    label: 'HorizonEye-MX	',
     icon: L.icon({
       iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png',
+      iconSize: [25, 41],
+      iconAnchor: [12, 41],
+    }),
+    remaining: 30,
+  },
+   {
+    id: 'CloudFence-Area',
+    label: 'CloudFence-Area',
+    icon: L.icon({
+      iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-yellow.png',
       iconSize: [25, 41],
       iconAnchor: [12, 41],
     }),
