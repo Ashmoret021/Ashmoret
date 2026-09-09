@@ -18,8 +18,10 @@ export default function App() {
 
     return () => {
       map.remove();
-    };
+    };  
   }, []);
 
-  return <div ref={mapRef} style={{ height: '100vh', width: '100vw' }} />;
+  console.log(5)
+
+  return <div ref={mapRef} style={{ height: '100vh', width: '100vw' }} />; 
 }
