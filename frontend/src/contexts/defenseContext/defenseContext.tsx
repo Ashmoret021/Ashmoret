@@ -28,6 +28,7 @@ export function DefenseProvider({ children }: { children: ReactNode }) {
       setLoading(true);
       setError(null);
 
+      //TODO: change the api endpoint to match server
       const response = await fetch("/api/defenses");
 
       if (!response.ok) {
