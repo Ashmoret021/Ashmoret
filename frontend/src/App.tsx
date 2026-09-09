@@ -35,6 +35,13 @@ export default function App() {
 
     L.control.layers(baseMaps).addTo(map);
 
+
+    fetch("/CITIES.geojson")
+      .then((response) => response.json())
+      .then((data) => {
+        L.geoJSON(data).addTo(map);
+      });
+
     return () => {
       map.remove();
     };
