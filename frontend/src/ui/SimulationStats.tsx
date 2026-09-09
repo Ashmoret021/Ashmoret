@@ -86,7 +86,7 @@ export const SimulationStats: React.FC<SimulationStatsProps> = ({
         bottom: 24,
         right: 24,
         zIndex: 1100,
-        minWidth: 260,
+        width: 320,
         backgroundColor: 'rgba(15, 23, 42, 0.85)',
         backdropFilter: 'blur(12px)',
         border: '1px solid rgba(255, 255, 255, 0.15)',
