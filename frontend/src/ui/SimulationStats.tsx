@@ -84,11 +84,11 @@ export const SimulationStats: React.FC<SimulationStatsProps> = ({
       dir="rtl"
       sx={{
         position: 'absolute',
-        bottom: 24,
-        right: 24,
+        top: 76,
+        left: 16,
         zIndex: 1100,
-        width: 320,
-        backgroundColor: 'rgba(15, 23, 42, 0.85)',
+        width: 272,
+        backgroundColor: 'rgba(15, 23, 42, 0.88)',
         backdropFilter: 'blur(12px)',
         border: '1px solid rgba(255, 255, 255, 0.15)',
         borderRadius: 4,

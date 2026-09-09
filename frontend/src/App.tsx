@@ -4,7 +4,6 @@ import { MapView } from './ui/MapView';
 import { SimulationControls } from './ui/SimulationControls';
 import { SimulationStats } from './ui/SimulationStats';
 import { EventLog } from './ui/EventLog';
-import { MapLegend } from './ui/MapLegend';
 import { getState, loadScenario, onTick, setState, stopClock } from './simulation/SimulationContext';
 import { sampleScenario } from './simulation/sampleScenario';
 import { LeafletRenderer } from './map/LeafletRenderer';
@@ -191,12 +190,6 @@ export default function App() {
     <div style={{ height: '100vh', position: 'relative', width: '100vw', overflow: 'hidden' }}>
       {/* Central Map View with LeafletRenderer callback */}
       <MapView onMapReady={handleMapReady} />
-
-      {/* Mission 4.4: Map Legend and Settings */}
-      <MapLegend
-        onToggleThreatRoutes={(show) => rendererRef.current?.setShowThreatRoutes(show)}
-        onToggleInterceptorRoutes={(show) => rendererRef.current?.setShowInterceptorRoutes(show)}
-      />
 
       {/* Mission 4.3: Chronological Event Log */}
       <EventLog />

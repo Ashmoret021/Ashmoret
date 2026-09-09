@@ -167,10 +167,10 @@ export const EventLog: React.FC = () => {
       dir="rtl"
       sx={{
         position: 'absolute',
-        top: 'calc(100vh - 550px)',
-        right: 24,
+        top: 365,
+        left: 16,
         zIndex: 1100,
-        width: 320,
+        width: 272,
         backgroundColor: 'rgba(15, 23, 42, 0.88)',
         backdropFilter: 'blur(12px)',
         border: '1px solid rgba(255, 255, 255, 0.15)',
@@ -243,7 +243,7 @@ export const EventLog: React.FC = () => {
           </Stack>
 
           {/* Log Items List */}
-          <Box sx={{ maxHeight: 200, overflowY: 'auto', pr: 0.5 }}>
+          <Box sx={{ maxHeight: 'calc(100vh - 480px)', minHeight: 60, overflowY: 'auto', pr: 0.5 }}>
             {filteredEntries.length === 0 ? (
               <Box
                 sx={{
