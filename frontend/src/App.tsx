@@ -231,8 +231,7 @@ export default function App() {
       '🛰️ צילום לווייני': satelliteLayer,
     };
 
-    const layerControl = L.control.layers(baseMaps).addTo(map);
-    layerControl.getContainer()?.classList.add('top-center-layer-control');
+    const layerControl = L.control.layers(baseMaps, undefined, { position: 'topleft' }).addTo(map);
 
     const baseLayerNames = Object.keys(baseMaps);
 
@@ -289,10 +288,16 @@ export default function App() {
     <>
       <style>
         {`
-          .top-center-layer-control {
-            position: fixed !important;
-            top: 20px !important;
-            left: 50% !important;
+          .leaflet-top.leaflet-left {
+            display: flex !important;
+            flex-direction: row !important;
+            align-items: center !important;
+            gap: 12px !important;
+            top: 16px !important;
+            left: 16px !important;
+          }
+          .leaflet-top.leaflet-left .leaflet-control {
+            margin: 0 !important;
           }
         `}
       </style>

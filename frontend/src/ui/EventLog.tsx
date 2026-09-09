@@ -99,19 +99,19 @@ export const EventLog: React.FC = () => {
       dir="rtl"
       sx={{
         position: 'absolute',
-        top: 365,
+        top: 326,
         left: 16,
         zIndex: 1100,
-        width: 272,
+        width: 252,
         backgroundColor: 'rgba(15, 23, 42, 0.88)',
         backdropFilter: 'blur(12px)',
         border: '1px solid rgba(255, 255, 255, 0.15)',
-        borderRadius: 4,
+        borderRadius: 3.5,
         color: '#ffffff',
         boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.3)',
       }}
     >
-      <CardContent sx={{ p: 2, '&:last-child': { pb: isExpanded ? 2 : 1 } }}>
+      <CardContent sx={{ p: 1.5, '&:last-child': { pb: isExpanded ? 1.5 : 1 } }}>
         {/* Header */}
         <Box
           sx={{
@@ -138,10 +138,10 @@ export const EventLog: React.FC = () => {
         </Box>
 
         <Collapse in={isExpanded}>
-          <Divider sx={{ borderColor: 'rgba(255, 255, 255, 0.1)', my: 1.5 }} />
+          <Divider sx={{ borderColor: 'rgba(255, 255, 255, 0.1)', my: 1 }} />
 
           {/* Filter Chips */}
-          <Stack direction="row" spacing={0.5} sx={{ mb: 1.5, flexWrap: 'wrap', gap: 0.5 }}>
+          <Stack direction="row" spacing={0.5} sx={{ mb: 1, flexWrap: 'wrap', gap: 0.5 }}>
             {(['all', 'launch', 'interception', 'impact', 'detection'] as EventCategory[]).map(
               (cat) => {
                 const labels: Record<EventCategory, string> = {
@@ -159,9 +159,9 @@ export const EventLog: React.FC = () => {
                     size="small"
                     onClick={() => setSelectedCategory(cat)}
                     sx={{
-                      fontSize: '0.7rem',
+                      fontSize: '0.68rem',
                       fontWeight: 600,
-                      height: 24,
+                      height: 22,
                       backgroundColor: isSelected ? '#38bdf8' : 'rgba(255, 255, 255, 0.08)',
                       color: isSelected ? '#0f172a' : '#cbd5e1',
                       '&:hover': {
@@ -175,7 +175,7 @@ export const EventLog: React.FC = () => {
           </Stack>
 
           {/* Log Items List */}
-          <Box sx={{ maxHeight: 'calc(100vh - 480px)', minHeight: 60, overflowY: 'auto', pr: 0.5 }}>
+          <Box sx={{ maxHeight: 'calc(100vh - 460px)', minHeight: 60, overflowY: 'auto', pr: 0.5 }}>
             {filteredEntries.length === 0 ? (
               <Box
                 sx={{

@@ -39,44 +39,24 @@ export const MapView: React.FC<MapViewProps> = React.memo(({
 
     const map = L.map(mapRef.current, {
       preferCanvas: true,
+      zoomControl: false,
       // Hard-lock panning to the Middle East; viscosity=1 creates a solid wall
       maxBounds: MIDDLE_EAST_BOUNDS,
       maxBoundsViscosity: 1.0,
       minZoom: MIN_ZOOM,
     }).setView(center, zoom);
+
+    L.control.zoom({ position: 'topleft' }).addTo(map);
     mapInstanceRef.current = map;
 
-    const streetLayer = L.tileLayer(
-      'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+    const darkLayer = L.tileLayer(
+      'https://tiles.stadiamaps.com/tiles/stamen_toner_dark/{z}/{x}/{y}{r}.png',
       {
-        attribution: '&copy; OpenStreetMap contributors',
+        maxZoom: 20,
+        attribution: '&copy; Stadia Maps &copy; OpenStreetMap',
       },
     );
-
-    const satelliteLayer = L.tileLayer(
-      'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-      {
-        attribution: 'Tiles &copy; Esri',
-      },
-    );
-
-    streetLayer.addTo(map);
-
-    const baseMaps = {
-      '🗺️ מפה רגילה': streetLayer,
-      '🛰️ צילום לווייני': satelliteLayer,
-    };
-
-    L.control.layers(baseMaps).addTo(map);
-
-    fetch('/CITIES.geojson')
-      .then((response) => response.json())
-      .then((data) => {
-        L.geoJSON(data).addTo(map);
-      })
-      .catch(() => {
-        // Fallback gracefully if GeoJSON isn't available
-      });
+    darkLayer.addTo(map);
 
     onMapReadyRef.current?.(map);
 

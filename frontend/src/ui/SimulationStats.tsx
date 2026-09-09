@@ -84,19 +84,19 @@ export const SimulationStats: React.FC<SimulationStatsProps> = ({
       dir="rtl"
       sx={{
         position: 'absolute',
-        top: 76,
+        top: 86,
         left: 16,
         zIndex: 1100,
-        width: 272,
+        width: 252,
         backgroundColor: 'rgba(15, 23, 42, 0.88)',
         backdropFilter: 'blur(12px)',
         border: '1px solid rgba(255, 255, 255, 0.15)',
-        borderRadius: 4,
+        borderRadius: 3.5,
         color: '#ffffff',
         boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.3)',
       }}
     >
-      <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
+      <CardContent sx={{ p: 1.5, '&:last-child': { pb: 1.5 } }}>
         {/* Header & Connection Indicator */}
         <Box
           sx={{
@@ -123,10 +123,10 @@ export const SimulationStats: React.FC<SimulationStatsProps> = ({
           />
         </Box>
 
-        <Divider sx={{ borderColor: 'rgba(255, 255, 255, 0.1)', mb: 1.5 }} />
+        <Divider sx={{ borderColor: 'rgba(255, 255, 255, 0.1)', mb: 1 }} />
 
         {/* Counter Items Grid */}
-        <Stack spacing={1}>
+        <Stack spacing={0.75}>
           {stats.map((item) => (
             <Box
               key={item.id}
@@ -134,8 +134,8 @@ export const SimulationStats: React.FC<SimulationStatsProps> = ({
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'space-between',
-                px: 1.5,
-                py: 0.75,
+                px: 1.25,
+                py: 0.5,
                 borderRadius: 2,
                 backgroundColor: item.bgColor,
                 border: `1px solid ${item.color}33`,
@@ -143,12 +143,12 @@ export const SimulationStats: React.FC<SimulationStatsProps> = ({
             >
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                 {item.icon}
-                <Typography variant="body2" sx={{ fontWeight: 600, color: '#e2e8f0' }}>
+                <Typography variant="body2" sx={{ fontWeight: 600, color: '#e2e8f0', fontSize: '0.8rem' }}>
                   {item.label}
                 </Typography>
               </Box>
               <Typography
-                variant="subtitle1"
+                variant="subtitle2"
                 sx={{
                   fontWeight: 800,
                   fontFamily: 'monospace',
