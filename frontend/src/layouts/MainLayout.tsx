@@ -81,6 +81,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
   const {dronesGroups, setDronesGroups} = useGetAllDronesGroups();
   const {launchersGroups, setLaunchersGroups} = useGetAllLaunchersGroups();
 
+
   //TODO: data doesnt match to INITIAL_SCENARIOS
   const {scenarios, setScenarios} = useGetAllScenarios();
 
