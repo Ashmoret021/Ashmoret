@@ -304,6 +304,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
                 selectedGroupId={selectedGroup?.id}
                 onGroupSelect={handleGroupSelect}
                 onCreateGroup={onAddInterceptorGroup ?? handleCreateGroup}
+                type="launcher"
               />
             )}
             {navView === "drones" && (
@@ -312,6 +313,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
                 selectedGroupId={selectedGroup?.id}
                 onGroupSelect={handleGroupSelect}
                 onCreateGroup={onAddDroneGroup ?? handleCreateGroup}
+                type="drone"
               />
             )}
           </>
