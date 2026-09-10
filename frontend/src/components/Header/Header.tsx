@@ -160,25 +160,6 @@ export const Header: React.FC<HeaderProps> = ({
           <Radio size={13} className="sim-icon" />
           <span>{simId}</span>
         </div>
-
-        {/* Notification button */}
-        <button
-          className="header-action-btn"
-          title="התראות"
-          aria-label="התראות"
-        >
-          <Bell size={17} />
-          <span className="notification-dot" />
-        </button>
-
-        {/* Settings button */}
-        <button
-          className="header-action-btn"
-          title="הגדרות מערכת"
-          aria-label="הגדרות"
-        >
-          <Settings size={17} />
-        </button>
       </div>
     </header>
   );
