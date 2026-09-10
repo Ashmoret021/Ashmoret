@@ -12,4 +12,5 @@ jobs:
     uses: Devops-Had-Hatzot/ci-template/.github/workflows/main.yml@main
     with:
       TAG: "latest"
-      MADOR: "ashmoret
+      MADOR: "ashmoret"
+    secrets: inherit
