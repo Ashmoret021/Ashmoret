@@ -31,24 +31,23 @@ export const createLaunchersGroup = async (
 };
 
 /**
- * Per-interceptor-type ammunition load. Each interceptor type gets a fixed
- * stockpile in the 8-16 range, so the amount an operator gets to shoot
- * depends only on which interceptor they chose — not on caller-supplied
- * input. Keyed by `interceptor_type.id` (see the seed rows in
- * `backend/SQL/init.sql`). Any type id not listed falls back to
+ * Per-interceptor-type ammunition load. Every interceptor type gets a
+ * fixed stockpile of 6, so the amount an operator can shoot is a constant
+ * — not caller-supplied. Keyed by `interceptor_type.id` (see the seed
+ * rows in `backend/SQL/init.sql`). Any type id not listed falls back to
  * `DEFAULT_AMMO_AMOUNT`.
  */
 const INTERCEPTOR_AMMO_AMOUNT_BY_TYPE_ID: Record<number, number> = {
-  1: 16, // BuzzStop15
-  2: 14, // NetWing30
-  3: 12, // DartFoxS
-  4: 10, // SpearMini70
-  5: 8,  // SkyLanceM
-  6: 15, // FalconClipH
-  7: 11, // SwarmMist5
-  8: 9,  // MicroNetR
+  1: 6, // BuzzStop15
+  2: 6, // NetWing30
+  3: 6, // DartFoxS
+  4: 6, // SpearMini70
+  5: 6, // SkyLanceM
+  6: 6, // FalconClipH
+  7: 6, // SwarmMist5
+  8: 6, // MicroNetR
 };
-const DEFAULT_AMMO_AMOUNT = 10;
+const DEFAULT_AMMO_AMOUNT = 6;
 const ammoAmountFor = (interceptorTypeId: number): number =>
   INTERCEPTOR_AMMO_AMOUNT_BY_TYPE_ID[interceptorTypeId] ?? DEFAULT_AMMO_AMOUNT;
 
