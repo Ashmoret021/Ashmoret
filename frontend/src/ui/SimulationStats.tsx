@@ -4,8 +4,11 @@ import {
   Card,
   CardContent,
   Chip,
+  Collapse,
   Divider,
+  IconButton,
   Stack,
+  Tooltip,
   Typography,
 } from '@mui/material';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
@@ -13,6 +16,8 @@ import FlightTakeoffIcon from '@mui/icons-material/FlightTakeoff';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import DangerousIcon from '@mui/icons-material/Dangerous';
 import WifiIcon from '@mui/icons-material/Wifi';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import { useSimulation } from '../simulation/useSimulation';
 import { algorithmClient } from '../algorithm/AlgorithmClient';
 
@@ -23,6 +28,7 @@ export interface SimulationStatsProps {
 export const SimulationStats: React.FC<SimulationStatsProps> = () => {
   const { state } = useSimulation();
   const [isConnected, setIsConnected] = useState(true);
+  const [isExpanded, setIsExpanded] = useState(true);
 
   useEffect(() => {
     const id = setInterval(() => {
@@ -103,19 +109,29 @@ export const SimulationStats: React.FC<SimulationStatsProps> = () => {
         boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.3)',
       }}
     >
-      <CardContent sx={{ p: 1.5, '&:last-child': { pb: 1.5 } }}>
+      <CardContent sx={{ p: 1.5, '&:last-child': { pb: isExpanded ? 1.5 : 1 } }}>
         {/* Header & Connection Indicator */}
         <Box
           sx={{
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            mb: 1.5,
+            cursor: 'pointer',
+            userSelect: 'none',
           }}
+          onClick={() => setIsExpanded((prev) => !prev)}
         >
-          <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#f8fafc' }}>
-            לוח סטטיסטיקות
-          </Typography>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#f8fafc' }}>
+              לוח סטטיסטיקות
+            </Typography>
+            <Tooltip title={isExpanded ? 'מזער לוח' : 'הרחב לוח'}>
+              <IconButton size="small" sx={{ color: '#94a3b8', p: 0.25 }}>
+                {isExpanded ? <ExpandLessIcon fontSize="small" /> : <ExpandMoreIcon fontSize="small" />}
+              </IconButton>
+            </Tooltip>
+          </Box>
+
           <Chip
             icon={<WifiIcon sx={{ fontSize: 16 }} />}
             label={isConnected ? 'מחובר' : 'גיבוי'}
@@ -130,43 +146,45 @@ export const SimulationStats: React.FC<SimulationStatsProps> = () => {
           />
         </Box>
 
-        <Divider sx={{ borderColor: 'rgba(255, 255, 255, 0.1)', mb: 1 }} />
+        <Collapse in={isExpanded}>
+          <Divider sx={{ borderColor: 'rgba(255, 255, 255, 0.1)', my: 1 }} />
 
-        {/* Counter Items Grid */}
-        <Stack spacing={0.75}>
-          {stats.map((item) => (
-            <Box
-              key={item.id}
-              sx={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                px: 1.25,
-                py: 0.5,
-                borderRadius: 2,
-                backgroundColor: item.bgColor,
-                border: `1px solid ${item.color}33`,
-              }}
-            >
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                {item.icon}
-                <Typography variant="body2" sx={{ fontWeight: 600, color: '#e2e8f0', fontSize: '0.8rem' }}>
-                  {item.label}
-                </Typography>
-              </Box>
-              <Typography
-                variant="subtitle2"
+          {/* Counter Items Grid */}
+          <Stack spacing={0.75}>
+            {stats.map((item) => (
+              <Box
+                key={item.id}
                 sx={{
-                  fontWeight: 800,
-                  fontFamily: 'monospace',
-                  color: item.color,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  px: 1.25,
+                  py: 0.5,
+                  borderRadius: 2,
+                  backgroundColor: item.bgColor,
+                  border: `1px solid ${item.color}33`,
                 }}
               >
-                {item.value}
-              </Typography>
-            </Box>
-          ))}
-        </Stack>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  {item.icon}
+                  <Typography variant="body2" sx={{ fontWeight: 600, color: '#e2e8f0', fontSize: '0.8rem' }}>
+                    {item.label}
+                  </Typography>
+                </Box>
+                <Typography
+                  variant="subtitle2"
+                  sx={{
+                    fontWeight: 800,
+                    fontFamily: 'monospace',
+                    color: item.color,
+                  }}
+                >
+                  {item.value}
+                </Typography>
+              </Box>
+            ))}
+          </Stack>
+        </Collapse>
       </CardContent>
     </Card>
   );
