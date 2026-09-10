@@ -14,6 +14,7 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
+  getAlertTitleUtilityClass,
 } from "@mui/material";
 import L, { Map } from "leaflet";
 import "leaflet/dist/leaflet.css";
@@ -21,6 +22,7 @@ import { useSimulation } from "../simulation/useSimulation";
 import { AddScenerioModal } from '../components';
 import { MapView } from "../ui/MapView";
 import { LaunchersDronesPanel } from "../components/LaunchersDronesPanel/LaunchersDronesPanel";
+import { useGetAllDronesGroups, useGetAllLaunchersGroups } from "../api/hooks";
 
 interface MainLayoutProps {
   logoSrc?: string;
@@ -59,6 +61,9 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
       droneTypes: ["A", "B", "C"],
     },
   );
+
+  const {dronesGroups, setDronesGroups} = useGetAllDronesGroups();
+  const {launchersGroups, setLaunchersGroups} = useGetAllLaunchersGroups();
 
   const [selectedGroup, setSelectedGroup] = useState<DroneGroup | LauncherGroup | null>(null);
 
@@ -195,7 +200,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
 
             {navView === "interceptors" && (
               <LaunchersDronesPanel
-                groups={INITIAL_LAUNCHER_GROUPS}
+                groups={launchersGroups}
                 selectedGroupId={selectedGroup?.id}
                 onGroupSelect={handleGroupSelect}
                 onCreateGroup={onAddInterceptorGroup ?? handleCreateGroup}
@@ -204,7 +209,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
 
             {navView === "drones" && (
               <LaunchersDronesPanel
-                groups={INITIAL_DRONE_GROUPS}
+                groups={dronesGroups}
                 selectedGroupId={selectedGroup?.id}
                 onGroupSelect={handleGroupSelect}
                 onCreateGroup={onAddDroneGroup ?? handleCreateGroup}
