@@ -138,7 +138,6 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
       if (renderer) {
         renderer.initDefenseSystems();
       }
-      startClock();
     }
   };
 
@@ -156,7 +155,6 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
       if (renderer) {
         renderer.initDefenseSystems();
       }
-      startClock();
     }
   };
 

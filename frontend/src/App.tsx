@@ -273,6 +273,23 @@ export const App = () => {
                   bundle.interceptorState,
                 );
 
+                const interceptorId = bundle.interceptorState.id;
+                const freshState = getState();
+                const updatedInterceptors = {
+                  ...freshState.interceptors,
+                  [interceptorId]: {
+                    id: interceptorId,
+                    launcherId: decision.defenseSystemId,
+                    targetDroneId: targetIdNum,
+                    type: decision.interceptorType,
+                    location: bundle.interceptorState.startPosition,
+                    progress: 0,
+                    status: 'flying' as const,
+                    launchedAt: simTime,
+                  },
+                };
+                setState({ interceptors: updatedInterceptors });
+
                 appendLog(
                   "launch",
                   "שיגור מיירט",
@@ -284,15 +301,23 @@ export const App = () => {
                 const checkRemoval = onTick((_dt, currentSimTime) => {
                   if (currentSimTime >= arrivalSimTime) {
                     const s = getState();
+                    const nextInterceptors = { ...s.interceptors };
+                    if (nextInterceptors[interceptorId]) {
+                      nextInterceptors[interceptorId] = {
+                        ...nextInterceptors[interceptorId],
+                        status: 'intercepted' as const,
+                      };
+                    }
+
                     if (s.threats[targetIdNum]) {
-                      const updated = {
+                      const updatedThreats = {
                         ...s.threats,
                         [targetIdNum]: {
                           ...s.threats[targetIdNum],
                           logicalStatus: "intercepted" as const,
                         },
                       };
-                      setState({ threats: updated });
+                      setState({ threats: updatedThreats, interceptors: nextInterceptors });
 
                       appendLog(
                         "interception",
@@ -300,6 +325,8 @@ export const App = () => {
                         `איום #${targetIdNum} (סוג: ${s.threats[targetIdNum].type ?? "אויב"}) יורט בהצלחה`,
                         s.threats[targetIdNum].location,
                       );
+                    } else {
+                      setState({ interceptors: nextInterceptors });
                     }
                     checkRemoval();
                   }
@@ -325,14 +352,14 @@ export const App = () => {
         });
       }
 
-      const allThreats = Object.values(updatedThreats);
+      const allValues = Object.values(updatedThreats);
       const allDone =
-        allThreats.length > 0 &&
-        allThreats.every(
+        allValues.length > 0 &&
+        allValues.every(
           (t) =>
             t.logicalStatus === "intercepted" || t.logicalStatus === "impacted",
         );
-      if (allDone && status === "running") {
+      if (allDone && state.status === "running") {
         finishClock();
       }
     });
@@ -358,6 +385,11 @@ export const App = () => {
       lastApiTickSimTimeRef.current = 0;
       pendingApiCallRef.current = false;
       engagedDronesRef.current.clear();
+      // @ts-ignore - interceptorOutcomesRef added by Dev 2
+      if (typeof interceptorOutcomesRef !== "undefined" && interceptorOutcomesRef?.current) {
+        // @ts-ignore
+        interceptorOutcomesRef.current = {};
+      }
     };
 
     // Load initial scenario so map isn't empty on page load
@@ -499,6 +531,11 @@ export const App = () => {
     lastApiTickSimTimeRef.current = 0;
     pendingApiCallRef.current = false;
     engagedDronesRef.current.clear();
+    // @ts-ignore - interceptorOutcomesRef added by Dev 2
+    if (typeof interceptorOutcomesRef !== "undefined" && interceptorOutcomesRef?.current) {
+      // @ts-ignore
+      interceptorOutcomesRef.current = {};
+    }
     visualEventQueue.clear();
 
     const renderer = rendererRef.current;
@@ -511,8 +548,7 @@ export const App = () => {
     if (renderer) {
       renderer.initDefenseSystems();
     }
-    startClock();
-  }, [startClock]);
+  }, []);
   // NOTE: App.handleRestart is only used as fallback when no onRestart prop is
   // provided. The actual restart path goes through MainLayout.handleRestart,
   // which uses window.__resetSimulationRefs to reset App-level refs.

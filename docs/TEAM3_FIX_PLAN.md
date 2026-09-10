@@ -656,7 +656,7 @@ App.tsx component body
 
 #### משימות לביצוע:
 
-- [ ] **4.1 תיקון impact detection ב-`App.tsx`**
+- [V] **4.1 תיקון impact detection ב-`App.tsx`**
 
   מצא בתוך הלולאה `for (const [idStr, threat] of Object.entries(updatedThreats))` את הבלוק שמטפל ב-`isImpacted` (מכיל `checkFinish`). **החלף אותו** ב:
   ```ts
@@ -674,7 +674,7 @@ App.tsx component body
   ```
   (**מחק** את כל בלוק `checkFinish` הישן עם ה-`onTick` הפנימי — זו הדליפה.)
 
-- [ ] **4.2 תיקון finish detection**
+- [V] **4.2 תיקון finish detection**
 
   מצא בסוף ה-`onTick`:
   ```ts
@@ -693,7 +693,7 @@ App.tsx component body
   }
   ```
 
-- [ ] **4.3 תיקון `handleRestart` — ניקוי refs**
+- [V] **4.3 תיקון `handleRestart` — ניקוי refs**
 
   בתוך `handleRestart`, הוסף:
   ```ts
@@ -701,14 +701,14 @@ App.tsx component body
   ```
   > אם Dev 2 עוד לא מוזג, הוסף `// @ts-ignore` זמני.
 
-- [ ] **4.4 בדיקה**
+- [V] **4.4 בדיקה**
   ```bash
   cd frontend && npm run dev
   ```
-  - [ ] Restart מאפס לחלוטין ומחזיר סוללות למפה
-  - [ ] הסימולציה מסתיימת אוטומטית כשכל האיומים נפלו / יורטו
+  - [x] Restart מאפס לחלוטין ומחזיר סוללות למפה
+  - [x] הסימולציה מסתיימת אוטומטית כשכל האיומים נפלו / יורטו
 
-- [ ] **4.5 Commit**
+- [V] **4.5 Commit**
   ```bash
   git add frontend/src/App.tsx
   git commit -m "fix(simulation): fix impact detection listener leak and finish detection logic"
