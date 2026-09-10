@@ -140,8 +140,19 @@ export const EventLog: React.FC = () => {
         <Collapse in={isExpanded}>
           <Divider sx={{ borderColor: 'rgba(255, 255, 255, 0.1)', my: 1 }} />
 
-          {/* Filter Chips */}
-          <Stack direction="row" spacing={0.5} sx={{ mb: 1, flexWrap: 'wrap', gap: 0.5 }}>
+          {/* Filter Chips - Segmented Control matching speed selector design */}
+          <Box
+            sx={{
+              display: 'flex',
+              backgroundColor: 'rgba(255, 255, 255, 0.06)',
+              borderRadius: 2,
+              p: 0.4,
+              gap: 0.4,
+              mb: 1,
+              width: '100%',
+              justifyContent: 'space-between',
+            }}
+          >
             {(['all', 'launch', 'interception', 'impact', 'detection'] as EventCategory[]).map(
               (cat) => {
                 const labels: Record<EventCategory, string> = {
@@ -153,26 +164,36 @@ export const EventLog: React.FC = () => {
                 };
                 const isSelected = selectedCategory === cat;
                 return (
-                  <Chip
+                  <Box
                     key={cat}
-                    label={labels[cat]}
-                    size="small"
+                    component="button"
                     onClick={() => setSelectedCategory(cat)}
                     sx={{
-                      fontSize: '0.68rem',
-                      fontWeight: 600,
-                      height: 22,
-                      backgroundColor: isSelected ? '#38bdf8' : 'rgba(255, 255, 255, 0.08)',
-                      color: isSelected ? '#0f172a' : '#cbd5e1',
+                      flex: 1,
+                      px: 0.5,
+                      py: 0.5,
+                      fontWeight: 700,
+                      fontSize: '0.72rem',
+                      border: 'none',
+                      borderRadius: 1.5,
+                      cursor: 'pointer',
+                      transition: 'all 0.15s ease',
+                      textAlign: 'center',
+                      whiteSpace: 'nowrap',
+                      color: isSelected ? '#0f172a' : '#94a3b8',
+                      backgroundColor: isSelected ? '#38bdf8' : 'transparent',
                       '&:hover': {
-                        backgroundColor: isSelected ? '#0284c7' : 'rgba(255, 255, 255, 0.15)',
+                        backgroundColor: isSelected ? '#0284c7' : 'rgba(255,255,255,0.08)',
+                        color: isSelected ? '#0f172a' : '#e2e8f0',
                       },
                     }}
-                  />
+                  >
+                    {labels[cat]}
+                  </Box>
                 );
               },
             )}
-          </Stack>
+          </Box>
 
           {/* Log Items List */}
           <Box sx={{ maxHeight: 'calc(100vh - 585px)', minHeight: 60, overflowY: 'auto', pr: 0.5 }}>
