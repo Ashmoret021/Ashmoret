@@ -356,7 +356,6 @@ export const App = () => {
   const handleMapReady = useCallback((map: L.Map) => {
     const renderer = new LeafletRenderer(map);
     rendererRef.current = renderer;
-      mapInstanceRef.current = map; // <-- added: needed for the coordinate search to work
 
     renderer.initDefenseSystems();
     renderer.start();
