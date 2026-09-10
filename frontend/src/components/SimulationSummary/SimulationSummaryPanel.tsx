@@ -31,7 +31,7 @@ export const SimulationSummaryPanel: React.FC<SimulationSummaryPanelProps> = ({
     <div className="simulation-summary-panel">
       {/* Top Bar: Search input on the left, Title on the right (RTL) */}
       <div className="summary-header">
-        <h1 className="summary-page-title">סיכום סימולציות</h1>
+        <h1 className="summary-page-title" style={{ fontFamily: "Heebo, Arial, sans-serif"}}>סיכום סימולציות</h1>
 
         <div className="summary-search-container">
           <input

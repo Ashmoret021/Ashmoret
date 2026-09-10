@@ -26,6 +26,7 @@ interface MainLayoutProps {
   simId?: string;
   onStartSimulation?: () => void;
   handleMapReady?: (map: Map) => void;
+  setShowMainAdditionalComponents: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 export const MainLayout: React.FC<MainLayoutProps> = ({
@@ -35,6 +36,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
   simId = "SIM-01",
   onStartSimulation,
   handleMapReady,
+  setShowMainAdditionalComponents
 }) => {
   const initialScenarioTitle = scenarioName || defaultScenarioName;
   const [navView, setNavView] = useState<NavViewMode>("drones");
@@ -82,6 +84,11 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
     setNavView("drones");
   };
 
+  useEffect(() => {
+  if (navView === "summary") {
+    setShowMainAdditionalComponents(false); 
+  }
+}, [navView]);
   return (
     <div className="main-layout-container">
       {/* Top Application Header */}
@@ -102,6 +109,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
         {/* View 1: Simulation Summary Panel (Without additional sidebar buttons) */}
         {navView === "summary" ? (
           <SimulationSummaryPanel onViewSimulation={handleViewSimulation} />
+          
         ) : (
           <>
             {/* Tactical Map View */}

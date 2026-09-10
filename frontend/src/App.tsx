@@ -45,6 +45,8 @@ export const App = () => {
   const engagedDronesRef = useRef<Set<number>>(new Set());
   const [layers, setLayers] = useState<string[]>(["🗺️ מפה רגילה"]);
   const [selectedDrone, setSelectedDrone] = useState<Drone | null>(null);
+  const [showMainAdditionalComponents, setShowMainAdditionalComponents] =
+    useState<boolean>(true);
 
   const tickIdRef = useRef<number>(0);
   const lastApiTickSimTimeRef = useRef<number>(-1);
@@ -497,6 +499,7 @@ export const App = () => {
           simId="SIM-01"
           onStartSimulation={handleStartSimulation}
           handleMapReady={handleMapReady}
+          setShowMainAdditionalComponents={setShowMainAdditionalComponents}
         />
         {selectedDrone && (
           <DroneModal
@@ -508,9 +511,14 @@ export const App = () => {
             onClose={() => setSelectedDrone(null)}
           />
         )}
-        <EventLog />
-        <SimulationStats />
-        <SimulationControls onRestart={handleRestart} />
+
+        {showMainAdditionalComponents && (
+          <>
+            <EventLog />
+            <SimulationStats />
+            <SimulationControls onRestart={handleRestart} />
+          </>
+        )}
       </div>
     </>
   );
