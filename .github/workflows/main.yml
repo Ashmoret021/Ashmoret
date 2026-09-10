@@ -9,7 +9,7 @@ on:
 
 jobs:
   pipeline:
-    uses: Ashmoret021/Gitops/.github/workflows/main.yml@main
+    uses: Devops-Had-Hatzot/ci-template/.github/workflows/main.yml@main
     with:
       TAG: "latest"
       MADOR: "ashmoret"
