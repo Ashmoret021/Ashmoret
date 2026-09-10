@@ -1,19 +1,19 @@
 import { Router } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import {
-  getAllInterceptorTypes,
-  getInterceptorTypeById,
-  createInterceptorType,
-  updateInterceptorType,
-  deleteInterceptorType,
-} from '../services/interceptor-type.service';
+  getAllDronesGroups,
+  getDronesGroupById,
+  createDronesGroup,
+  updateDronesGroup,
+  deleteDronesGroup,
+} from '../services/DronesGroup.service';
 
 const router = Router();
 
 router.get('/', async (_req, res, next) => {
   try {
-    const types = await getAllInterceptorTypes();
-    res.status(StatusCodes.OK).json({ status: 'ok', data: types });
+    const groups = await getAllDronesGroups();
+    res.status(StatusCodes.OK).json({ status: 'ok', data: groups });
   } catch (err) {
     next(err);
   }
@@ -27,12 +27,12 @@ router.get('/:id', async (req, res, next) => {
       return;
     }
 
-    const item = await getInterceptorTypeById(id);
-    if (!item) {
-      res.status(StatusCodes.NOT_FOUND).json({ status: 'error', message: 'Interceptor type not found' });
+    const group = await getDronesGroupById(id);
+    if (!group) {
+      res.status(StatusCodes.NOT_FOUND).json({ status: 'error', message: 'Drones group not found' });
       return;
     }
-    res.status(StatusCodes.OK).json({ status: 'ok', data: item });
+    res.status(StatusCodes.OK).json({ status: 'ok', data: group });
   } catch (err) {
     next(err);
   }
@@ -40,7 +40,7 @@ router.get('/:id', async (req, res, next) => {
 
 router.post('/', async (req, res, next) => {
   try {
-    const created = await createInterceptorType(req.body);
+    const created = await createDronesGroup(req.body);
     res.status(StatusCodes.CREATED).json({ status: 'ok', data: created });
   } catch (err) {
     next(err);
@@ -55,9 +55,9 @@ router.put('/:id', async (req, res, next) => {
       return;
     }
 
-    const updated = await updateInterceptorType(id, req.body);
+    const updated = await updateDronesGroup(id, req.body);
     if (!updated) {
-      res.status(StatusCodes.NOT_FOUND).json({ status: 'error', message: 'Interceptor type not found' });
+      res.status(StatusCodes.NOT_FOUND).json({ status: 'error', message: 'Drones group not found' });
       return;
     }
     res.status(StatusCodes.OK).json({ status: 'ok', data: updated });
@@ -74,12 +74,12 @@ router.delete('/:id', async (req, res, next) => {
       return;
     }
 
-    const deleted = await deleteInterceptorType(id);
+    const deleted = await deleteDronesGroup(id);
     if (!deleted) {
-      res.status(StatusCodes.NOT_FOUND).json({ status: 'error', message: 'Interceptor type not found' });
+      res.status(StatusCodes.NOT_FOUND).json({ status: 'error', message: 'Drones group not found' });
       return;
     }
-    res.status(StatusCodes.OK).json({ status: 'ok', message: 'Interceptor type deleted successfully' });
+    res.status(StatusCodes.OK).json({ status: 'ok', message: 'Drones group deleted successfully' });
   } catch (err) {
     next(err);
   }
