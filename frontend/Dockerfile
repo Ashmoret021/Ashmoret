@@ -1,23 +1,20 @@
-# NOTE: build context must be the repository root (not frontend/), because
-# the frontend imports shared types from the root-level `types/` folder, e.g.
-# `import { Drone } from "../../../types/types"`.
-# Build from the repo root with:
-#   docker build -f frontend/Dockerfile -t ashmoret-frontend .
+# NOTE: the CI pipeline builds this image with the build context set to the
+# `frontend/` directory itself (e.g. `docker build ./frontend`), so this
+# Dockerfile must be self-contained and must not reference anything outside
+# `frontend/` (the repo-root `types/` folder is NOT reachable from here -
+# frontend/src/types/types.ts is a local copy used instead).
+# Build with:
+#   docker build -t ashmoret-frontend ./frontend
 
 # ---- Build stage ----
 FROM node:20-alpine AS build
 
 WORKDIR /app
 
-COPY frontend/package*.json ./frontend/
-WORKDIR /app/frontend
+COPY package*.json ./
 RUN npm ci
 
-WORKDIR /app
-COPY types ./types
-COPY frontend ./frontend
-
-WORKDIR /app/frontend
+COPY . .
 
 # Vite env vars (must be prefixed VITE_) are baked into the static bundle at
 # build time. Override with --build-arg VITE_ALGORITHM_URL=... etc.
@@ -31,8 +28,8 @@ RUN npm run build
 # ---- Production stage ----
 FROM nginx:1.27-alpine AS production
 
-COPY --from=build /app/frontend/dist /usr/share/nginx/html
-COPY frontend/nginx.conf /etc/nginx/conf.d/default.conf
+COPY --from=build /app/dist /usr/share/nginx/html
+COPY nginx.conf /etc/nginx/conf.d/default.conf
 
 EXPOSE 80
 

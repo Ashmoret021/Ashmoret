@@ -6,7 +6,7 @@ import { CoordinatesControl } from "./components/CoordinatesControl";
 import { MainLayout } from "./layouts/MainLayout";
 
 import axios from "axios";
-import { Drone, DroneType } from "../../types/types";
+import { Drone, DroneType } from "./types/types";
 import { algorithmClient } from "./algorithm/AlgorithmClient";
 import { WorldSnapshotBuilder } from "./algorithm/WorldSnapshotBuilder";
 import AttackSide from "./components/Attackside";
@@ -1074,8 +1074,10 @@ export const App = () => {
         )}
         {showMainAdditionalComponents && (
           <>
-            <EventLog />
-            <SimulationStats />
+            <div className="simulation-info-stack">
+              <SimulationStats />
+              <EventLog />
+            </div>
             <SimulationControls onRestart={handleRestart} />
             <DefenseSide
               map={map}

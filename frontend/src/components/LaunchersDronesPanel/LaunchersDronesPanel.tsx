@@ -5,10 +5,10 @@ import { DroneGroup, LauncherGroup } from '../../types/types';
 import './LaunchersDronesPanel.css';
 
 type EntityGroup = DroneGroup | LauncherGroup;
-type GroupTabFilter = 'all' | 'drones' | 'launchers';
 
 interface LaunchersDronesPanelProps {
   groups: EntityGroup[];
+  type: 'drone' | 'launcher' | string;
   selectedGroupId?: number;
   isOpen?: boolean;
   onToggleOpen?: () => void;
@@ -19,6 +19,7 @@ interface LaunchersDronesPanelProps {
 
 export const LaunchersDronesPanel: React.FC<LaunchersDronesPanelProps> = ({
   groups,
+  type,
   selectedGroupId,
   isOpen: controlledIsOpen,
   onToggleOpen,
@@ -30,8 +31,13 @@ export const LaunchersDronesPanel: React.FC<LaunchersDronesPanelProps> = ({
   const isOpen = controlledIsOpen !== undefined ? controlledIsOpen : internalIsOpen;
 
   const [activeGroupId, setActiveGroupId] = useState<number | undefined>(selectedGroupId);
-  const [tabFilter, setTabFilter] = useState<GroupTabFilter>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
+
+  const isDrone = type === 'drone';
+
+  // Labels dynamically assigned based on the type prop
+  const singularLabel = isDrone ? 'קבוצת רחפנים' : 'קבוצת מיירטים';
+  const pluralLabel = isDrone ? 'קבוצות רחפנים' : 'קבוצות מיירטים';
 
   const isDroneGroup = (group: EntityGroup): group is DroneGroup => {
     return 'drones' in group;
@@ -56,24 +62,19 @@ export const LaunchersDronesPanel: React.FC<LaunchersDronesPanelProps> = ({
     }
   };
 
-  // Filtered groups logic
+  // Filtered groups logic based on search query
   const filteredGroups = useMemo(() => {
     return groups.filter((group) => {
-      // Filter by category tab
-      if (tabFilter === 'drones' && !isDroneGroup(group)) return false;
-      if (tabFilter === 'launchers' && isDroneGroup(group)) return false;
-
-      // Filter by search query (name or description)
       if (searchQuery.trim() !== '') {
         const query = searchQuery.toLowerCase();
-        const matchesName = group.name.toLowerCase().includes(query);
+        const matchesName = group.name?.toLowerCase().includes(query) ?? false;
         const matchesDesc = group.description?.toLowerCase().includes(query) ?? false;
         if (!matchesName && !matchesDesc) return false;
       }
 
       return true;
     });
-  }, [groups, tabFilter, searchQuery]);
+  }, [groups, searchQuery]);
 
   return (
     <aside className={`launchers-drones-panel-wrapper ${isOpen ? 'open' : 'collapsed'}`}>
@@ -97,12 +98,12 @@ export const LaunchersDronesPanel: React.FC<LaunchersDronesPanelProps> = ({
             onClick={onCreateGroup}
           >
             <Plus size={15} />
-            <span>צור קבוצה</span>
+            <span>צור {singularLabel}</span>
           </button>
 
           <div className="scenarios-title-block">
             <h3 className="scenarios-heading">
-              קבוצות ({groups.length})
+              {pluralLabel} ({groups.length})
             </h3>
             <Layers size={19} className="scenarios-icon" />
           </div>
@@ -121,7 +122,7 @@ export const LaunchersDronesPanel: React.FC<LaunchersDronesPanelProps> = ({
 
           {filteredGroups.length === 0 && (
             <div className="no-scenarios-empty">
-              <span>לא נמצאו קבוצות התואמות את הסינון</span>
+              <span>לא נמצאו {pluralLabel} התואמים את הסינון</span>
             </div>
           )}
         </div>
