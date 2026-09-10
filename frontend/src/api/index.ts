@@ -9,7 +9,7 @@ export default {
     scenerios() {
         return {
             createScenerio: (data: ScenerioCreationType): Promise<AxiosResponse> => {
-                return axiosInstance.post("/scenerios", data);
+                return axiosInstance.post("/scenarios", data);
             },
             getAllScenerios: (): Promise<AxiosResponse> => {
                 return axiosInstance.get("/scenarios");
