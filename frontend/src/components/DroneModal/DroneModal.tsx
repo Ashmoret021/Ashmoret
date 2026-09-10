@@ -41,8 +41,6 @@ export default function DroneModal({
   estimatedDamage,
   position,
 }: DroneModalProps) {
-  const commercialName = droneTypeNames[drone.type] || "לא ידוע";
-
   const clampedX = position
     ? Math.max(145, Math.min(window.innerWidth - 145, position.x))
     : undefined;
@@ -110,7 +108,7 @@ export default function DroneModal({
                 <StorefrontRoundedIcon className="row-icon" />
                 <Typography className="info-label">שם מסחרי</Typography>
               </Box>
-              <Typography className="info-value">{commercialName}</Typography>
+              <Typography className="info-value">{drone.type}</Typography>
             </Box>
 
             <Box className="info-row">
