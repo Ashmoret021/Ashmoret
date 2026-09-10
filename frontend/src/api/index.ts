@@ -2,7 +2,7 @@ import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
 import { ScenerioCreationType } from "../types/types";
  
 const axiosInstance = axios.create({
-  baseURL: "http://localhost:3000",
+  baseURL: "http://localhost:3000/api",
 });
 
 export default {
@@ -10,7 +10,10 @@ export default {
         return {
             createScenerio: (data: ScenerioCreationType): Promise<AxiosResponse> => {
                 return axiosInstance.post("/scenerios", data);
-            }
+            },
+            getAllScenerios: (): Promise<AxiosResponse> => {
+                return axiosInstance.get("/scenarios");
+            },
         }
     },
     dronesGroup() {

@@ -42,3 +42,24 @@ export const useGetAllLaunchersGroups = () => {
 
   return { launchersGroups, setLaunchersGroups };
 };
+
+export const useGetAllScenarios = () => {
+  const [scenarios, setScenarios] = useState<any>([]);
+
+  useEffect(() => {
+    const fetchScenarios = async () => {
+      api
+        .scenerios()
+        .getAllScenerios()
+        .then((response) => {
+          setScenarios(response.data);
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    };
+    fetchScenarios();
+  }, []);
+
+  return { scenarios, setScenarios };
+};
