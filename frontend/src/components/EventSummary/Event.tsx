@@ -1,6 +1,6 @@
-import React from 'react';
-import { ScenarioItem, SeverityLevel } from '../../types/simulation';
-import './Event.css';
+import React from "react";
+import { ScenarioItem, SeverityLevel } from "../../types/simulation";
+import "./Event.css";
 
 interface EventProps {
   scenario: ScenarioItem;
@@ -10,10 +10,10 @@ interface EventProps {
 export const Event: React.FC<EventProps> = ({ scenario, onSelectScenario }) => {
   const getSeverityBadge = (severity: SeverityLevel) => {
     switch (severity) {
-      case 'low':
+      case "low":
         return <span className="severity-badge severity-low">נמוכה</span>;
-      case 'high':
-      case 'extreme':
+      case "high":
+      case "extreme":
         return <span className="severity-badge severity-extreme">קיצונית</span>;
       default:
         return <span className="severity-badge severity-medium">בינונית</span>;
@@ -27,20 +27,20 @@ export const Event: React.FC<EventProps> = ({ scenario, onSelectScenario }) => {
     >
       {/* Header: Title & Severity */}
       <div className="scenario-card-header">
-        <h3 className="scenario-card-title">{scenario.title}</h3>
-        {getSeverityBadge(scenario.severity)}
+        <h3 className="scenario-card-title">{scenario.name}</h3>
+        {scenario.severity && getSeverityBadge(scenario.severity)}
       </div>
 
       {/* Body: Drone Count, Entry Points, Drone Types */}
       <div className="scenario-card-body">
         <div className="drone-count-text">
-          {scenario.droneCount} רחפנים
+          {scenario.dronesGroup?.drones.length || 0} רחפנים
         </div>
 
         <div className="scenario-info-row">
           <span className="scenario-info-label">חדירה:</span>
           <div className="scenario-tags-container">
-            {scenario.entryPoints.map((point, index) => (
+            {scenario.entryPoints?.map((point, index) => (
               <span key={index} className="scenario-tag">
                 {point}
               </span>
@@ -51,7 +51,7 @@ export const Event: React.FC<EventProps> = ({ scenario, onSelectScenario }) => {
         <div className="scenario-info-row">
           <span className="scenario-info-label">סוגי רחפנים:</span>
           <div className="scenario-tags-container">
-            {scenario.droneTypes.map((type, index) => (
+            {scenario.dronesGroup?.drones.map(({ type }, index) => (
               <span key={index} className="scenario-tag-type">
                 {type}
               </span>
