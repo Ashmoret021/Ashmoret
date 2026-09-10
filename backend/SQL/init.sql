@@ -82,7 +82,7 @@ CREATE TABLE scenario.launchers_group (
 
 CREATE TABLE scenario.scenario (
 
-    id VARCHAR(255) PRIMARY KEY,
+    id SERIAL NOT NULL PRIMARY KEY,
 
     name VARCHAR(255) NOT NULL,
 
