@@ -240,7 +240,7 @@ export default function App() {
       '🛰️ צילום לווייני': satelliteLayer,
     };
 
-    const layerControl = L.control.layers(baseMaps, undefined, { position: 'topleft' }).addTo(map);
+    const layerControl = L.control.layers(baseMaps, undefined, { position: 'topright' }).addTo(map);
 
     const baseLayerNames = Object.keys(baseMaps);
 
