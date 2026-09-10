@@ -1,10 +1,8 @@
 import { Header } from "../components/Header/Header";
 import { EventsPanel } from "../components/EventsPanel/EventsPanel";
 import { InterceptorsPanel } from "../components/InterceptorsPanel/InterceptorsPanel";
-import {
-  SideNavDrawer,
-  NavViewMode,
-} from "../components/Navigation/SideNavDrawer";
+import { SideNavDrawer, NavViewMode } from "../components/Navigation/SideNavDrawer";
+import { SimulationSummaryPanel } from "../components/SimulationSummary/SimulationSummaryPanel";
 import { ScenarioItem } from "../types/simulation";
 import { INITIAL_SCENARIOS } from "../mock/events";
 import "./MainLayout.css";
@@ -79,6 +77,11 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
     console.log("Open Create Scenario modal / action");
   };
 
+  const handleViewSimulation = (simulationId: string) => {
+    console.log("Viewing simulation:", simulationId);
+    setNavView("drones");
+  };
+
   return (
     <div className="main-layout-container">
       {/* Top Application Header */}
@@ -91,86 +94,85 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
         logoSrc={logoSrc}
       />
 
-      {/* Main Workspace: Tactical Map with Right Navigation Drawer & Sidebars */}
+      {/* Main Workspace */}
       <main className="main-viewport">
-        <div style={{ height: "100vh", position: "relative", width: "100vw" }}>
-          <MapView onMapReady={handleMapReady} />
-          <Dialog
-            fullWidth
-            maxWidth="md"
-            onClose={() => setIsStateDialogOpen(false)}
-            open={isStateDialogOpen}
-          >
-            <DialogTitle>Simulation state</DialogTitle>
-            <DialogContent>
-              <pre
-                style={{
-                  backgroundColor: "#f5f5f5",
-                  borderRadius: 4,
-                  fontFamily: "monospace",
-                  fontSize: 13,
-                  margin: 0,
-                  maxHeight: "60vh",
-                  overflow: "auto",
-                  padding: 16,
-                  whiteSpace: "pre-wrap",
-                  wordBreak: "break-word",
-                }}
-              >
-                {stateJson}
-              </pre>
-            </DialogContent>
-            <DialogActions>
-              <Button onClick={toggleClock}>
-                {isRunning ? "Pause clock" : "Run clock"}
-              </Button>
-              <select
-                aria-label="Simulation speed"
-                value={state.speedMultiplier}
-                onChange={(event) =>
-                  setSpeed(Number(event.target.value) as 1 | 2 | 5 | 10)
-                }
-              >
-                {[1, 2, 5, 10].map((speed) => (
-                  <option key={speed} value={speed}>
-                    x{speed}
-                  </option>
-                ))}
-              </select>
-              <Button onClick={() => setIsStateDialogOpen(false)}>Close</Button>
-            </DialogActions>
-          </Dialog>
-        </div>
-
-        {/* Right-Edge Flyout Navigation Drawer (סיכום סימולציות, פריסת מיירטים, פריסת רחפנים) */}
+        {/* Navigation Dropdown Drawer (סיכום סימולציות, פריסת מיירטים, פריסת רחפנים וכו') */}
         <SideNavDrawer activeView={navView} onViewChange={setNavView} />
 
-        {/* Events Panel (פריסת רחפנים / תרחישים) */}
-        {navView === "drones" && (
-          <EventsPanel
-            scenarios={INITIAL_SCENARIOS}
-            selectedScenarioId={selectedScenario.id}
-            onScenarioSelect={handleScenarioSelect}
-            onCreateScenario={handleCreateScenario}
-          />
-        )}
+        {/* View 1: Simulation Summary Panel (Without additional sidebar buttons) */}
+        {navView === "summary" ? (
+          <SimulationSummaryPanel onViewSimulation={handleViewSimulation} />
+        ) : (
+          <>
+            {/* Tactical Map View */}
+            <div style={{ height: "100vh", position: "relative", width: "100vw" }}>
+              <MapView onMapReady={handleMapReady} />
+              <Dialog
+                fullWidth
+                maxWidth="md"
+                onClose={() => setIsStateDialogOpen(false)}
+                open={isStateDialogOpen}
+              >
+                <DialogTitle>Simulation state</DialogTitle>
+                <DialogContent>
+                  <pre
+                    style={{
+                      backgroundColor: "#f5f5f5",
+                      borderRadius: 4,
+                      fontFamily: "monospace",
+                      fontSize: 13,
+                      margin: 0,
+                      maxHeight: "60vh",
+                      overflow: "auto",
+                      padding: 16,
+                      whiteSpace: "pre-wrap",
+                      wordBreak: "break-word",
+                    }}
+                  >
+                    {stateJson}
+                  </pre>
+                </DialogContent>
+                <DialogActions>
+                  <Button onClick={toggleClock}>
+                    {isRunning ? "Pause clock" : "Run clock"}
+                  </Button>
+                  <select
+                    aria-label="Simulation speed"
+                    value={state.speedMultiplier}
+                    onChange={(event) =>
+                      setSpeed(Number(event.target.value) as 1 | 2 | 5 | 10)
+                    }
+                  >
+                    {[1, 2, 5, 10].map((speed) => (
+                      <option key={speed} value={speed}>
+                        x{speed}
+                      </option>
+                    ))}
+                  </select>
+                  <Button onClick={() => setIsStateDialogOpen(false)}>Close</Button>
+                </DialogActions>
+              </Dialog>
+            </div>
 
-        {/* Interceptors Panel (פריסת מיירטים / ניהול הצבה) */}
-        {navView === "interceptors" && (
-          <InterceptorsPanel
-            scenarioName={selectedScenario.title}
-            isSafeMode={true}
-            onStartSimulation={onStartSimulation}
-          />
-        )}
+            {/* Events Panel (פריסת רחפנים / תרחישים / מסך בית) */}
+            {(navView === "drones" || navView === "home" || navView === "scenarios") && (
+              <EventsPanel
+                scenarios={INITIAL_SCENARIOS}
+                selectedScenarioId={selectedScenario.id}
+                onScenarioSelect={handleScenarioSelect}
+                onCreateScenario={handleCreateScenario}
+              />
+            )}
 
-        {/* Simulation Summary Placeholder (סיכום סימולציות) */}
-        {navView === "summary" && (
-          <InterceptorsPanel
-            scenarioName={selectedScenario.title}
-            isSafeMode={true}
-            onStartSimulation={onStartSimulation}
-          />
+            {/* Interceptors Panel (פריסת מיירטים / ניהול הצבה) */}
+            {navView === "interceptors" && (
+              <InterceptorsPanel
+                scenarioName={selectedScenario.title}
+                isSafeMode={true}
+                onStartSimulation={onStartSimulation}
+              />
+            )}
+          </>
         )}
       </main>
     </div>
