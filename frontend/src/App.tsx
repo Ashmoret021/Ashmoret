@@ -310,14 +310,14 @@ export const App = () => {
         });
       }
 
-      const allThreats = Object.values(updatedThreats);
+      const allValues = Object.values(updatedThreats);
       const allDone =
-        allThreats.length > 0 &&
-        allThreats.every(
+        allValues.length > 0 &&
+        allValues.every(
           (t) =>
             t.logicalStatus === "intercepted" || t.logicalStatus === "impacted",
         );
-      if (allDone && status === "running") {
+      if (allDone && state.status === "running") {
         finishClock();
       }
     });
@@ -342,6 +342,11 @@ export const App = () => {
       lastApiTickSimTimeRef.current = -1;
       pendingApiCallRef.current = false;
       engagedDronesRef.current.clear();
+      // @ts-ignore - interceptorOutcomesRef added by Dev 2
+      if (typeof interceptorOutcomesRef !== "undefined" && interceptorOutcomesRef?.current) {
+        // @ts-ignore
+        interceptorOutcomesRef.current = {};
+      }
     };
 
     const markersLayer = L.layerGroup().addTo(map);
@@ -479,6 +484,11 @@ export const App = () => {
     lastApiTickSimTimeRef.current = -1;
     pendingApiCallRef.current = false;
     engagedDronesRef.current.clear();
+    // @ts-ignore - interceptorOutcomesRef added by Dev 2
+    if (typeof interceptorOutcomesRef !== "undefined" && interceptorOutcomesRef?.current) {
+      // @ts-ignore
+      interceptorOutcomesRef.current = {};
+    }
     visualEventQueue.clear();
 
     const renderer = rendererRef.current;
