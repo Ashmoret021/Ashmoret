@@ -12,7 +12,7 @@ import MemoryRoundedIcon from "@mui/icons-material/MemoryRounded";
 import StorefrontRoundedIcon from "@mui/icons-material/StorefrontRounded";
 import LanguageRoundedIcon from "@mui/icons-material/LanguageRounded";
 
-import { Drone } from "../../../../types/types";
+import { Drone, DroneType } from "../../../../types/types";
 import "./DroneModal.css";
 
 export type DroneModalProps = {
@@ -25,6 +25,13 @@ export type DroneModalProps = {
   position?: { x: number; y: number } | null;
 };
 
+const droneTypeNames: Record<DroneType, string> = {
+  [DroneType.SkyMiteC7]: "SkyMite C7",
+  [DroneType.LoadBeeM2]: "LoadBee M2",
+  [DroneType.FalconLongX4]: "Falcon Long X4",
+  [DroneType.NanoSwarmQ9]: "NanoSwarm Q9",
+};
+
 export default function DroneModal({
   drone,
   onClose,
@@ -34,6 +41,8 @@ export default function DroneModal({
   estimatedDamage,
   position,
 }: DroneModalProps) {
+  const commercialName = droneTypeNames[drone.type] || "לא ידוע";
+
   const clampedX = position
     ? Math.max(145, Math.min(window.innerWidth - 145, position.x))
     : undefined;
@@ -101,7 +110,7 @@ export default function DroneModal({
                 <StorefrontRoundedIcon className="row-icon" />
                 <Typography className="info-label">שם מסחרי</Typography>
               </Box>
-              <Typography className="info-value">{drone.type}</Typography>
+              <Typography className="info-value">{commercialName}</Typography>
             </Box>
 
             <Box className="info-row">

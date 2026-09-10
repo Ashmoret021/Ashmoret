@@ -1,3 +1,5 @@
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { CoordinatesControl } from "./components/CoordinatesControl";
 import React from "react";
 import { MainLayout } from "./layouts/MainLayout";
 import {
@@ -8,14 +10,23 @@ import {
   DialogTitle,
 } from "@mui/material";
 import L from "leaflet";
-import "leaflet/dist/leaflet.css";
+import "./styles/droneStyles.css";
 import { useSimulation } from "./simulation/useSimulation";
 import { SimulationControls } from "./ui/SimulationControls";
 import { SimulationStats } from "./ui/SimulationStats";
 import { Drone, DroneType } from "../../types/types";
 import DroneModal from "./components/DroneModal/DroneModal";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import "leaflet/dist/leaflet.css";
+import { DefenseSide } from "./components/DefenseSide/defenseSide";
+import AttackSide from "./components/Attackside";
+import { createWave } from "./constants/droneConstants";
+import { PlacementHUD } from "./components/PlacementHUD";
+import { DeleteConfirmModal } from "./components/DeleteConfirmModal";
+import { PlacedDrone, DroneWave, Scenario } from "./types/drone";
+import { storageService } from "./services/storageService";
+import {
+  createDroneDivIcon,
+  createDronePopupContent,
+} from "./utils/droneMarker";
 import { MapView } from "./ui/MapView";
 import { EventLog } from "./ui/EventLog";
 import {
@@ -29,6 +40,7 @@ import {
   stopClock,
 } from "./simulation/SimulationContext";
 import { sampleScenario } from "./simulation/sampleScenario";
+import { activateWaitingThreats } from "./simulation/ThreatEngine";
 import { LeafletRenderer } from "./map/LeafletRenderer";
 import { visualEventQueue } from "./visual/VisualEventQueue";
 import { processEngagementDecision } from "./visual/VisualEventBuilder";
@@ -36,8 +48,14 @@ import axios from "axios";
 import "leaflet/dist/leaflet.css";
 import { algorithmClient } from "./algorithm/AlgorithmClient";
 import { WorldSnapshotBuilder } from "./algorithm/WorldSnapshotBuilder";
+
 export const App = () => {
-  const mapRef = useRef<HTMLDivElement | null>(null);
+  const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(
+    null,
+  );
+  const mapInstanceRef = useRef<L.Map | null>(null);
+  const markersLayerRef = useRef<L.LayerGroup | null>(null);
+  const markersMapRef = useRef<Map<string, L.Marker>>(new Map());
   const [isStateDialogOpen, setIsStateDialogOpen] = useState(false);
   const { state, pauseClock, resumeClock, setSpeed, startClock } =
     useSimulation();
@@ -45,21 +63,81 @@ export const App = () => {
   const engagedDronesRef = useRef<Set<number>>(new Set());
   const [layers, setLayers] = useState<string[]>(["🗺️ מפה רגילה"]);
   const [selectedThreatId, setSelectedThreatId] = useState<number | null>(null);
-  const [mapInstance, setMapInstance] = useState<L.Map | null>(null);
+  const [map, setMap] = useState<L.Map | null>(null);
   const [mapMoveTick, setMapMoveTick] = useState(0);
+  const [showMainAdditionalComponents, setShowMainAdditionalComponents] =
+    useState<boolean>(true);
 
   const tickIdRef = useRef<number>(0);
   const lastApiTickSimTimeRef = useRef<number>(-1);
   const pendingApiCallRef = useRef<boolean>(false);
+  // Monotonically-increasing counter, incremented every time the simulation
+  // is reset. Async algorithm callbacks capture this at call time and skip
+  // processing if the generation has changed (stale response guard).
+  const simulationGenerationRef = useRef<number>(0);
+
+  // ── Attack Side (wave placement builder) state ─────────────────────────
+  const [attackModalOpen, setAttackModalOpen] = useState(false);
+  const [defenseModalOpen, setDefenseModalOpen] = useState(false);
+  const [currentScenarioId, setCurrentScenarioId] = useState<string | null>(
+    () => {
+      return storageService.getActiveScenarioId();
+    },
+  );
+  const [attackName, setAttackName] = useState<string>(() => {
+    return storageService.getStoredMetadata()?.attackName || "";
+  });
+  const [attackDescription, setAttackDescription] = useState<string>(() => {
+    return storageService.getStoredMetadata()?.attackDescription || "";
+  });
+  const [waves, setWaves] = useState<DroneWave[]>(() => {
+    const saved = storageService.getStoredWaves();
+    return saved && saved.length > 0 ? saved : [createWave(1)];
+  });
+  const [placedDrones, setPlacedDrones] = useState<PlacedDrone[]>(() => {
+    return storageService.getStoredDrones();
+  });
+  const [placingWaveId, setPlacingWaveId] = useState<number | null>(null);
+  const [highlightedDroneId, setHighlightedDroneId] = useState<string | null>(
+    null,
+  );
+  const [deleteModal, setDeleteModal] = useState<{
+    open: boolean;
+    title: string;
+    message: string;
+    onConfirm: () => void;
+  }>({
+    open: false,
+    title: "",
+    message: "",
+    onConfirm: () => { },
+  });
+  const [toast, setToast] = useState<{
+    message: string;
+    type: "success" | "error" | "info";
+  } | null>(null);
+
+  const showToast = useCallback(
+    (message: string, type: "success" | "error" | "info" = "info") => {
+      setToast({ message, type });
+      setTimeout(() => {
+        setToast((curr) => (curr?.message === message ? null : curr));
+      }, 4000);
+    },
+    [],
+  );
+
+  // Persist waves on change
+  useEffect(() => {
+    storageService.saveStoredWaves(waves);
+  }, [waves]);
+
+  // Persist metadata on change
+  useEffect(() => {
+    storageService.saveStoredMetadata({ attackName, attackDescription });
+  }, [attackName, attackDescription]);
 
   useEffect(() => {
-    // Load default realistic scenario once on mount
-    loadScenario(sampleScenario);
-    engagedDronesRef.current.clear();
-    tickIdRef.current = 0;
-    lastApiTickSimTimeRef.current = -1;
-    pendingApiCallRef.current = false;
-
     // ── Simulation Tick Processor ──────────────────────────────────────────
     const unsubscribe = onTick((_deltaTime, simTime) => {
       const state = getState();
@@ -67,182 +145,79 @@ export const App = () => {
       if (status !== "running") return;
 
       let changed = false;
-      const updatedThreats = { ...threats };
+      let updatedThreats = { ...threats };
 
-      for (const [idStr, threat] of Object.entries(updatedThreats)) {
-        const id = Number(idStr);
+      // --- Dev 1: Threat activation + movement ---
+      const prevThreats = updatedThreats;
 
-        // A. Threat Launch
-        if (threat.logicalStatus === "waiting" && simTime >= threat.startTime) {
-          updatedThreats[id] = {
-            ...threat,
-            logicalStatus: "active",
-            visualStatus: "flying",
-            progress: 0,
-            location: threat.route[0],
-          };
-          changed = true;
+      // A. Activate threats whose startTime has arrived (via ThreatEngine)
+      updatedThreats = activateWaitingThreats(updatedThreats, simTime);
 
-          appendLog(
-            "detection",
-            "זיהוי איום",
-            `איום #${id} זוהה באוויר`,
-            threat.route[0],
-          );
-        }
-        // B. Threat Straight-Line Movement
-        else if (
-          threat.logicalStatus === "active" ||
-          threat.logicalStatus === "interceptPending"
-        ) {
-          const flightDuration = 40; // 40 seconds — wider corridor in advanced scenario
-          const progress = Math.min(
-            1,
-            (simTime - threat.startTime) / flightDuration,
-          );
-
-          if (threat.route && threat.route.length >= 2) {
-            const start = threat.route[0];
-            const end = threat.route[threat.route.length - 1];
-
-            const currentPos = {
-              latitude:
-                start.latitude + (end.latitude - start.latitude) * progress,
-              longitude:
-                start.longitude + (end.longitude - start.longitude) * progress,
-              asl: start.asl + (end.asl - start.asl) * progress,
-              agl: start.agl + (end.agl - start.agl) * progress,
-            };
-
-            const isImpacted = progress >= 1;
-            updatedThreats[id] = {
-              ...threat,
-              progress,
-              location: currentPos,
-              logicalStatus: isImpacted ? "impacted" : threat.logicalStatus,
-            };
-            changed = true;
-
-            if (isImpacted) {
-              visualEventQueue.enqueue({
-                id: `evt-impact-${id}`,
-                type: "impact",
-                startTime: simTime,
-                targetId: `איום ${id}`,
-                position: currentPos,
-                status: "pending",
-              });
-
-              appendLog(
-                "impact",
-                "פגיעה בשטח",
-                `איום #${id} (סוג: ${threat.type ?? "אויב"}) פגע בשטח`,
-                currentPos,
-              );
-
-              const allThreats = Object.values(updatedThreats);
-              const allDone =
-                allThreats.length > 0 &&
-                allThreats.every(
-                  (t) =>
-                    t.logicalStatus === "intercepted" ||
-                    t.logicalStatus === "impacted",
-                );
-              if (allDone) {
-                const finishTime = simTime + 1.0;
-                const checkFinish = onTick((_dt, time) => {
-                  if (time >= finishTime) {
-                    finishClock();
-                    checkFinish();
-                  }
-                });
-              }
-            }
-          }
-
-          // C. Simulated Interception Decision
-          const timeSinceLaunch = simTime - threat.startTime;
-          if (
-            timeSinceLaunch >= 5 &&
-            !engagedDronesRef.current.has(id) &&
-            threat.logicalStatus === "active"
-          ) {
-            engagedDronesRef.current.add(id);
-            updatedThreats[id].logicalStatus = "interceptPending";
-            changed = true;
-
-            const launcherId = id === 1 ? "101" : "102";
-            const interceptorType = id === 1 ? "DartFoxS" : "SkyLanceM";
-
-            const bundle = processEngagementDecision(
-              {
-                defenseSystemId: launcherId,
-                interceptorType,
-                targetId: String(id),
-                result: "success",
-              },
-              state,
-            );
-
-            if (bundle) {
-              visualEventQueue.enqueue(bundle.visualEvent);
-              rendererRef.current?.registerInterceptorVisualState(
-                bundle.interceptorState,
-              );
-
-              appendLog(
-                "launch",
-                "שיגור מיירט",
-                `מיירט ${interceptorType} שוגר מסוללה #${launcherId} לעבר איום #${id}`,
-                bundle.interceptorState.startPosition,
-              );
-
-              const arrivalSimTime = simTime + 3;
-              const checkRemoval = onTick((_dt, currentSimTime) => {
-                if (currentSimTime >= arrivalSimTime) {
-                  const s = getState();
-                  if (s.threats[id]) {
-                    const nextThreats = {
-                      ...s.threats,
-                      [id]: {
-                        ...s.threats[id],
-                        logicalStatus: "intercepted" as const,
-                      },
-                    };
-                    setState({ threats: nextThreats });
-
-                    appendLog(
-                      "interception",
-                      "יירוט מוצלח",
-                      `איום #${id} (סוג: ${s.threats[id].type ?? "אויב"}) יורט בהצלחה`,
-                      s.threats[id].location,
-                    );
-
-                    const allThreats = Object.values(nextThreats);
-                    const allDone =
-                      allThreats.length > 0 &&
-                      allThreats.every(
-                        (t) =>
-                          t.logicalStatus === "intercepted" ||
-                          t.logicalStatus === "impacted",
-                      );
-                    if (allDone) {
-                      const finishTime = currentSimTime + 1.0;
-                      const checkFinish = onTick((_dt, time) => {
-                        if (time >= finishTime) {
-                          finishClock();
-                          checkFinish();
-                        }
-                      });
-                    }
-                  }
-                  checkRemoval();
-                }
-              });
-            }
-          }
+      // Log newly activated threats
+      for (const [idStr, t] of Object.entries(updatedThreats)) {
+        if (t.logicalStatus === 'active' && prevThreats[Number(idStr)]?.logicalStatus === 'waiting') {
+          appendLog('detection', 'זיהוי איום', `איום #${idStr} זוהה באוויר`, t.route[0]);
         }
       }
+
+      // B. Advance positions using fixed 40s flight duration (matches original behavior)
+      const flightDuration = 40;
+      const next = { ...updatedThreats };
+      for (const [idStr, threat] of Object.entries(updatedThreats)) {
+        if (threat.logicalStatus !== 'active' && threat.logicalStatus !== 'interceptPending') continue;
+        if (!threat.route || threat.route.length < 2) continue;
+
+        const elapsed = simTime - threat.startTime;
+        if (elapsed < 0) continue;
+
+        const progress = Math.min(1, elapsed / flightDuration);
+        const start = threat.route[0];
+        const end = threat.route[threat.route.length - 1];
+        const location = {
+          latitude: start.latitude + (end.latitude - start.latitude) * progress,
+          longitude: start.longitude + (end.longitude - start.longitude) * progress,
+          asl: start.asl + (end.asl - start.asl) * progress,
+          agl: start.agl + (end.agl - start.agl) * progress,
+        };
+        next[Number(idStr)] = { ...threat, progress, location };
+      }
+      updatedThreats = next;
+
+      // C. Detect newly-impacted threats (progress reached 1) and fire impact events
+      for (const [idStr, t] of Object.entries(updatedThreats)) {
+        const id = Number(idStr);
+        const prev = prevThreats[id];
+        if (
+          t.progress >= 1 &&
+          t.logicalStatus !== 'intercepted' &&
+          t.logicalStatus !== 'impacted' &&
+          prev?.logicalStatus !== 'impacted'
+        ) {
+          updatedThreats = {
+            ...updatedThreats,
+            [id]: { ...t, logicalStatus: 'impacted' },
+          };
+
+          visualEventQueue.enqueue({
+            id: `evt-impact-${id}`,
+            type: 'impact',
+            startTime: simTime,
+            targetId: `איום ${id}`,
+            position: t.location,
+            status: 'pending',
+          });
+
+          appendLog(
+            'impact',
+            'פגיעה בשטח',
+            `איום #${id} (סוג: ${t.type ?? 'אויב'}) פגע בשטח`,
+            t.location,
+          );
+        }
+      }
+
+      changed = updatedThreats !== prevThreats;
+      // --- End movement ---
 
       if (changed) {
         // Re-read fresh state to avoid overwriting logicalStatus changes
@@ -274,8 +249,14 @@ export const App = () => {
           tickIdRef.current,
         );
 
+        // Capture current generation — if it changes before this promise resolves,
+        // the scenario was switched/reset and we should discard the response.
+        const capturedGeneration = simulationGenerationRef.current;
+
         algorithmClient.step(snapshot).then((response) => {
           pendingApiCallRef.current = false;
+          // Guard: discard stale results from a previous simulation run
+          if (capturedGeneration !== simulationGenerationRef.current) return;
           if (!response || !response.engagements) return;
 
           const currentState = getState();
@@ -369,13 +350,27 @@ export const App = () => {
     return () => unsubscribe();
   }, []);
 
-  const handleMapReady = useCallback((map: L.Map) => {
-    setMapInstance(map);
-    const renderer = new LeafletRenderer(map);
+  const handleMapReady = useCallback((mapArg: L.Map) => {
+    setMap(mapArg);
+    mapInstanceRef.current = mapArg;
+    const renderer = new LeafletRenderer(mapArg);
     rendererRef.current = renderer;
 
     renderer.initDefenseSystems();
     renderer.start();
+    (window as any).__leafletRenderer = renderer;
+    (window as any).__clearEngagedDrones = () => engagedDronesRef.current.clear();
+    // Full simulation state reset — called by MainLayout on scenario switch / restart
+    (window as any).__resetSimulationRefs = () => {
+      simulationGenerationRef.current += 1; // invalidate any in-flight async callbacks
+      tickIdRef.current = 0;
+      lastApiTickSimTimeRef.current = -1;
+      pendingApiCallRef.current = false;
+      engagedDronesRef.current.clear();
+    };
+
+    const markersLayer = L.layerGroup().addTo(mapArg);
+    markersLayerRef.current = markersLayer;
 
     // Map layer controls and GeoJSON overlays from dev
     const streetLayer = L.tileLayer(
@@ -396,7 +391,7 @@ export const App = () => {
       },
     );
 
-    darkLayer.addTo(map);
+    darkLayer.addTo(mapArg);
 
     const baseMaps = {
       "🌙 מפה כהה": darkLayer,
@@ -406,14 +401,22 @@ export const App = () => {
 
     const layerControl = L.control
       .layers(baseMaps, undefined, { position: "topright" })
-      .addTo(map);
+      .addTo(mapArg);
+
+    mapArg.on("mousemove", (e: L.LeafletMouseEvent) => {
+      setCoords({ lat: e.latlng.lat, lng: e.latlng.lng });
+    });
+
+    mapArg.on("mouseout", () => {
+      setCoords(null);
+    });
 
     const baseLayerNames = Object.keys(baseMaps);
 
     const container = layerControl.getContainer();
 
     if (container) {
-      map.getContainer().appendChild(container);
+      mapArg.getContainer().appendChild(container);
 
       Object.assign(container.style, {
         position: "absolute",
@@ -425,18 +428,18 @@ export const App = () => {
       });
     }
 
-    map.on("baselayerchange", (e: L.LayersControlEvent) => {
+    mapArg.on("baselayerchange", (e: L.LayersControlEvent) => {
       setLayers((prev) => [
         ...prev.filter((name) => !baseLayerNames.includes(name)),
         e.name,
       ]);
     });
 
-    map.on("overlayadd", (e: L.LayersControlEvent) => {
+    mapArg.on("overlayadd", (e: L.LayersControlEvent) => {
       setLayers((prev) => [...prev.filter((name) => name !== e.name), e.name]);
     });
 
-    map.on("overlayremove", (e: L.LayersControlEvent) => {
+    mapArg.on("overlayremove", (e: L.LayersControlEvent) => {
       setLayers((prev) => prev.filter((name) => name !== e.name));
     });
 
@@ -480,7 +483,7 @@ export const App = () => {
           },
         });
 
-        map.on("overlayadd", (e: L.LayersControlEvent) => {
+        mapArg.on("overlayadd", (e: L.LayersControlEvent) => {
           if (e.name === "🛡️ מיקומים רגישים") {
             sensitivesLayer.bringToFront();
           }
@@ -497,6 +500,7 @@ export const App = () => {
     setSelectedThreatId(null);
     stopClock();
     algorithmClient.reset();
+    simulationGenerationRef.current += 1; // invalidate any in-flight async callbacks
     tickIdRef.current = 0;
     lastApiTickSimTimeRef.current = -1;
     pendingApiCallRef.current = false;
@@ -514,6 +518,9 @@ export const App = () => {
       renderer.initDefenseSystems();
     }
   }, []);
+  // NOTE: App.handleRestart is only used as fallback when no onRestart prop is
+  // provided. The actual restart path goes through MainLayout.handleRestart,
+  // which uses window.__resetSimulationRefs to reset App-level refs.
 
   useEffect(() => {
     return () => {
@@ -521,25 +528,290 @@ export const App = () => {
         rendererRef.current.stop();
         rendererRef.current = null;
       }
+      markersLayerRef.current = null;
+      mapInstanceRef.current = null;
     };
   }, []);
 
+  // ── Attack Side (wave placement builder) handlers ─────────────────────────
+
   // Update modal position on map pan/zoom
   useEffect(() => {
-    if (!mapInstance) return;
+    if (!map) return;
     const onMove = () => setMapMoveTick((v) => (v + 1) % 10000);
-    mapInstance.on("move", onMove);
-    mapInstance.on("zoom", onMove);
+    map.on("move", onMove);
+    map.on("zoom", onMove);
     return () => {
-      mapInstance.off("move", onMove);
-      mapInstance.off("zoom", onMove);
+      map.off("move", onMove);
+      map.off("zoom", onMove);
     };
-  }, [mapInstance]);
+  }, [map]);
+
+  // Drone focus / centering action
+  const handleFocusDrone = useCallback(
+    (droneId: string) => {
+      const drone = placedDrones.find((d) => d.id === droneId);
+      if (!drone || !mapInstanceRef.current) return;
+
+      mapInstanceRef.current.flyTo([drone.latitude, drone.longitude], 12, {
+        animate: true,
+        duration: 1,
+      });
+
+      setHighlightedDroneId(droneId);
+
+      setTimeout(() => {
+        const marker = markersMapRef.current.get(droneId);
+        if (marker) {
+          marker.openPopup();
+        }
+      }, 400);
+
+      setTimeout(() => {
+        setHighlightedDroneId((curr) => (curr === droneId ? null : curr));
+      }, 5000);
+    },
+    [placedDrones],
+  );
+
+  // Request Delete Single Drone (with confirmation modal)
+  const handleDeleteDroneRequestById = useCallback(
+    (droneId: string) => {
+      const drone = placedDrones.find((d) => d.id === droneId);
+      if (!drone) return;
+
+      setDeleteModal({
+        open: true,
+        title: `מחיקת רחפן ${drone.name || drone.id}`,
+        message: `האם אתה בטוח שברצונך למחוק את רחפן ${drone.id} (גל ${drone.waveId}) מהמפה? פעולה זו תפנה מקום להצבת רחפן נוסף.`,
+        onConfirm: () => {
+          setPlacedDrones((prev) => {
+            const updated = prev.filter((d) => d.id !== droneId);
+            storageService.saveStoredDrones(updated);
+            return updated;
+          });
+          setDeleteModal((curr) => ({ ...curr, open: false }));
+          showToast(`רחפן ${drone.id} נמחק בהצלחה`, "success");
+        },
+      });
+    },
+    [placedDrones, showToast],
+  );
+
+  // Render & Update Markers on the Leaflet Map
+  useEffect(() => {
+    const markersLayer = markersLayerRef.current;
+    if (!markersLayer) return;
+
+    markersLayer.clearLayers();
+    markersMapRef.current.clear();
+
+    placedDrones.forEach((drone) => {
+      const isHighlighted = highlightedDroneId === drone.id;
+      const icon = createDroneDivIcon(drone, isHighlighted);
+      const marker = L.marker([drone.latitude, drone.longitude], {
+        icon,
+        title: `${drone.id} (${drone.droneType})`,
+      });
+
+      const popupElement = createDronePopupContent(
+        drone,
+        (id) => handleDeleteDroneRequestById(id),
+        (id) => handleFocusDrone(id),
+      );
+
+      marker.bindPopup(popupElement, {
+        className: "tactical-leaflet-popup",
+        closeButton: true,
+      });
+
+      marker.addTo(markersLayer);
+      markersMapRef.current.set(drone.id, marker);
+
+      if (isHighlighted) {
+        marker.openPopup();
+      }
+    });
+  }, [
+    placedDrones,
+    highlightedDroneId,
+    handleDeleteDroneRequestById,
+    handleFocusDrone,
+  ]);
+
+  // Handle Map Click when in Placement Mode
+  useEffect(() => {
+    const mapEl = mapInstanceRef.current;
+    if (!mapEl || placingWaveId === null) return;
+
+    const activeWave = waves.find((w) => w.id === placingWaveId);
+    if (!activeWave) {
+      setPlacingWaveId(null);
+      return;
+    }
+
+    const onMapClick = (e: L.LeafletMouseEvent) => {
+      const placedForWave = placedDrones.filter(
+        (d) => d.waveId === activeWave.id,
+      );
+      const required = Number(activeWave.quantity) || 0;
+
+      if (placedForWave.length >= required) {
+        showToast(
+          `הושלמה הצבת כל ${required} הרחפנים לגל ${activeWave.id}. לא ניתן לחרוג מהכמות המוגדרת.`,
+          "error",
+        );
+        setPlacingWaveId(null);
+        return;
+      }
+
+      const lat = Number(e.latlng.lat.toFixed(6));
+      const lng = Number(e.latlng.lng.toFixed(6));
+
+      const isBatch = activeWave.placementMode === "batch";
+      const batchCount = isBatch
+        ? Math.min(activeWave.batchSize || 1, required - placedForWave.length)
+        : 1;
+
+      const newDronesToPlace: PlacedDrone[] = [];
+
+      for (let i = 0; i < batchCount; i++) {
+        const nextNum = placedForWave.length + 1 + i;
+        const uniqueSuffix = Math.random()
+          .toString(36)
+          .substring(2, 6)
+          .toUpperCase();
+        const droneId = `DRN-W${activeWave.id}-${String(nextNum).padStart(2, "0")}-${uniqueSuffix}`;
+        const droneName = `רחפן ${nextNum} (גל ${activeWave.id})`;
+
+        // Slight offset for multi-placement batch items
+        const offsetRadius =
+          isBatch && batchCount > 1 ? 0.0003 * Math.sqrt(i) : 0;
+        const offsetAngle =
+          isBatch && batchCount > 1 ? (i * 2 * Math.PI) / batchCount : 0;
+        const droneLat = Number(
+          (lat + offsetRadius * Math.cos(offsetAngle)).toFixed(6),
+        );
+        const droneLng = Number(
+          (lng + offsetRadius * Math.sin(offsetAngle)).toFixed(6),
+        );
+
+        newDronesToPlace.push({
+          id: droneId,
+          name: droneName,
+          waveId: activeWave.id,
+          waveIndex: waves.findIndex((w) => w.id === activeWave.id) + 1,
+          droneType: activeWave.droneType,
+          latitude: droneLat,
+          longitude: droneLng,
+          altitude: activeWave.altitude || 100,
+          heading: activeWave.angle || 45,
+          status: "ready",
+          placedAt: new Date().toISOString(),
+        });
+      }
+
+      const updatedDrones = [...placedDrones, ...newDronesToPlace];
+      setPlacedDrones(updatedDrones);
+      storageService.saveStoredDrones(updatedDrones);
+
+      const remaining =
+        required - (placedForWave.length + newDronesToPlace.length);
+
+      if (remaining <= 0) {
+        showToast(
+          `כל ${required} הרחפנים עבור גל ${activeWave.id} הוצבו בהצלחה!`,
+          "success",
+        );
+        setPlacingWaveId(null);
+      } else {
+        showToast(
+          batchCount > 1
+            ? `הוצבו ${batchCount} רחפנים במקבץ! נותרו עוד ${remaining} רחפנים להצבה.`
+            : `רחפן ${newDronesToPlace[0].name} מוקם בהצלחה! נותרו עוד ${remaining} רחפנים להצבה.`,
+          "success",
+        );
+      }
+    };
+
+    mapEl.on("click", onMapClick);
+
+    return () => {
+      mapEl.off("click", onMapClick);
+    };
+  }, [placingWaveId, waves, placedDrones, showToast]);
+
+  // Scenario Management Callbacks
+  const handleSaveScenario = useCallback(() => {
+    const scenarioId =
+      currentScenarioId || `SCN-${Date.now().toString().slice(-6)}`;
+    const scenarioName =
+      attackName.trim() ||
+      `תרחיש ${new Date().toLocaleTimeString("he-IL", { hour: "2-digit", minute: "2-digit" })}`;
+
+    const scenarioToSave: Scenario = {
+      id: scenarioId,
+      name: scenarioName,
+      description: attackDescription,
+      waves,
+      drones: placedDrones,
+      savedAt: new Date().toISOString(),
+    };
+
+    storageService.saveScenario(scenarioToSave);
+    setPlacedDrones([]);
+    storageService.saveStoredDrones([]);
+
+    setCurrentScenarioId(null);
+    setAttackName("");
+    setAttackDescription("");
+    setWaves([createWave(1)]);
+
+    storageService.setActiveScenarioId(null);
+    storageService.saveStoredWaves([createWave(1)]);
+    storageService.saveStoredMetadata({
+      attackName: "",
+      attackDescription: "",
+    });
+
+    setAttackModalOpen(false);
+    showToast(
+      `תרחיש "${scenarioName}" נשמר בהצלחה עם ${scenarioToSave.drones.length} רחפנים. הרחפנים הוסרו מהמפה הפעילה.`,
+      "success",
+    );
+  }, [
+    currentScenarioId,
+    attackName,
+    attackDescription,
+    waves,
+    placedDrones,
+    showToast,
+  ]);
+
+  // Active wave calculation
+  const activePlacingWave =
+    placingWaveId !== null
+      ? waves.find((w) => w.id === placingWaveId) || null
+      : null;
+  const activePlacedCount = activePlacingWave
+    ? placedDrones.filter((d) => d.waveId === activePlacingWave.id).length
+    : 0;
+  const activeRequiredCount = activePlacingWave
+    ? Number(activePlacingWave.quantity) || 0
+    : 0;
+  const activeRemainingCount = Math.max(
+    0,
+    activeRequiredCount - activePlacedCount,
+  );
+
+  const stateJson = JSON.stringify(state, null, 2);
+  const isRunning = state.status === "running";
+  const isPaused = state.status === "paused";
 
   // Click on threat detection
   useEffect(() => {
-    if (!mapInstance) return;
-    const container = mapInstance.getContainer();
+    if (!map) return;
+    const container = map.getContainer();
 
     let startX = 0;
     let startY = 0;
@@ -580,12 +852,12 @@ export const App = () => {
       }
 
       // 2. Click near a threat marker on screen (within 35px)
-      const clickPoint = mapInstance.mouseEventToContainerPoint(e);
+      const clickPoint = map.mouseEventToContainerPoint(e);
       let closestThreat: DroneSimState | null = null;
       let minDistance = Infinity;
 
       for (const threat of activeThreats) {
-        const threatPoint = mapInstance.latLngToContainerPoint([
+        const threatPoint = map.latLngToContainerPoint([
           threat.location.latitude,
           threat.location.longitude,
         ]);
@@ -614,7 +886,7 @@ export const App = () => {
       container.removeEventListener("mousedown", handleMouseDown, true);
       container.removeEventListener("click", handleContainerClick, true);
     };
-  }, [mapInstance]);
+  }, [map]);
 
   const currentThreat =
     selectedThreatId !== null ? state.threats[selectedThreatId] : null;
@@ -632,13 +904,13 @@ export const App = () => {
   }, [selectedThreatId, isThreatNeutralized]);
 
   const modalPosition = useMemo(() => {
-    if (!currentThreat || !mapInstance || isThreatNeutralized) return null;
-    const pt = mapInstance.latLngToContainerPoint([
+    if (!currentThreat || !map || isThreatNeutralized) return null;
+    const pt = map.latLngToContainerPoint([
       currentThreat.location.latitude,
       currentThreat.location.longitude,
     ]);
     return { x: pt.x, y: pt.y };
-  }, [currentThreat, mapInstance, isThreatNeutralized, mapMoveTick]);
+  }, [currentThreat, map, isThreatNeutralized, mapMoveTick]);
 
   const getDroneHebrewName = (type: DroneType): string => {
     switch (type) {
@@ -695,23 +967,8 @@ export const App = () => {
 
   return (
     <>
-      <style>
-        {`
-          .leaflet-top.leaflet-left {
-            display: flex !important;
-            flex-direction: row !important;
-            align-items: center !important;
-            gap: 12px !important;
-            top: 16px !important;
-            left: 16px !important;
-          }
-          .leaflet-top.leaflet-left .leaflet-control {
-            margin: 0 !important;
-          }
-        `}
-      </style>
-
       <div
+        className={placingWaveId !== null ? "placement-active-cursor" : ""}
         style={{
           height: "100vh",
           position: "relative",
@@ -724,7 +981,11 @@ export const App = () => {
           simId="SIM-01"
           onStartSimulation={handleStartSimulation}
           handleMapReady={handleMapReady}
+          setShowMainAdditionalComponents={setShowMainAdditionalComponents}
+          onAddDroneGroup={() => setAttackModalOpen(true)}
+          onAddInterceptorGroup={() => setDefenseModalOpen(true)}
         />
+        <CoordinatesControl coords={coords} />
         {selectedThreatId !== null && currentThreat && !isThreatNeutralized && (
           <DroneModal
             drone={currentThreat}
@@ -736,9 +997,126 @@ export const App = () => {
             onClose={() => setSelectedThreatId(null)}
           />
         )}
-        <EventLog />
-        <SimulationStats />
-        <SimulationControls onRestart={handleRestart} />
+        {showMainAdditionalComponents && (
+          <>
+            <EventLog />
+            <SimulationStats />
+            <SimulationControls onRestart={handleRestart} />
+            <DefenseSide
+              map={map}
+              open={defenseModalOpen}
+              onClose={() => setDefenseModalOpen(false)}
+            />
+
+            {/* Floating Placement HUD for attack-side drone placement */}
+            {activePlacingWave && (
+              <PlacementHUD
+                activeWave={activePlacingWave}
+                placedCount={activePlacedCount}
+                remainingCount={activeRemainingCount}
+                totalRequired={activeRequiredCount}
+                onFinish={() => setPlacingWaveId(null)}
+                onOpenForm={() => {
+                  setPlacingWaveId(null);
+                  setAttackModalOpen(true);
+                }}
+              />
+            )}
+          </>
+        )}
+
+        {/* Attack Waves Configuration Modal */}
+        <AttackSide
+          open={attackModalOpen}
+          onClose={() => setAttackModalOpen(false)}
+          waves={waves}
+          setWaves={setWaves}
+          placedDrones={placedDrones}
+          onStartPlacement={(waveId, options) => {
+            const numericWaveId = Number(waveId);
+            if (!Number.isFinite(numericWaveId)) {
+              showToast("מזהה גל לא תקין.", "error");
+              return;
+            }
+
+            setPlacingWaveId(numericWaveId);
+
+            if (options) {
+              setWaves((prev) =>
+                prev.map((wave) =>
+                  String(wave.id) === String(waveId)
+                    ? {
+                      ...wave,
+                      placementMode: options.mode,
+                      batchSize: options.count,
+                    }
+                    : wave,
+                ),
+              );
+            }
+
+            showToast(
+              options?.mode === "batch"
+                ? `מצב הצבת מקבץ פעיל עבור גל ${numericWaveId}. יוצבו ${options.count} רחפנים בכל לחיצה.`
+                : `מצב הצבה פעיל עבור גל ${numericWaveId}. לחץ על המפה להצבת רחפן.`,
+              "info",
+            );
+          }}
+          attackName={attackName}
+          setAttackName={setAttackName}
+          attackDescription={attackDescription}
+          setAttackDescription={setAttackDescription}
+          onSaveScenario={handleSaveScenario}
+        />
+
+        {/* Delete Confirmation Modal */}
+        <DeleteConfirmModal
+          open={deleteModal.open}
+          title={deleteModal.title}
+          message={deleteModal.message}
+          onConfirm={deleteModal.onConfirm}
+          onCancel={() => setDeleteModal((curr) => ({ ...curr, open: false }))}
+        />
+
+        {/* Attack-side toast notifications */}
+        {toast && (
+          <div
+            dir="rtl"
+            style={{
+              position: "fixed",
+              bottom: 24,
+              left: "50%",
+              transform: "translateX(-50%)",
+              zIndex: 2500,
+              background:
+                toast.type === "success"
+                  ? "linear-gradient(135deg, #065f46 0%, #047857 100%)"
+                  : toast.type === "error"
+                    ? "linear-gradient(135deg, #991b1b 0%, #b91c1c 100%)"
+                    : "linear-gradient(135deg, #1e293b 0%, #334155 100%)",
+              color: "#ffffff",
+              padding: "10px 22px",
+              borderRadius: 30,
+              boxShadow: "0 10px 25px rgba(0, 0, 0, 0.25)",
+              fontSize: 13,
+              fontWeight: 700,
+              display: "flex",
+              alignItems: "center",
+              gap: 10,
+              fontFamily: "Inter, Arial, Helvetica, sans-serif",
+              animation: "fadeIn 0.2s ease-out",
+            }}
+          >
+            <span>
+              {toast.type === "success"
+                ? "✓"
+                : toast.type === "error"
+                  ? "⚠️"
+                  : "ℹ️"}
+            </span>
+            <span>{toast.message}</span>
+          </div>
+        )}
       </div>
     </>
   );
