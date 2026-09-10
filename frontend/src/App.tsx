@@ -46,6 +46,7 @@ import {
 import { processEngagementDecision } from "./visual/VisualEventBuilder";
 import { visualEventQueue } from "./visual/VisualEventQueue";
 import { launcherToRange } from "./types";
+import api from "./api";
 
 export const App = () => {
   const mapInstanceRef = useRef<L.Map | null>(null);
@@ -476,7 +477,10 @@ export const App = () => {
         });
         
 
-    axios.get("api/launchers/").then((response)=> {
+    api
+    .launchers()
+    .getAllLaunchers()
+    .then((response)=> {
       console.log(response.data)
       const launchers = response.data;
         const launcherCircles: [Location, number][] = launchers.map(

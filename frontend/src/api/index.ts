@@ -29,5 +29,12 @@ export default {
                 return axiosInstance.get("/launchers-groups");
             }
         }
+    },
+    launchers() {
+        return {
+            getAllLaunchers: (): Promise<AxiosResponse> => {
+                return axiosInstance.get("/launchers");
+            }
+        }
     }
 }
