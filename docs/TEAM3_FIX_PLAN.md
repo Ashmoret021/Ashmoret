@@ -169,7 +169,7 @@ App.tsx component body
   import { activateWaitingThreats, advanceThreatPositions } from './simulation/ThreatEngine';
   ```
 
-- [ ] **1.3 עדכון `App.tsx` — החלפת for loop תנועת איומים**
+- [x] **1.3 עדכון `App.tsx` — החלפת for loop תנועת איומים**
 
   מצא וסמן את הסקציה שמתחילה ב-`for (const [idStr, threat] of Object.entries(updatedThreats)) {` ומסתיימת לפני `if (changed) { setState... }` (הסקציה שמכילה `const flightDuration = 40`).
 
@@ -188,7 +188,7 @@ App.tsx component body
   // --- End Dev 1 ---
   ```
 
-- [ ] **1.4 כתיבת טסטים**
+- [x] **1.4 כתיבת טסטים**
 
   צור `frontend/src/simulation/ThreatEngine.test.ts`:
   ```ts
@@ -221,12 +221,12 @@ App.tsx component body
   });
   ```
 
-- [ ] **1.5 הרצת טסטים**
+- [x] **1.5 הרצת טסטים**
   ```bash
   cd frontend && npx vitest run src/simulation/ThreatEngine.test.ts
   ```
 
-- [ ] **1.6 Commit**
+- [x] **1.6 Commit**
   ```bash
   git add frontend/src/simulation/ThreatEngine.ts frontend/src/simulation/ThreatEngine.test.ts frontend/src/App.tsx
   git commit -m "feat(simulation): add ThreatEngine with velocity-based movement and multi-waypoint routes"

@@ -66,182 +66,19 @@ export const App = () => {
       if (status !== "running") return;
 
       let changed = false;
-      const updatedThreats = { ...threats };
+      let updatedThreats = { ...threats };
 
-      for (const [idStr, threat] of Object.entries(updatedThreats)) {
-        const id = Number(idStr);
-
-        // A. Threat Launch
-        if (threat.logicalStatus === "waiting" && simTime >= threat.startTime) {
-          updatedThreats[id] = {
-            ...threat,
-            logicalStatus: "active",
-            visualStatus: "flying",
-            progress: 0,
-            location: threat.route[0],
-          };
-          changed = true;
-
-          appendLog(
-            "detection",
-            "זיהוי איום",
-            `איום #${id} זוהה באוויר`,
-            threat.route[0],
-          );
-        }
-        // B. Threat Straight-Line Movement
-        else if (
-          threat.logicalStatus === "active" ||
-          threat.logicalStatus === "interceptPending"
-        ) {
-          const flightDuration = 40; // 40 seconds — wider corridor in advanced scenario
-          const progress = Math.min(
-            1,
-            (simTime - threat.startTime) / flightDuration,
-          );
-
-          if (threat.route && threat.route.length >= 2) {
-            const start = threat.route[0];
-            const end = threat.route[threat.route.length - 1];
-
-            const currentPos = {
-              latitude:
-                start.latitude + (end.latitude - start.latitude) * progress,
-              longitude:
-                start.longitude + (end.longitude - start.longitude) * progress,
-              asl: start.asl + (end.asl - start.asl) * progress,
-              agl: start.agl + (end.agl - start.agl) * progress,
-            };
-
-            const isImpacted = progress >= 1;
-            updatedThreats[id] = {
-              ...threat,
-              progress,
-              location: currentPos,
-              logicalStatus: isImpacted ? "impacted" : threat.logicalStatus,
-            };
-            changed = true;
-
-            if (isImpacted) {
-              visualEventQueue.enqueue({
-                id: `evt-impact-${id}`,
-                type: "impact",
-                startTime: simTime,
-                targetId: `איום ${id}`,
-                position: currentPos,
-                status: "pending",
-              });
-
-              appendLog(
-                "impact",
-                "פגיעה בשטח",
-                `איום #${id} (סוג: ${threat.type ?? "אויב"}) פגע בשטח`,
-                currentPos,
-              );
-
-              const allThreats = Object.values(updatedThreats);
-              const allDone =
-                allThreats.length > 0 &&
-                allThreats.every(
-                  (t) =>
-                    t.logicalStatus === "intercepted" ||
-                    t.logicalStatus === "impacted",
-                );
-              if (allDone) {
-                const finishTime = simTime + 1.0;
-                const checkFinish = onTick((_dt, time) => {
-                  if (time >= finishTime) {
-                    finishClock();
-                    checkFinish();
-                  }
-                });
-              }
-            }
-          }
-
-          // C. Simulated Interception Decision
-          const timeSinceLaunch = simTime - threat.startTime;
-          if (
-            timeSinceLaunch >= 5 &&
-            !engagedDronesRef.current.has(id) &&
-            threat.logicalStatus === "active"
-          ) {
-            engagedDronesRef.current.add(id);
-            updatedThreats[id].logicalStatus = "interceptPending";
-            changed = true;
-
-            const launcherId = id === 1 ? "101" : "102";
-            const interceptorType = id === 1 ? "DartFoxS" : "SkyLanceM";
-
-            const bundle = processEngagementDecision(
-              {
-                defenseSystemId: launcherId,
-                interceptorType,
-                targetId: String(id),
-                result: "success",
-              },
-              state,
-            );
-
-            if (bundle) {
-              visualEventQueue.enqueue(bundle.visualEvent);
-              rendererRef.current?.registerInterceptorVisualState(
-                bundle.interceptorState,
-              );
-
-              appendLog(
-                "launch",
-                "שיגור מיירט",
-                `מיירט ${interceptorType} שוגר מסוללה #${launcherId} לעבר איום #${id}`,
-                bundle.interceptorState.startPosition,
-              );
-
-              const arrivalSimTime = simTime + 3;
-              const checkRemoval = onTick((_dt, currentSimTime) => {
-                if (currentSimTime >= arrivalSimTime) {
-                  const s = getState();
-                  if (s.threats[id]) {
-                    const nextThreats = {
-                      ...s.threats,
-                      [id]: {
-                        ...s.threats[id],
-                        logicalStatus: "intercepted" as const,
-                      },
-                    };
-                    setState({ threats: nextThreats });
-
-                    appendLog(
-                      "interception",
-                      "יירוט מוצלח",
-                      `איום #${id} (סוג: ${s.threats[id].type ?? "אויב"}) יורט בהצלחה`,
-                      s.threats[id].location,
-                    );
-
-                    const allThreats = Object.values(nextThreats);
-                    const allDone =
-                      allThreats.length > 0 &&
-                      allThreats.every(
-                        (t) =>
-                          t.logicalStatus === "intercepted" ||
-                          t.logicalStatus === "impacted",
-                      );
-                    if (allDone) {
-                      const finishTime = currentSimTime + 1.0;
-                      const checkFinish = onTick((_dt, time) => {
-                        if (time >= finishTime) {
-                          finishClock();
-                          checkFinish();
-                        }
-                      });
-                    }
-                  }
-                  checkRemoval();
-                }
-              });
-            }
-          }
+      // --- Dev 1: Threat activation + movement via ThreatEngine ---
+      const prevThreats = updatedThreats;
+      updatedThreats = activateWaitingThreats(updatedThreats, simTime);
+      for (const [idStr, t] of Object.entries(updatedThreats)) {
+        if (t.logicalStatus === 'active' && prevThreats[Number(idStr)]?.logicalStatus === 'waiting') {
+          appendLog('detection', 'זיהוי איום', `איום #${idStr} זוהה באוויר`, t.route[0]);
         }
       }
+      updatedThreats = advanceThreatPositions(updatedThreats, simTime);
+      changed = updatedThreats !== prevThreats;
+      // --- End Dev 1 ---
 
       if (changed) {
         setState({ threats: updatedThreats });
