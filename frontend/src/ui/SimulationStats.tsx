@@ -133,7 +133,7 @@ export const SimulationStats: React.FC<SimulationStatsProps> = () => {
           </Box>
 
           <Chip
-            icon={<WifiIcon sx={{ fontSize: 16 }} />}
+            icon={<WifiIcon sx={{ fontSize: 14 }} />}
             label={isConnected ? 'מחובר' : 'גיבוי'}
             size="small"
             color={isConnected ? 'success' : 'warning'}
@@ -142,6 +142,16 @@ export const SimulationStats: React.FC<SimulationStatsProps> = () => {
               fontWeight: 600,
               fontSize: '0.7rem',
               height: 24,
+              px: 0.5,
+              display: 'inline-flex',
+              alignItems: 'center',
+              '& .MuiChip-icon': {
+                mr: 0,
+                ml: 0.5,
+              },
+              '& .MuiChip-label': {
+                px: 0.5,
+              },
             }}
           />
         </Box>

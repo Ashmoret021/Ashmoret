@@ -6,7 +6,7 @@ import { CoordinatesControl } from "./components/CoordinatesControl";
 import { MainLayout } from "./layouts/MainLayout";
 
 import axios from "axios";
-import { Drone, DroneType } from "../../types/types";
+import { Drone, DroneType, InterceptorType } from "../../types/types";
 import { algorithmClient } from "./algorithm/AlgorithmClient";
 import { WorldSnapshotBuilder } from "./algorithm/WorldSnapshotBuilder";
 import AttackSide from "./components/Attackside";
@@ -279,10 +279,15 @@ export const App = () => {
                   ...freshState.interceptors,
                   [interceptorId]: {
                     id: interceptorId,
-                    launcherId: decision.defenseSystemId,
+                    launcherId: Number(decision.defenseSystemId),
                     targetDroneId: targetIdNum,
-                    type: decision.interceptorType,
-                    location: bundle.interceptorState.startPosition,
+                    type: decision.interceptorType as unknown as InterceptorType,
+                    location: {
+                      latitude: bundle.interceptorState.startPosition.latitude,
+                      longitude: bundle.interceptorState.startPosition.longitude,
+                      asl: 0,
+                      agl: 0,
+                    },
                     progress: 0,
                     status: 'flying' as const,
                     launchedAt: simTime,
