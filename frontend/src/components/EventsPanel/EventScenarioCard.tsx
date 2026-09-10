@@ -76,7 +76,7 @@ export const EventScenarioCard: React.FC<EventScenarioCardProps> = ({
 
         <div className="drone-count-indicator">
           <Crosshair size={13} className="meta-icon" />
-          <span>{scenarioDrones.length} רחפנים</span>
+          <span>{scenarioDrones.length} איומים</span>
         </div>
       </div>
 
