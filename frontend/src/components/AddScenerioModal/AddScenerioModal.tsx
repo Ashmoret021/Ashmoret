@@ -49,7 +49,6 @@ export const AddScenerioModal: FC = () => {
   const [generalData, setGeneralData] = useState({
     scenarioName: "",
     scenarioType: "Single",
-    description: "",
   });
   const [selectedDroneGroup, setSelectedDroneGroup] = useState("group-1");
   const [selectedLauncherGroup, setSelectedLauncherGroup] = useState("battery-1");

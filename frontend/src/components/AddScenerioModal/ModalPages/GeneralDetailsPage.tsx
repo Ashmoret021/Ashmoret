@@ -13,7 +13,6 @@ import { ChangeEvent, FC, useState } from "react";
 export interface GeneralDetailsData {
   scenarioName: string;
   scenarioType: string;
-  description?: string;
 }
 
 export interface GeneralDetailsPageProps {
@@ -110,11 +109,9 @@ export const GeneralDetailsPage: FC<GeneralDetailsPageProps> = ({
 }) => {
   const [internalName, setInternalName] = useState("");
   const [internalType, setInternalType] = useState("Single");
-  const [internalDesc, setInternalDesc] = useState("");
 
   const scenarioName = data?.scenarioName ?? internalName;
   const scenarioType = data?.scenarioType ?? internalType;
-  const description = data?.description ?? internalDesc;
 
   const handleNameChange = (event: ChangeEvent<HTMLInputElement>) => {
     const val = event.target.value;
@@ -128,14 +125,11 @@ export const GeneralDetailsPage: FC<GeneralDetailsPageProps> = ({
     onChange?.({ scenarioType: val });
   };
 
-  const handleDescChange = (event: ChangeEvent<HTMLInputElement>) => {
-    const val = event.target.value;
-    setInternalDesc(val);
-    onChange?.({ description: val });
-  };
-
   return (
-    <Box dir="rtl" sx={{ width: "100%", direction: "rtl", textAlign: "right", pt: 1 }}>
+    <Box
+      dir="rtl"
+      sx={{ width: "100%", direction: "rtl", textAlign: "right", pt: 1 }}
+    >
       <Stack spacing={2.5}>
         <TextField
           fullWidth
@@ -162,19 +156,6 @@ export const GeneralDetailsPage: FC<GeneralDetailsPageProps> = ({
             <MenuItem value="Multi">רב-זירתי</MenuItem>
           </Select>
         </FormControl>
-
-        <TextField
-          fullWidth
-          multiline
-          rows={3}
-          variant="outlined"
-          label="תיאור (אופציונלי)"
-          placeholder="הערות או דגשים מבצעיים..."
-          value={description}
-          onChange={handleDescChange}
-          inputProps={{ dir: "rtl", style: { textAlign: "right" } }}
-          sx={darkInputSx}
-        />
       </Stack>
     </Box>
   );

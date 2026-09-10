@@ -13,6 +13,7 @@ import { SimulationControls } from "./ui/SimulationControls";
 import { SimulationStats } from "./ui/SimulationStats";
 import { Drone, DroneType } from "./types/types";
 import DroneModal from "./components/DroneModal/DroneModal";
+import { AddScenerioModal } from "./components";
 
 export default function App() {
   const mapRef = useRef<HTMLDivElement | null>(null);
@@ -118,6 +119,7 @@ export default function App() {
       >
         View simulation state
       </Button>
+      <AddScenerioModal />
 
       {/* Mission 4.2: Simulation Stats HUD */}
       <SimulationStats />
