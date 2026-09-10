@@ -22,7 +22,7 @@ import { useSimulation } from "../simulation/useSimulation";
 import { AddScenerioModal } from '../components';
 import { MapView } from "../ui/MapView";
 import { LaunchersDronesPanel } from "../components/LaunchersDronesPanel/LaunchersDronesPanel";
-import { useGetAllDronesGroups, useGetAllLaunchersGroups } from "../api/hooks";
+import { useGetAllDronesGroups, useGetAllLaunchersGroups, useGetAllScenarios } from "../api/hooks";
 
 interface MainLayoutProps {
   logoSrc?: string;
@@ -64,6 +64,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
 
   const {dronesGroups, setDronesGroups} = useGetAllDronesGroups();
   const {launchersGroups, setLaunchersGroups} = useGetAllLaunchersGroups();
+  const {scenarios, setScenarios} = useGetAllScenarios();
 
   const [selectedGroup, setSelectedGroup] = useState<DroneGroup | LauncherGroup | null>(null);
 
@@ -190,7 +191,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
             {/* Events Panel (פריסת רחפנים / תרחישים) */}
             {navView === "home" && (
               <EventsPanel
-                scenarios={INITIAL_SCENARIOS}
+                scenarios={scenarios}
                 selectedScenarioId={selectedScenario.id}
                 onScenarioSelect={handleScenarioSelect}
                 onCreateScenario={handleCreateScenario}
@@ -219,7 +220,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
             {/* Events Panel (פריסת רחפנים / תרחישים / מסך בית) */}
             {navView === "scenarios" && (
               <EventsPanel
-                scenarios={INITIAL_SCENARIOS}
+                scenarios={scenarios}
                 selectedScenarioId={selectedScenario.id}
                 onScenarioSelect={handleScenarioSelect}
                 onCreateScenario={handleCreateScenario}
