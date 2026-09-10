@@ -4,7 +4,6 @@
 # Build from the repo root with:
 #   docker build -f frontend/Dockerfile -t ashmoret-frontend .
 
-
 # ---- Build stage ----
 FROM node:20-alpine AS build
 
