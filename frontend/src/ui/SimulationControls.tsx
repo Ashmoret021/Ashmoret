@@ -40,6 +40,14 @@ export const SimulationControls: React.FC<{ onRestart?: () => void }> = ({ onRes
     setState,
   } = useSimulation();
 
+  const hasScenario =
+    Object.keys(state.threats).length > 0 ||
+    Object.keys(state.launchers).length > 0;
+
+  if (!hasScenario) {
+    return null;
+  }
+
   const isRunning = state.status === 'running';
   const isPaused = state.status === 'paused';
   const isFinished = state.status === 'finished';
