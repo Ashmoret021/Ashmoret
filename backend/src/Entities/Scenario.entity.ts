@@ -4,19 +4,19 @@ import { LaunchersGroup } from "./LaunchersGroup.entity";
 
 @Entity("scenario")
 export class Scenario {
-  @PrimaryColumn()
+  @PrimaryColumn({ type: "varchar" })
   id!: string;
 
-  @Column()
+  @Column({ type: "varchar" })
   name!: string;
 
-  @Column({ name: "drones_group_id" })
+  @Column({ type: "int", name: "drones_group_id" })
   dronesGroupId!: number;
 
-  @Column({ name: "launchers_group_id" })
+  @Column({ type: "int", name: "launchers_group_id" })
   launchersGroupId!: number;
 
-  @Column()
+  @Column({ type: "varchar" })
   type!: string;
 
   @ManyToOne(

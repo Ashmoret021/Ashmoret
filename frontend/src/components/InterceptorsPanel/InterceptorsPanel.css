@@ -1,0 +1,362 @@
+/* Interceptors Panel Layout */
+.interceptors-panel-wrapper {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 385px;
+  background: rgba(9, 15, 28, 0.94);
+  backdrop-filter: blur(16px);
+  border-left: 1px solid #182845;
+  display: flex;
+  flex-direction: column;
+  z-index: 900;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  direction: rtl;
+  user-select: none;
+  box-shadow: -4px 0 20px rgba(0, 0, 0, 0.5);
+}
+
+.interceptors-panel-wrapper.collapsed {
+  transform: translateX(100%);
+}
+
+/* Edge toggle button (collapsible tab) */
+.panel-collapse-tab {
+  position: absolute;
+  top: 50%;
+  left: -28px;
+  transform: translateY(-50%);
+  width: 28px;
+  height: 52px;
+  background: #1e3a8a;
+  border: 1px solid #3b82f6;
+  border-right: none;
+  border-radius: 12px 0 0 12px;
+  color: #f1f5f9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: -4px 0 12px rgba(30, 58, 138, 0.4);
+  transition: all 0.2s ease;
+  z-index: 901;
+}
+
+.panel-collapse-tab:hover {
+  background: #2563eb;
+  color: #ffffff;
+}
+
+/* Inner scrollable content */
+.interceptors-panel-content {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 14px 16px 12px 16px;
+  overflow: hidden;
+}
+
+/* Top Scenario Banner */
+.panel-header-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #16243d;
+  margin-bottom: 12px;
+}
+
+.panel-scenario-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+}
+
+.banner-scenario-label {
+  color: #64748b;
+}
+
+.banner-scenario-val {
+  color: #e2e8f0;
+  font-weight: 600;
+}
+
+.panel-safe-badge {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11.5px;
+  color: #38bdf8;
+  background: rgba(56, 189, 248, 0.08);
+  padding: 3px 8px;
+  border-radius: 4px;
+  border: 1px solid rgba(56, 189, 248, 0.2);
+}
+
+/* Card list */
+.interceptors-card-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow-y: auto;
+  flex: 1;
+  padding-left: 4px;
+  margin-bottom: 12px;
+}
+
+/* Interceptor Card Item */
+.interceptor-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #0d172b;
+  border: 1px solid #182845;
+  border-radius: 8px;
+  padding: 9px 12px;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.interceptor-card:hover {
+  background: #12203b;
+  border-color: #2b4573;
+}
+
+.interceptor-card.selected {
+  background: #142547;
+  border-color: #38bdf8;
+  box-shadow: 0 0 10px rgba(56, 189, 248, 0.18);
+}
+
+.interceptor-card.depleted {
+  opacity: 0.65;
+}
+
+/* Card counter */
+.card-counter {
+  display: flex;
+  align-items: baseline;
+  gap: 3px;
+  font-family: 'JetBrains Mono', 'Segoe UI', monospace;
+  direction: ltr;
+}
+
+.count-current {
+  font-size: 15px;
+  font-weight: 700;
+  color: #f1f5f9;
+}
+
+.count-divider {
+  font-size: 12px;
+  color: #64748b;
+}
+
+.count-total {
+  font-size: 11.5px;
+  color: #64748b;
+}
+
+/* Card Details */
+.card-details {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.card-main-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.status-bullet {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.status-bullet.ready {
+  background-color: #22c55e;
+  box-shadow: 0 0 6px rgba(34, 197, 94, 0.6);
+}
+
+.status-bullet.depleted {
+  background-color: #ef4444;
+  box-shadow: 0 0 6px rgba(239, 68, 68, 0.6);
+}
+
+.card-name {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #e2e8f0;
+}
+
+.card-category {
+  font-size: 11.5px;
+  color: #64748b;
+}
+
+.card-icon {
+  color: #60a5fa;
+  display: flex;
+  align-items: center;
+}
+
+.interceptor-card.depleted .card-icon {
+  color: #64748b;
+}
+
+/* Bottom Controls Section */
+.interceptors-panel-footer {
+  border-top: 1px solid #16243d;
+  padding-top: 12px;
+}
+
+.placement-controls-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.placement-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.placement-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.placement-title-icon {
+  color: #38bdf8;
+}
+
+.placement-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #f1f5f9;
+}
+
+/* Segmented Buttons */
+.placement-toggle-group {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  background: #09101f;
+  border: 1px solid #16243d;
+  border-radius: 8px;
+  padding: 3px;
+  gap: 3px;
+}
+
+.toggle-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 10px;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  color: #94a3b8;
+  font-size: 12.5px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: inherit;
+}
+
+.toggle-btn:hover {
+  color: #f1f5f9;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.toggle-btn.active {
+  background: #1d4ed8;
+  color: #ffffff;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(29, 78, 216, 0.4);
+}
+
+/* Info Box */
+.placement-info-box {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  background: rgba(15, 23, 42, 0.7);
+  border: 1px solid #1e293b;
+  border-radius: 6px;
+  padding: 8px 10px;
+}
+
+.info-icon {
+  color: #38bdf8;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.info-text {
+  font-size: 11.5px;
+  color: #94a3b8;
+  line-height: 1.4;
+  margin: 0;
+}
+
+/* Start Sim Button */
+.start-sim-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 10px;
+  border-radius: 8px;
+  font-size: 13.5px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid #1e2d4d;
+  background: #101c33;
+  color: #64748b;
+}
+
+.start-sim-button:not(:disabled) {
+  background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 100%);
+  color: #ffffff;
+  border-color: #3b82f6;
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
+}
+
+.start-sim-button:not(:disabled):hover {
+  background: #1e40af;
+}
+
+.start-sim-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.play-icon {
+  fill: currentColor;
+}
+
+/* Warning Note */
+.placement-warning-note {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #eab308;
+  font-size: 11px;
+  justify-content: center;
+}
+
+.warning-icon {
+  flex-shrink: 0;
+}

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Box,
   Card,
@@ -14,15 +14,22 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import DangerousIcon from '@mui/icons-material/Dangerous';
 import WifiIcon from '@mui/icons-material/Wifi';
 import { useSimulation } from '../simulation/useSimulation';
+import { algorithmClient } from '../algorithm/AlgorithmClient';
 
 export interface SimulationStatsProps {
   isAlgorithmConnected?: boolean;
 }
 
-export const SimulationStats: React.FC<SimulationStatsProps> = ({
-  isAlgorithmConnected = true,
-}) => {
+export const SimulationStats: React.FC<SimulationStatsProps> = () => {
   const { state } = useSimulation();
+  const [isConnected, setIsConnected] = useState(true);
+
+  useEffect(() => {
+    const id = setInterval(() => {
+      setIsConnected(algorithmClient.getIsAvailable());
+    }, 1000);
+    return () => clearInterval(id);
+  }, []);
 
   const threatsList = Object.values(state.threats);
   const interceptorsList = Object.values(state.interceptors);
@@ -81,21 +88,22 @@ export const SimulationStats: React.FC<SimulationStatsProps> = ({
   return (
     <Card
       elevation={8}
+      dir="rtl"
       sx={{
         position: 'absolute',
-        bottom: 24,
-        right: 24,
+        top: 86,
+        left: 16,
         zIndex: 1100,
-        minWidth: 260,
-        backgroundColor: 'rgba(15, 23, 42, 0.85)',
+        width: 252,
+        backgroundColor: 'rgba(15, 23, 42, 0.88)',
         backdropFilter: 'blur(12px)',
         border: '1px solid rgba(255, 255, 255, 0.15)',
-        borderRadius: 4,
+        borderRadius: 3.5,
         color: '#ffffff',
         boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.3)',
       }}
     >
-      <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
+      <CardContent sx={{ p: 1.5, '&:last-child': { pb: 1.5 } }}>
         {/* Header & Connection Indicator */}
         <Box
           sx={{
@@ -106,13 +114,13 @@ export const SimulationStats: React.FC<SimulationStatsProps> = ({
           }}
         >
           <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#f8fafc' }}>
-            לוח סטטיסטיקות HUD
+            לוח סטטיסטיקות
           </Typography>
           <Chip
             icon={<WifiIcon sx={{ fontSize: 16 }} />}
-            label={isAlgorithmConnected ? 'מחובר (Connected)' : 'גיבוי (Fallback)'}
+            label={isConnected ? 'מחובר' : 'גיבוי'}
             size="small"
-            color={isAlgorithmConnected ? 'success' : 'warning'}
+            color={isConnected ? 'success' : 'warning'}
             variant="outlined"
             sx={{
               fontWeight: 600,
@@ -122,10 +130,10 @@ export const SimulationStats: React.FC<SimulationStatsProps> = ({
           />
         </Box>
 
-        <Divider sx={{ borderColor: 'rgba(255, 255, 255, 0.1)', mb: 1.5 }} />
+        <Divider sx={{ borderColor: 'rgba(255, 255, 255, 0.1)', mb: 1 }} />
 
         {/* Counter Items Grid */}
-        <Stack spacing={1}>
+        <Stack spacing={0.75}>
           {stats.map((item) => (
             <Box
               key={item.id}
@@ -133,8 +141,8 @@ export const SimulationStats: React.FC<SimulationStatsProps> = ({
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'space-between',
-                px: 1.5,
-                py: 0.75,
+                px: 1.25,
+                py: 0.5,
                 borderRadius: 2,
                 backgroundColor: item.bgColor,
                 border: `1px solid ${item.color}33`,
@@ -142,12 +150,12 @@ export const SimulationStats: React.FC<SimulationStatsProps> = ({
             >
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                 {item.icon}
-                <Typography variant="body2" sx={{ fontWeight: 600, color: '#e2e8f0' }}>
+                <Typography variant="body2" sx={{ fontWeight: 600, color: '#e2e8f0', fontSize: '0.8rem' }}>
                   {item.label}
                 </Typography>
               </Box>
               <Typography
-                variant="subtitle1"
+                variant="subtitle2"
                 sx={{
                   fontWeight: 800,
                   fontFamily: 'monospace',
