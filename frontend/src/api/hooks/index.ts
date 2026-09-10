@@ -52,7 +52,7 @@ export const useGetAllScenarios = () => {
         .scenerios()
         .getAllScenerios()
         .then((response) => {
-          setScenarios(response.data.data);
+          setScenarios(response.data);
         })
         .catch((error) => {
           console.log(error);
