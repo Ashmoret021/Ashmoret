@@ -6,10 +6,10 @@ import {
   Wifi,
   ShieldCheck,
   Crosshair,
-    Ruler,
+  Ruler,
   Layers3,
 } from "lucide-react";
-import { CoordinateSearch } from './CoordinateSearch';
+import { CoordinateSearch } from "./CoordinateSearch";
 import "./Header.css";
 interface HeaderProps {
   scenarioName?: string;
@@ -90,14 +90,6 @@ export const Header: React.FC<HeaderProps> = ({
           </span>
         </div>
 
-        {/* Coordinate Search moved to right side */}
-        {onGoToCoordinates && (
-          <CoordinateSearch
-            onGoToCoordinates={onGoToCoordinates}
-            onRemoveMarker={onRemoveMarker}
-            hasMarker={hasMarker}
-          />
-        )}
         <div className="map-tools-section" aria-label="כלי מפה">
           <span className="map-tools-title">כלי מפה</span>
           <div className="map-tools-actions">
@@ -126,6 +118,13 @@ export const Header: React.FC<HeaderProps> = ({
                 <span>שכבות</span>
               </button>
             </div>
+            {onGoToCoordinates && (
+              <CoordinateSearch
+                onGoToCoordinates={onGoToCoordinates}
+                onRemoveMarker={onRemoveMarker}
+                hasMarker={hasMarker}
+              />
+            )}
           </div>
         </div>
       </div>
