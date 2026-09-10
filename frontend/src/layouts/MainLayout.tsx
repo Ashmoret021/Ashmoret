@@ -19,6 +19,7 @@ import {
 import L, { Map } from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { useSimulation } from "../simulation/useSimulation";
+import { AddScenerioModal } from '../components';
 import { MapView } from "../ui/MapView";
 import { clearScenario, loadScenario, stopClock } from "../simulation/SimulationContext";
 import { getScenarioById } from "../simulation/sampleScenario";
@@ -53,7 +54,9 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
   const [selectedGroup, setSelectedGroup] = useState<DroneGroup | LauncherGroup | null>(null);
 
   const [isStateDialogOpen, setIsStateDialogOpen] = useState(false);
-  const { state, pauseClock, resumeClock, setSpeed, startClock } = useSimulation();
+  const [isCreateScenarioOpen, setIsCreateScenarioOpen] = useState(false);
+  const { state, pauseClock, resumeClock, setSpeed, startClock } =
+    useSimulation();
 
   const stateJson = JSON.stringify(state, null, 2);
   const isRunning = state.status === "running";
@@ -121,7 +124,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
 
   // ── Panel action stubs ────────────────────────────────────────────────────
   const handleCreateScenario = () => {
-    console.log("Open Create Scenario modal / action");
+    setIsCreateScenarioOpen(true);
   };
 
   const handleGroupSelect = (group: DroneGroup | LauncherGroup) => {
@@ -229,6 +232,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
                 onCreateScenario={handleCreateScenario}
               />
             )}
+            <AddScenerioModal open={isCreateScenarioOpen} onClose={() => setIsCreateScenarioOpen(false)} />
 
             {/* Scenarios panel (dedicated scenarios view) */}
             {navView === "scenarios" && (
