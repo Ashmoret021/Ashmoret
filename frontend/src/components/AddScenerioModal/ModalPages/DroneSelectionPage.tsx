@@ -207,7 +207,9 @@ export const DroneSelectionPage: FC<DroneSelectionPageProps> = ({
           setAttackName={setAttackName}
           attackDescription={attackDescription}
           setAttackDescription={setAttackDescription}
-          onSaveScenario={()=>{}}
+          onSaveScenario={()=>{
+            setInternalGroup(dronesGroups[dronesGroups.length-1].id)
+          }}
         />
       </Stack>
     </Box>

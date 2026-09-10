@@ -55,10 +55,12 @@ export const AddScenerioModal: FC<AddScenerioModalProps> = ({ open, onClose }) =
   // Scenario Wizard State
   const [generalData, setGeneralData] = useState({
     scenarioName: "",
-    scenarioType: "Single",
+    scenarioType: "יחיד",
   });
-  const [selectedDroneGroup, setSelectedDroneGroup] = useState(0);
-  const [selectedLauncherGroup, setSelectedLauncherGroup] = useState(0);
+
+  const [name, setName] = useState("");
+  const [selectedDroneGroup, setSelectedDroneGroup] = useState(1);
+  const [selectedLauncherGroup, setSelectedLauncherGroup] = useState(1);
 
   const handleNext = () => {
     if (page < STEP_LABELS.length - 1) {
@@ -84,6 +86,8 @@ export const AddScenerioModal: FC<AddScenerioModalProps> = ({ open, onClose }) =
   const handleClose = () => {
     onClose();
     setPage(0);
+    setName("");
+    setCanMovePage(false);
   };
 
   return (
@@ -196,6 +200,8 @@ export const AddScenerioModal: FC<AddScenerioModalProps> = ({ open, onClose }) =
                 setGeneralData((prev) => ({ ...prev, ...updated }))
               }
               setCanMovePage={setCanMovePage}
+              name={name}
+              onNameChange={setName}
             />
           )}
 
