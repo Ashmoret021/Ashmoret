@@ -14,10 +14,12 @@
 | G4 | `decision.result === 'failure'` מתעלם — תמיד מסמן `intercepted` | `App.tsx:170-188` | יירוטים כושלים שקטים |
 | G5 | `<MapLegend />` לא מרונדר ב-`App.tsx` | `App.tsx` JSX | המקרא בלתי גלוי |
 | G6 | Toggle callbacks לא מחוברים ל-`LeafletRenderer` | `App.tsx:handleMapReady` | מתגי מסלולים לא עושים כלום |
+| G7 | בחירת תרחיש מהפאנל לא עושה כלום — `EventsPanel` קיים אך לא מרונדר ב-`App.tsx` ואין מיפוי ל-`Scenario` אמיתי | `MainLayout.tsx`, `mock/events.ts` | תמיד רץ אותו `sampleScenario` |
+| G8 | אין קובץ `.env.local` — `VITE_ALGORITHM_URL` ריק ו-`VITE_USE_MOCK_ALGORITHM=true` תמיד פעיל | `.env.example` | האלגוריתם האמיתי לא עובד בשום מצב |
 
 ---
 
-## 🗂️ חלוקת עבודה — סקציות ב-`App.tsx`
+## 🗂️ חלוקת עבודה — סקציות ב-`App.tsx` + קבצים חדשים
 
 ```
 App.tsx onTick callback
@@ -27,9 +29,17 @@ App.tsx onTick callback
 
 App.tsx component body
 ├── [Dev 2 owns]  הוספת interceptorOutcomesRef + resolveCompletedInterceptors
+├── [Dev 3 owns]  הוספת selectedScenario state + onScenarioSelect handler
 ├── [Dev 3 owns]  handleMapReady — הוספת toggle callbacks
 ├── [Dev 4 owns]  handleRestart  — ניקוי refs
-└── [Dev 3 owns]  JSX return     — הוספת <MapLegend />
+└── [Dev 3 owns]  JSX return     — הוספת <MapLegend /> + <EventsPanel />
+
+קבצים חדשים
+├── [Dev 1 owns]  src/simulation/ThreatEngine.ts
+├── [Dev 2 owns]  src/simulation/InterceptorEngine.ts
+├── [Dev 3 owns]  src/simulation/scenarios.ts  — תרחישים אמיתיים
+└── [Dev 4 owns]  src/ui/AlgorithmSettings.tsx — חיבור לאלגוריתם אמיתי
+                  frontend/.env.local
 ```
 
 כל מפתח עורך טווח שורות שונה → אין קונפליקטים במיזוג.
@@ -41,8 +51,8 @@ App.tsx component body
 - **בסיס:** `team-3`
 - **Dev 1:** `team3/fix-dev1-threat-engine`
 - **Dev 2:** `team3/fix-dev2-interceptor-engine`
-- **Dev 3:** `team3/fix-dev3-map-legend`
-- **Dev 4:** `team3/fix-dev4-impact-finish`
+- **Dev 3:** `team3/fix-dev3-scenarios-legend`
+- **Dev 4:** `team3/fix-dev4-impact-api`
 
 ---
 
@@ -458,27 +468,144 @@ App.tsx component body
 
 ---
 
-## 👤 Developer 3 — מקרא מפה ומתגי מסלולים (Fix MapLegend)
-> **במה זה עוסק?** קומפוננט `MapLegend` כבר קיים אבל אף פעם לא מרונדר — המשתמש לא רואה אותו. אתה מוסיף אותו למסך ומחבר את מתגי ה-"הצג/הסתר מסלולים" לרנדרר של Leaflet.
+## 👤 Developer 3 — בחירת תרחיש + מקרא מפה (Scenario Selection + MapLegend)
+> **במה זה עוסק?** בחירת תרחיש מהפאנל השמאלי לא עושה כלום — הסימולציה תמיד טוענת את אותו `sampleScenario`. הסיבה: `EventsPanel` כלל לא מרונדר ב-`App.tsx`, וה-`ScenarioItem` שנבחר לא מחובר ל-`loadScenario`. אתה יוצר תרחישים אמיתיים, מרנדר את הפאנל, ומחבר בחירה לסימולציה. בנוסף, מוסיף את `MapLegend`.
 
 **קבצים:**
-- עריכה: `frontend/src/App.tsx` — **סקציות: `handleMapReady` + JSX return**
+- יצירה: `frontend/src/simulation/scenarios.ts`
+- עריכה: `frontend/src/App.tsx` — **סקציות: state + handlers + JSX**
 
-**פערים:** G5, G6
+**פערים:** G5, G6, G7
 
 #### משימות לביצוע:
 
-- [ ] **3.1 הוסף import של MapLegend**
+- [ ] **3.1 יצירת `src/simulation/scenarios.ts` — תרחישים אמיתיים**
 
-  ב-`App.tsx`, ליד שאר imports של `./ui/`:
+  מפה כל `ScenarioItem.id` לאובייקט `Scenario` אמיתי עם מסלולים, רחפנים וסוללות.
   ```ts
-  import { MapLegend } from './ui/MapLegend';
+  import { DroneType, InterceptorType, LauncherType } from '../../../types/types';
+  import type { Scenario } from './SimulationContext';
+
+  const loc = (lat: number, lng: number, asl = 300) =>
+    ({ latitude: lat, longitude: lng, asl, agl: asl });
+
+  // sc-1: Single front — North (2 drones)
+  export const scenario_sc1: Scenario = {
+    id: 'sc-1', name: 'חדירה חד-זירתית - צפון', startTime: 0,
+    launchers: [
+      { id: 101, type: LauncherType.IronHookSR, active: true, amount: 20,
+        location: loc(32.794, 34.989, 200),
+        ammunition: [[InterceptorType.BuzzStop15, 10], [InterceptorType.DartFoxS, 10]] },
+    ],
+    drones: [
+      { id: 1, type: DroneType.SkyMiteC7, heading: 195, velocity: 120, startTime: 2,
+        location: loc(33.05, 35.10), route: [loc(33.05, 35.10), loc(32.09, 34.78, 200)] },
+      { id: 2, type: DroneType.NanoSwarmQ9, heading: 210, velocity: 90, startTime: 5,
+        location: loc(33.10, 35.55), route: [loc(33.10, 35.55), loc(32.30, 35.22, 200)] },
+    ],
+  };
+
+  // sc-2: Multi-front — North + East (5 drones) — same as sampleScenario
+  export { sampleScenario as scenario_sc2 } from './sampleScenario';
+
+  // sc-3: Massive — 3 borders (10 drones)
+  export const scenario_sc3: Scenario = {
+    id: 'sc-3', name: 'חדירה מסיבית - 3 גבולות', startTime: 0,
+    launchers: [
+      { id: 101, type: LauncherType.IronHookSR, active: true, amount: 30,
+        location: loc(32.794, 34.989, 200),
+        ammunition: [[InterceptorType.BuzzStop15, 15], [InterceptorType.DartFoxS, 15]] },
+      { id: 102, type: LauncherType.ShieldNestLite, active: true, amount: 20,
+        location: loc(32.085, 34.782, 30),
+        ammunition: [[InterceptorType.SkyLanceM, 10], [InterceptorType.NetWing30, 10]] },
+      { id: 103, type: LauncherType.HorizonEyeMX, active: true, amount: 25,
+        location: loc(31.768, 35.214, 750),
+        ammunition: [[InterceptorType.SkyLanceM, 12], [InterceptorType.FalconClipH, 13]] },
+    ],
+    drones: [
+      { id: 1, type: DroneType.SkyMiteC7,    heading: 195, velocity: 120, startTime: 2,  location: loc(33.05, 35.10), route: [loc(33.05, 35.10), loc(32.09, 34.78, 200)] },
+      { id: 2, type: DroneType.FalconLongX4, heading: 200, velocity: 160, startTime: 4,  location: loc(33.20, 35.35), route: [loc(33.20, 35.35), loc(32.79, 34.99, 300)] },
+      { id: 3, type: DroneType.NanoSwarmQ9,  heading: 210, velocity: 90,  startTime: 6,  location: loc(33.10, 35.55), route: [loc(33.10, 35.55), loc(32.30, 35.22, 200)] },
+      { id: 4, type: DroneType.FalconLongX4, heading: 240, velocity: 145, startTime: 8,  location: loc(33.40, 36.60), route: [loc(33.40, 36.60), loc(32.08, 34.78, 300)] },
+      { id: 5, type: DroneType.SkyMiteC7,    heading: 230, velocity: 110, startTime: 10, location: loc(33.00, 36.20), route: [loc(33.00, 36.20), loc(31.77, 35.21, 250)] },
+      { id: 6, type: DroneType.LoadBeeM2,    heading: 260, velocity: 100, startTime: 10, location: loc(32.20, 36.80), route: [loc(32.20, 36.80), loc(31.77, 35.21, 200)] },
+      { id: 7, type: DroneType.NanoSwarmQ9,  heading: 255, velocity: 85,  startTime: 13, location: loc(31.95, 36.50), route: [loc(31.95, 36.50), loc(31.77, 35.21, 200)] },
+      { id: 8, type: DroneType.SkyMiteC7,    heading: 300, velocity: 130, startTime: 18, location: loc(30.20, 34.90), route: [loc(30.20, 34.90), loc(31.25, 34.79, 200)] },
+      { id: 9, type: DroneType.LoadBeeM2,    heading: 315, velocity: 105, startTime: 20, location: loc(30.00, 35.20), route: [loc(30.00, 35.20), loc(31.77, 35.21, 200)] },
+      { id: 10, type: DroneType.FalconLongX4, heading: 325, velocity: 155, startTime: 24, location: loc(29.55, 34.70), route: [loc(29.55, 34.70), loc(31.25, 34.79, 200)] },
+    ],
+  };
+
+  // sc-4: Single drone — West approach
+  export const scenario_sc4: Scenario = {
+    id: 'sc-4', name: 'רחפן בודד - חדירה מערבית', startTime: 0,
+    launchers: [
+      { id: 105, type: LauncherType.IronHookSR, active: true, amount: 18,
+        location: loc(31.804, 34.655, 10),
+        ammunition: [[InterceptorType.BuzzStop15, 10], [InterceptorType.SpearMini70, 8]] },
+    ],
+    drones: [
+      { id: 1, type: DroneType.LoadBeeM2, heading: 85, velocity: 110, startTime: 3,
+        location: loc(31.80, 33.00), route: [loc(31.80, 33.00), loc(31.80, 34.65, 120)] },
+    ],
+  };
+
+  // sc-5 through sc-8: reuse sc-2 data with different start offsets
+  export const scenario_sc5: Scenario = { ...scenario_sc3, id: 'sc-5', name: 'חדירה משולבת - צפון ודרום',
+    drones: scenario_sc3.drones.slice(0, 4).map((d, i) => ({ ...d, startTime: d.startTime + i * 2 })) };
+  export const scenario_sc6: Scenario = { ...scenario_sc3, id: 'sc-6', name: 'נחיל רחפנים - גזרה מזרחית',
+    drones: scenario_sc3.drones.slice(3, 8).map((d, i) => ({ ...d, id: i + 1 })) };
+  export const scenario_sc7: Scenario = { ...scenario_sc3, id: 'sc-7', name: 'מתקפה מסונכרנת - מזרח ודרום',
+    drones: scenario_sc3.drones.slice(3, 7).map((d, i) => ({ ...d, id: i + 1 })) };
+  export const scenario_sc8: Scenario = { ...scenario_sc1, id: 'sc-8', name: 'חדירת סיור - גזרת צפון' };
+
+  export const SCENARIO_MAP: Record<string, Scenario> = {
+    'sc-1': scenario_sc1,
+    'sc-2': scenario_sc2,
+    'sc-3': scenario_sc3,
+    'sc-4': scenario_sc4,
+    'sc-5': scenario_sc5,
+    'sc-6': scenario_sc6,
+    'sc-7': scenario_sc7,
+    'sc-8': scenario_sc8,
+  };
   ```
 
-- [ ] **3.2 הוסף toggle handlers**
+- [ ] **3.2 עדכון `App.tsx` — הוסף imports**
 
-  ב-`App.tsx`, אחרי `handleRestart`, הוסף:
   ```ts
+  import { EventsPanel } from './components/EventsPanel/EventsPanel';
+  import { MapLegend } from './ui/MapLegend';
+  import { SCENARIO_MAP } from './simulation/scenarios';
+  import type { ScenarioItem } from './types/simulation';
+  ```
+
+- [ ] **3.3 עדכון `App.tsx` — הוסף state ו-handlers לבחירת תרחיש**
+
+  בתחילת קומפוננט `App`, הוסף:
+  ```ts
+  const [activeScenarioId, setActiveScenarioId] = useState<string>('sc-2');
+  ```
+
+  אחרי `handleRestart`, הוסף:
+  ```ts
+  const handleScenarioSelect = useCallback((scenario: ScenarioItem) => {
+    const simScenario = SCENARIO_MAP[scenario.id];
+    if (!simScenario) return;
+
+    setActiveScenarioId(scenario.id);
+    stopClock();
+    algorithmClient.reset();
+    tickIdRef.current = 0;
+    lastApiTickSimTimeRef.current = -1;
+    pendingApiCallRef.current = false;
+    engagedDronesRef.current.clear();
+    visualEventQueue.clear();
+    rendererRef.current?.resetVisuals();
+    loadScenario(simScenario);
+    rendererRef.current?.initDefenseSystems();
+  }, []);
+
   const handleToggleThreatRoutes = useCallback((show: boolean) => {
     rendererRef.current?.setShowThreatRoutes(show);
   }, []);
@@ -488,43 +615,120 @@ App.tsx component body
   }, []);
   ```
 
-- [ ] **3.3 הוסף `<MapLegend />` ב-JSX**
+- [ ] **3.4 עדכון `App.tsx` — הוסף `<EventsPanel />` ו-`<MapLegend />` ל-JSX**
 
-  בתוך ה-`return`, מתחת ל-`<SimulationControls onRestart={handleRestart} />`:
+  בתוך ה-`return`, הוסף:
   ```tsx
+  <EventsPanel
+    selectedScenarioId={activeScenarioId}
+    onScenarioSelect={handleScenarioSelect}
+  />
   <MapLegend
     onToggleThreatRoutes={handleToggleThreatRoutes}
     onToggleInterceptorRoutes={handleToggleInterceptorRoutes}
   />
   ```
 
-- [ ] **3.4 בדיקה ויזואלית**
+- [ ] **3.5 בדיקה ויזואלית**
   ```bash
   cd frontend && npm run dev
   ```
-  - [ ] מקרא מפה (🔴 🔵 🟦 ✴️ 💥) מופיע בפינה שמאל-תחתון
-  - [ ] מתג "מסלולי 🔴" מסתיר/מציג קווי מסלולי איומים
-  - [ ] מתג "מסלולי 🔵" מסתיר/מציג קווי מסלולי מיירטים
+  - [ ] פאנל תרחישים מופיע בצד שמאל
+  - [ ] לחיצה על תרחיש אחר משנה את הסימולציה (מספר רחפנים שונה, מסלולים שונים)
+  - [ ] לחיצה על sc-3 (10 רחפנים) מציגה 10 מסלולים על המפה
+  - [ ] מקרא מפה מופיע ומתגי המסלולים עובדים
 
-- [ ] **3.5 Commit**
+- [ ] **3.6 Commit**
   ```bash
-  git add frontend/src/App.tsx
-  git commit -m "feat(ui): render MapLegend and wire route-toggle callbacks to LeafletRenderer"
+  git add frontend/src/simulation/scenarios.ts frontend/src/App.tsx
+  git commit -m "feat(ui): add scenario selection wiring EventsPanel to loadScenario, add MapLegend"
   ```
 
 ---
 
-## 👤 Developer 4 — זיהוי פגיעות וסיום סימולציה (Fix Impact & Finish Detection)
-> **במה זה עוסק?** כרגע יש דליפת listener — בכל פגיעה נוצר `onTick` חדש שלא תמיד מנקה את עצמו, מה שיכול לגרום לסימולציה לא להסתיים כמו שצריך. אתה מתקן את זיהוי הפגיעה ואת בדיקת הסיום, ומוסיף ניקוי נכון ב-Restart.
+## 👤 Developer 4 — חיבור לאלגוריתם האמיתי + תיקון פגיעות (Algorithm API + Impact Fix)
+> **במה זה עוסק?** האלגוריתם האמיתי לא עובד כי אין קובץ `.env.local` ו-`VITE_USE_MOCK_ALGORITHM` תמיד `true`. אתה מוסיף הגדרת סביבה, ממשק הגדרות קטן לעבור בין mock לאלגוריתם אמיתי, ומתקן את דליפת ה-listener בזיהוי פגיעות.
 
 **קבצים:**
-- עריכה: `frontend/src/App.tsx` — **סקציות: impact detection בתוך הלולאה + `handleRestart`**
+- יצירה: `frontend/.env.local`
+- יצירה: `frontend/src/ui/AlgorithmSettings.tsx`
+- עריכה: `frontend/src/App.tsx` — **סקציות: impact/finish + handleRestart + JSX**
 
-**בעיות שמתוקנות:** דליפת onTick listener בזיהוי פגיעה, ניקוי refs ב-restart
+**פערים:** G7 (חלקית), G8
 
 #### משימות לביצוע:
 
-- [ ] **4.1 תיקון impact detection ב-`App.tsx`**
+- [ ] **4.1 יצירת `frontend/.env.local`**
+
+  ```
+  # Algorithm API — set to real server URL to disable mock mode
+  VITE_ALGORITHM_URL=http://localhost:3001
+  VITE_USE_MOCK_ALGORITHM=false
+  ```
+
+  > **הערה:** קובץ זה לא מתועד ב-git (`.gitignore` כבר מכיל `*.local`). כל מפתח מגדיר אותו בהתאם לסביבתו.
+
+- [ ] **4.2 יצירת `src/ui/AlgorithmSettings.tsx` — כפתור מעבר Mock / Real**
+
+  ```tsx
+  import React, { useCallback, useState } from 'react';
+  import { Box, Chip, Tooltip, Typography } from '@mui/material';
+  import SettingsIcon from '@mui/icons-material/Settings';
+  import { algorithmClient } from '../algorithm/AlgorithmClient';
+
+  export const AlgorithmSettings: React.FC = () => {
+    const [useMock, setUseMock] = useState<boolean>(
+      import.meta.env.VITE_USE_MOCK_ALGORITHM === 'true' || !import.meta.env.VITE_ALGORITHM_URL,
+    );
+
+    const toggle = useCallback(() => {
+      const next = !useMock;
+      setUseMock(next);
+      // Override at runtime — AlgorithmClient checks this flag on each step() call
+      (import.meta.env as Record<string, string>).VITE_USE_MOCK_ALGORITHM = next ? 'true' : 'false';
+      algorithmClient.reset();
+    }, [useMock]);
+
+    return (
+      <Box
+        dir="rtl"
+        sx={{
+          position: 'absolute',
+          top: 86,
+          left: 284,
+          zIndex: 1100,
+          display: 'flex',
+          alignItems: 'center',
+          gap: 1,
+          backgroundColor: 'rgba(15, 23, 42, 0.88)',
+          backdropFilter: 'blur(12px)',
+          border: '1px solid rgba(255, 255, 255, 0.13)',
+          borderRadius: 3,
+          px: 1.5,
+          py: 0.75,
+          boxShadow: '0 8px 24px rgba(0,0,0,0.45)',
+          cursor: 'pointer',
+        }}
+        onClick={toggle}
+      >
+        <SettingsIcon sx={{ color: '#94a3b8', fontSize: 16 }} />
+        <Typography sx={{ fontSize: '0.7rem', color: '#94a3b8', whiteSpace: 'nowrap' }}>
+          אלגוריתם:
+        </Typography>
+        <Tooltip title={useMock ? 'לחץ לחיבור לאלגוריתם האמיתי' : 'לחץ למעבר ל-Mock'} placement="bottom">
+          <Chip
+            label={useMock ? 'Mock' : 'שרת אמיתי'}
+            size="small"
+            color={useMock ? 'warning' : 'success'}
+            sx={{ fontWeight: 700, fontSize: '0.65rem', height: 20 }}
+          />
+        </Tooltip>
+      </Box>
+    );
+  };
+  ```
+
+- [ ] **4.3 תיקון impact detection ב-`App.tsx`**
 
   מצא בתוך הלולאה `for (const [idStr, threat] of Object.entries(updatedThreats))` את הבלוק שמטפל ב-`isImpacted` (מכיל `checkFinish`). **החלף אותו** ב:
   ```ts
@@ -540,21 +744,18 @@ App.tsx component body
     appendLog('impact', 'פגיעה בשטח', `איום #${id} פגע בשטח`, currentPos);
   }
   ```
-
   (**מחק** את כל בלוק `checkFinish` הישן עם ה-`onTick` הפנימי — זו הדליפה.)
 
-- [ ] **4.2 תיקון finish detection**
+- [ ] **4.4 תיקון finish detection**
 
-  מצא בסוף ה-`onTick` את הבלוק:
+  מצא בסוף ה-`onTick`:
   ```ts
   const allThreats = Object.values(updatedThreats);
   const allDone = allThreats.length > 0 && allThreats.every(...)
   if (allDone && status === 'running') { finishClock(); }
   ```
-
   **החלף** ב:
   ```ts
-  // --- Dev 4: Finish detection ---
   const allValues = Object.values(updatedThreats);
   const allDone =
     allValues.length > 0 &&
@@ -562,31 +763,40 @@ App.tsx component body
   if (allDone && state.status === 'running') {
     finishClock();
   }
-  // --- End Dev 4 ---
   ```
 
-- [ ] **4.3 תיקון `handleRestart`**
+- [ ] **4.5 תיקון `handleRestart` — ניקוי refs**
 
-  בתוך `handleRestart`, הוסף שורה אחת לניקוי ה-ref של outcomes (שיוצר Dev 2):
+  בתוך `handleRestart`, הוסף:
   ```ts
-  // Clear interceptor outcomes on restart
-  // (interceptorOutcomesRef is created by Dev 2 — this line runs safely even before merge)
   if (interceptorOutcomesRef?.current) interceptorOutcomesRef.current = {};
   ```
+  > אם Dev 2 עוד לא מוזג, הוסף `// @ts-ignore` זמני.
 
-  > **הערה:** אם Dev 2 עוד לא מוזג, השורה תגרום ל-TypeScript error. ניתן להוסיף `// @ts-ignore` זמני עד לאחר המיזוג.
+- [ ] **4.6 הוסף `<AlgorithmSettings />` ל-JSX**
 
-- [ ] **4.4 בדיקה**
+  ```ts
+  import { AlgorithmSettings } from './ui/AlgorithmSettings';
+  ```
+  בתוך ה-`return`:
+  ```tsx
+  <AlgorithmSettings />
+  ```
+
+- [ ] **4.7 בדיקה**
   ```bash
   cd frontend && npm run dev
   ```
+  - [ ] ווידוא שכפתור "אלגוריתם: Mock / שרת אמיתי" מופיע
+  - [ ] לחיצה על Mock ← שרת אמיתי: בדוק ב-Network tab שקריאות נשלחות ל-`localhost:3001`
+  - [ ] לחיצה חזרה ל-Mock: קריאות נעצרות
   - [ ] Restart מאפס לחלוטין ומחזיר סוללות למפה
-  - [ ] הסימולציה מסתיימת אוטומטית כשכל האיומים נפלו / יורטו (ללא תקיעה)
+  - [ ] הסימולציה מסתיימת אוטומטית כשכל האיומים נפלו / יורטו
 
-- [ ] **4.5 Commit**
+- [ ] **4.8 Commit**
   ```bash
-  git add frontend/src/App.tsx
-  git commit -m "fix(simulation): fix impact detection onTick leak and finish detection"
+  git add frontend/.env.local frontend/src/ui/AlgorithmSettings.tsx frontend/src/App.tsx
+  git commit -m "feat(api): add AlgorithmSettings toggle, .env.local config, fix impact detection leak"
   ```
 
 ---
@@ -610,8 +820,8 @@ Dev 4  ──┘
 
 פיצ'רים קלים שיוסיפו ערך:
 
-### 🎯 Dynamic Threat Heading
-**תחום Dev 1:** בתוך `advanceThreatPositions`, לאחר חישוב `location`, חשב bearing לנקודה הבאה ועדכן `heading`:
+### 🎯 Dynamic Threat Heading (Dev 1)
+בתוך `advanceThreatPositions`, אחרי חישוב `location`, חשב bearing דינמי ועדכן `heading` — האייקון יסתובב לכיוון הטיסה האמיתי:
 ```ts
 const nextP = Math.min(1, progress + 0.005);
 const nextLoc = calculatePositionAlongRoute(threat.route, nextP);
@@ -624,10 +834,9 @@ const heading = (Math.atan2(
 ) * 180 / Math.PI + 360) % 360;
 next[Number(idStr)] = { ...threat, progress, location, heading };
 ```
-האייקון של האיום כבר מקבל `heading` — `createThreatIcon(threat.heading)`.
 
-### 📊 Simulation Summary Screen
-**תחום Dev 3:** הוסף קומפוננט `src/ui/SimulationSummary.tsx` — overlay כשסטטוס `finished` עם אחוז הצלחה + כפתור Restart.
+### 💣 Ammo Depletion Tracking (Dev 2)
+אחרי שיגור מיירט, הפחת 1 מ-`launcher.ammunition` ב-`state.launchers` — `SimulationStats` יוכל להציג מלאי נותר.
 
-### 💣 Ammo Depletion Tracking
-**תחום Dev 2:** לאחר שיגור מיירט, הפחת 1 מ-`launcher.ammunition` המתאים ב-`state.launchers`.
+### 📊 Simulation Summary Screen (Dev 3)
+הוסף `src/ui/SimulationSummary.tsx` — overlay כשסטטוס `finished` עם אחוז הצלחה, מספר יורטו/נפלו, וכפתור Restart.
