@@ -113,7 +113,7 @@ export const Header: React.FC<HeaderProps> = ({
             </button>
             <div
               className={`map-layers-menu-anchor ${layersOpen ? "map-layers-menu-open" : ""}`}
-              ref={layersMenuRef}
+              ref={layersMenuRef as React.RefObject<HTMLDivElement>}
             >
               <button
                 className={`header-action-btn map-tool-btn ${layersOpen ? "header-action-btn-active" : ""}`}

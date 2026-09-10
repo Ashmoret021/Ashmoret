@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { Layers, Plus, ChevronRight, ChevronLeft } from 'lucide-react';
 import { EventScenarioCard } from './EventScenarioCard';
 import { EventsFilter, EventTypeFilter, DroneCountFilter } from './EventsFilter';
-import { ScenarioItem } from '../../types/simulation';
+import { ScenarioItem, ScenarioType } from '../../types/simulation';
 import { INITIAL_SCENARIOS } from '../../mock/events';
 import './EventsPanel.css';
 
@@ -54,14 +54,15 @@ export const EventsPanel: React.FC<EventsPanelProps> = ({
   const filteredScenarios = useMemo(() => {
     return scenarios.filter((sc) => {
       // Filter by event type
-      if (eventTypeFilter === 'single' && sc.type !== 'single') return false;
-      if (eventTypeFilter === 'multi' && sc.type !== 'multi') return false;
+      if (eventTypeFilter === 'single' && sc.type !== ScenarioType.SINGLE_AREA) return false;
+      if (eventTypeFilter === 'multi' && sc.type !== ScenarioType.MULTIPLE_AREAS) return false;
 
       // Filter by drone count
-      if (droneCountFilter === '1' && sc.droneCount !== 1) return false;
-      if (droneCountFilter === '2-5' && (sc.droneCount < 2 || sc.droneCount > 5)) return false;
-      if (droneCountFilter === '6-10' && (sc.droneCount < 6 || sc.droneCount > 10)) return false;
-      if (droneCountFilter === '10+' && sc.droneCount < 10) return false;
+      const count = sc.drones?.length ?? 0;
+      if (droneCountFilter === '1' && count !== 1) return false;
+      if (droneCountFilter === '2-5' && (count < 2 || count > 5)) return false;
+      if (droneCountFilter === '6-10' && (count < 6 || count > 10)) return false;
+      if (droneCountFilter === '10+' && count < 10) return false;
 
       return true;
     });
