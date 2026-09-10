@@ -1,5 +1,5 @@
 import { AppDataSource } from '../config/db';
-import { AttackSide } from '../Entities';
+import { AttackSide, Scenario } from '../Entities';
 import { logger } from '../middleware/logger';
 
 export const getAttackSideRepository = () =>
@@ -36,11 +36,17 @@ export const getAttackSideById = async (id: number): Promise<AttackSide | null> 
 
 export const createAttackSide = async (data: AttackSideInput): Promise<AttackSide> => {
   const repo = getAttackSideRepository();
+  const scenarioRepo = AppDataSource.getRepository(Scenario);
+
+  const rawScenarioId = data.scenarioId ?? data.scenario_id ?? null;
+  const resolvedScenarioId = rawScenarioId
+    ? (await scenarioRepo.exists({ where: { id: rawScenarioId } }) ? rawScenarioId : null)
+    : null;
 
   const payload = repo.create({
     name: data.name,
     description: data.description,
-    scenarioId: data.scenarioId ?? data.scenario_id,
+    scenarioId: resolvedScenarioId,
     dronesGroupId: data.dronesGroupId ?? data.drones_group_id,
     droneId: data.droneId ?? data.drone_id,
     launcherId: data.launcherId ?? data.launcher_id,
@@ -58,6 +64,7 @@ export const updateAttackSide = async (
   data: Partial<AttackSideInput>,
 ): Promise<AttackSide | null> => {
   const repo = getAttackSideRepository();
+  const scenarioRepo = AppDataSource.getRepository(Scenario);
   const existing = await repo.findOneBy({ id });
 
   if (!existing) {
@@ -69,7 +76,11 @@ export const updateAttackSide = async (
   if (data.name !== undefined) updatePayload.name = data.name;
   if (data.description !== undefined) updatePayload.description = data.description;
   if (data.scenarioId !== undefined || data.scenario_id !== undefined) {
-    updatePayload.scenarioId = data.scenarioId ?? data.scenario_id;
+    const requestedScenarioId = data.scenarioId ?? data.scenario_id ?? null;
+    const resolvedScenarioId = requestedScenarioId
+      ? (await scenarioRepo.exists({ where: { id: requestedScenarioId } }) ? requestedScenarioId : null)
+      : null;
+    updatePayload.scenarioId = resolvedScenarioId;
   }
   if (data.dronesGroupId !== undefined || data.drones_group_id !== undefined) {
     updatePayload.dronesGroupId = data.dronesGroupId ?? data.drones_group_id;

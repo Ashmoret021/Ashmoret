@@ -1,5 +1,10 @@
 const API_BASE = import.meta.env.VITE_API_BASE_URL ?? '/api';
 
+export type DroneTypeRecord = {
+  id: number;
+  name: string;
+};
+
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const response = await fetch(`${API_BASE}${path}`, {
     headers: {
@@ -16,6 +21,28 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   }
 
   return payload?.data as T;
+}
+
+export async function getDroneTypes(): Promise<DroneTypeRecord[]> {
+  return request<DroneTypeRecord[]>('/drone-types');
+}
+
+export async function getDronesGroups() {
+  return request('/drones-groups');
+}
+
+export async function createDronesGroupWithDrones(payload: Record<string, unknown>) {
+  return request('/drones-groups/with-drones', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function createDrone(payload: Record<string, unknown>) {
+  return request('/drones', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
 }
 
 export async function getAttackSides(scenarioId?: string) {

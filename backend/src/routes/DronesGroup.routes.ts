@@ -4,6 +4,7 @@ import {
   getAllDronesGroups,
   getDronesGroupById,
   createDronesGroup,
+  createDronesGroupWithDrones,
   updateDronesGroup,
   deleteDronesGroup,
 } from '../services/DronesGroup.service';
@@ -41,6 +42,15 @@ router.get('/:id', async (req, res, next) => {
 router.post('/', async (req, res, next) => {
   try {
     const created = await createDronesGroup(req.body);
+    res.status(StatusCodes.CREATED).json({ status: 'ok', data: created });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.post('/with-drones', async (req, res, next) => {
+  try {
+    const created = await createDronesGroupWithDrones(req.body ?? {});
     res.status(StatusCodes.CREATED).json({ status: 'ok', data: created });
   } catch (err) {
     next(err);

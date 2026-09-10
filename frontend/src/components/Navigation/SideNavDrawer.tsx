@@ -9,7 +9,6 @@ export type NavViewMode =
   | 'interceptors'
   | 'drones';
 
-
 interface NavOption {
   id: NavViewMode;
   label: string;
