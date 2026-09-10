@@ -1,23 +1,40 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
-import L from 'leaflet';
+import React from "react";
+import { MainLayout } from "./layouts/MainLayout";
+import {
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+} from "@mui/material";
+import L from "leaflet";
+import "leaflet/dist/leaflet.css";
+import { useSimulation } from "./simulation/useSimulation";
+import { SimulationControls } from "./ui/SimulationControls";
+import { SimulationStats } from "./ui/SimulationStats";
+import { Drone, DroneType } from "../../types/types";
+import DroneModal from "./components/DroneModal/DroneModal";
+import { useCallback, useEffect, useRef, useState } from "react";
+import "leaflet/dist/leaflet.css";
+import { MapView } from "./ui/MapView";
+import { EventLog } from "./ui/EventLog";
+import {
+  appendLog,
+  finishClock,
+  getState,
+  loadScenario,
+  onTick,
+  setState,
+  stopClock,
+} from "./simulation/SimulationContext";
+import { sampleScenario } from "./simulation/sampleScenario";
+import { LeafletRenderer } from "./map/LeafletRenderer";
+import { visualEventQueue } from "./visual/VisualEventQueue";
+import { processEngagementDecision } from "./visual/VisualEventBuilder";
+import axios from "axios";
 import 'leaflet/dist/leaflet.css';
-import { MapView } from './ui/MapView';
-import { SimulationControls } from './ui/SimulationControls';
-import { SimulationStats } from './ui/SimulationStats';
-import { EventLog } from './ui/EventLog';
-import { appendLog, finishClock, getState, loadScenario, onTick, setState, stopClock } from './simulation/SimulationContext';
-import { sampleScenario } from './simulation/sampleScenario';
-import { LeafletRenderer } from './map/LeafletRenderer';
-import { visualEventQueue } from './visual/VisualEventQueue';
-import { processEngagementDecision } from './visual/VisualEventBuilder';
-import { Drone, DroneType } from './types/types';
-import DroneModal from './components/DroneModal/DroneModal';
-import axios from 'axios';
 import { algorithmClient } from './algorithm/AlgorithmClient';
 import { WorldSnapshotBuilder } from './algorithm/WorldSnapshotBuilder';
-import { useSimulation } from './simulation/useSimulation';
-import { MainLayout } from './layouts/MainLayout';
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
 
 export const App = () => {
   const rendererRef = useRef<LeafletRenderer | null>(null);
@@ -132,6 +149,88 @@ export const App = () => {
                   }
                 });
               }
+            }
+          }
+
+          // C. Simulated Interception Decision
+          const timeSinceLaunch = simTime - threat.startTime;
+          if (
+            timeSinceLaunch >= 5 &&
+            !engagedDronesRef.current.has(id) &&
+            threat.logicalStatus === "active"
+          ) {
+            engagedDronesRef.current.add(id);
+            updatedThreats[id].logicalStatus = "interceptPending";
+            changed = true;
+
+            const launcherId = id === 1 ? "101" : "102";
+            const interceptorType = id === 1 ? "DartFoxS" : "SkyLanceM";
+
+            const bundle = processEngagementDecision(
+              {
+                defenseSystemId: launcherId,
+                interceptorType,
+                targetId: String(id),
+                result: "success",
+              },
+              state,
+            );
+
+            if (bundle) {
+              visualEventQueue.enqueue(bundle.visualEvent);
+              rendererRef.current?.registerInterceptorVisualState(
+                bundle.interceptorState,
+              );
+
+              appendLog(
+                "launch",
+                "שיגור מיירט",
+                `מיירט ${interceptorType} שוגר מסוללה #${launcherId} לעבר איום #${id}`,
+                bundle.interceptorState.startPosition,
+              );
+
+              const arrivalSimTime = simTime + 3;
+              const checkRemoval = onTick((_dt, currentSimTime) => {
+                if (currentSimTime >= arrivalSimTime) {
+                  const s = getState();
+                  if (s.threats[id]) {
+                    const nextThreats = {
+                      ...s.threats,
+                      [id]: {
+                        ...s.threats[id],
+                        logicalStatus: "intercepted" as const,
+                      },
+                    };
+                    setState({ threats: nextThreats });
+
+                    appendLog(
+                      "interception",
+                      "יירוט מוצלח",
+                      `איום #${id} (סוג: ${s.threats[id].type ?? "אויב"}) יורט בהצלחה`,
+                      s.threats[id].location,
+                    );
+
+                    const allThreats = Object.values(nextThreats);
+                    const allDone =
+                      allThreats.length > 0 &&
+                      allThreats.every(
+                        (t) =>
+                          t.logicalStatus === "intercepted" ||
+                          t.logicalStatus === "impacted",
+                      );
+                    if (allDone) {
+                      const finishTime = currentSimTime + 1.0;
+                      const checkFinish = onTick((_dt, time) => {
+                        if (time >= finishTime) {
+                          finishClock();
+                          checkFinish();
+                        }
+                      });
+                    }
+                  }
+                  checkRemoval();
+                }
+              });
             }
           }
         }
@@ -347,11 +446,6 @@ export const App = () => {
 
   return (
     <>
-      <MainLayout
-        scenarioName="רב-זירתי - צפון ומזרח"
-        simId="SIM-01"
-        onStartSimulation={handleStartSimulation}
-      />
       <style>
         {`
           .leaflet-top.leaflet-left {
@@ -376,6 +470,11 @@ export const App = () => {
           overflow: "hidden",
         }}
       >
+        <MainLayout
+          scenarioName="רב-זירתי - צפון ומזרח"
+          simId="SIM-01"
+          onStartSimulation={handleStartSimulation}
+        />
         {selectedDrone && (
           <DroneModal
             drone={selectedDrone}
