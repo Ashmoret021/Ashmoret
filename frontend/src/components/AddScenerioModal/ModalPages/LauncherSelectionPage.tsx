@@ -115,8 +115,8 @@ export const LauncherSelectionPage: FC<LauncherSelectionPageProps> = ({
   selectedGroup: propGroup,
   onSelectGroup,
 }) => {
-  const {launchersGroups} = useGetAllLaunchersGroups();
   const [internalGroup, setInternalGroup] = useState<string>("");
+  const {launchersGroups} = useGetAllLaunchersGroups();
 
   const currentGroup = propGroup ?? internalGroup;
 

@@ -104,8 +104,8 @@ export const DroneSelectionPage: FC<DroneSelectionPageProps> = ({
   selectedGroup: propGroup,
   onSelectGroup,
 }) => {
-  const {dronesGroups} = useGetAllDronesGroups();
   const [internalGroup, setInternalGroup] = useState<string>("");
+  const {dronesGroups} = useGetAllDronesGroups();
 
   const currentGroup = propGroup ?? internalGroup;
 
