@@ -6,7 +6,6 @@
 # Build with:
 #   docker build -t ashmoret-frontend ./frontend
 
-
 # ---- Build stage ----
 FROM node:20-alpine AS build
 
