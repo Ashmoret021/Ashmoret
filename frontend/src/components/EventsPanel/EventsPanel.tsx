@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Layers, Plus, ChevronRight, ChevronLeft } from 'lucide-react';
+import { Layers, Plus, ChevronRight, ChevronLeft, Play } from 'lucide-react';
 import { EventScenarioCard } from './EventScenarioCard';
 import { EventsFilter, EventTypeFilter, DroneCountFilter } from './EventsFilter';
 import { ScenarioItem, ScenarioType } from '../../types/simulation';
@@ -13,6 +13,7 @@ interface EventsPanelProps {
   onToggleOpen?: () => void;
   onScenarioSelect?: (scenario: ScenarioItem) => void;
   onCreateScenario?: () => void;
+  onShowControlsChange?: (show: boolean) => void;
 }
 
 export const EventsPanel: React.FC<EventsPanelProps> = ({
@@ -22,14 +23,19 @@ export const EventsPanel: React.FC<EventsPanelProps> = ({
   onToggleOpen,
   onScenarioSelect,
   onCreateScenario,
+  onShowControlsChange,
 }) => {
   const [internalIsOpen, setInternalIsOpen] = useState(true);
   const isOpen = controlledIsOpen !== undefined ? controlledIsOpen : internalIsOpen;
 
   const [activeScenarioId, setActiveScenarioId] = useState<string | undefined>(selectedScenarioId);
+  const [showControls, setShowControls] = useState(false);
 
   useEffect(() => {
     setActiveScenarioId(selectedScenarioId);
+    // Hide controls whenever a new scenario is selected from outside
+    setShowControls(false);
+    onShowControlsChange?.(false);
   }, [selectedScenarioId]);
 
   const [eventTypeFilter, setEventTypeFilter] = useState<EventTypeFilter>('all');
@@ -45,9 +51,18 @@ export const EventsPanel: React.FC<EventsPanelProps> = ({
 
   const handleSelectScenario = (scenario: ScenarioItem) => {
     setActiveScenarioId(scenario.id);
+    // Selecting a different scenario hides controls
+    setShowControls(false);
+    onShowControlsChange?.(false);
     if (onScenarioSelect) {
       onScenarioSelect(scenario);
     }
+  };
+
+  const handleToggleControls = () => {
+    const next = !showControls;
+    setShowControls(next);
+    onShowControlsChange?.(next);
   };
 
   // Filtered scenarios logic
@@ -126,6 +141,22 @@ export const EventsPanel: React.FC<EventsPanelProps> = ({
             </div>
           )}
         </div>
+
+        {/* Start Simulation Button — only shown when a scenario is selected */}
+        {activeScenarioId && (
+          <div className="panel-start-btn-wrapper">
+            <button
+              type="button"
+              className={`panel-start-simulation-btn${showControls ? ' active' : ''}`}
+              onClick={handleToggleControls}
+              disabled={showControls}
+              aria-label="הצג בקרות סימולציה"
+            >
+              <Play size={15} className="panel-start-icon" />
+              <span>התחל סימולציה</span>
+            </button>
+          </div>
+        )}
       </div>
     </aside>
   );

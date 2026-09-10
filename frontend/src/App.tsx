@@ -68,6 +68,7 @@ export const App = () => {
   const [mapMoveTick, setMapMoveTick] = useState(0);
   const [showMainAdditionalComponents, setShowMainAdditionalComponents] =
     useState<boolean>(true);
+  const [showSimControls, setShowSimControls] = useState(false);
 
   const tickIdRef = useRef<number>(0);
   const lastApiTickSimTimeRef = useRef<number>(0); // Start at 0 so first API call fires at simTime≥1.0 (after threats have moved)
@@ -1096,6 +1097,7 @@ export const App = () => {
           layersOpen={layersOpen}
           onLayersToggle={handleLayersToggle}
           layersMenuRef={layersMenuRef}
+          onSimControlsVisibilityChange={setShowSimControls}
         />
         <CoordinatesControl coords={coords} />
         {selectedThreatId !== null && currentThreat && !isThreatNeutralized && (
@@ -1113,7 +1115,7 @@ export const App = () => {
           <>
             <EventLog />
             <SimulationStats />
-            <SimulationControls onRestart={handleRestart} />
+            {showSimControls && <SimulationControls onRestart={handleRestart} />}
             <DefenseSide
               map={map}
               open={defenseModalOpen}

@@ -381,3 +381,91 @@
   background: #475569;
   border: 1px solid #64748b;
 }
+
+/* ── Start Simulation Button ─────────────────────────────────────────────── */
+.panel-start-btn-wrapper {
+  padding: 12px 0 4px 0;
+  border-top: 1px solid #16243d;
+  margin-top: 10px;
+}
+
+.panel-start-simulation-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 11px 20px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 700;
+  font-family: inherit;
+  color: #ffffff;
+  background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 50%, #0369a1 100%);
+  box-shadow:
+    0 4px 15px rgba(14, 165, 233, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18);
+  transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+  letter-spacing: 0.3px;
+  position: relative;
+  overflow: hidden;
+}
+
+.panel-start-simulation-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.12) 0%, transparent 60%);
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+.panel-start-simulation-btn:hover {
+  background: linear-gradient(135deg, #38bdf8 0%, #0ea5e9 50%, #0284c7 100%);
+  box-shadow:
+    0 6px 22px rgba(14, 165, 233, 0.55),
+    inset 0 1px 0 rgba(255, 255, 255, 0.22);
+  transform: translateY(-1px);
+}
+
+.panel-start-simulation-btn:active {
+  transform: translateY(0);
+  box-shadow:
+    0 2px 8px rgba(14, 165, 233, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+
+.panel-start-simulation-btn.active {
+  background: linear-gradient(135deg, #0369a1 0%, #075985 50%, #0c4a6e 100%);
+  box-shadow:
+    0 2px 10px rgba(14, 165, 233, 0.25),
+    inset 0 2px 4px rgba(0, 0, 0, 0.25);
+}
+
+.panel-start-simulation-btn.active:hover {
+  background: linear-gradient(135deg, #0284c7 0%, #0369a1 50%, #075985 100%);
+  box-shadow:
+    0 4px 16px rgba(14, 165, 233, 0.35),
+    inset 0 2px 4px rgba(0, 0, 0, 0.2);
+  transform: translateY(-1px);
+}
+
+.panel-start-icon {
+  flex-shrink: 0;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
+}
+
+.panel-start-simulation-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.panel-start-simulation-btn:disabled:hover {
+  background: linear-gradient(135deg, #0369a1 0%, #075985 50%, #0c4a6e 100%);
+  box-shadow: none;
+  transform: none;
+}
