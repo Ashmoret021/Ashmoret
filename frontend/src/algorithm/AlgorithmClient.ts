@@ -1,4 +1,5 @@
 import type { WorldSnapshot, AlgorithmResponse } from './types';
+import { MockAlgorithmServer } from './mockServer';
 
 export interface AlgorithmClientOptions {
   baseUrl?: string;
@@ -10,6 +11,7 @@ export class AlgorithmClient {
   private timeoutMs: number;
   private latestProcessedTick: number = -1;
   private isAvailable: boolean = true;
+  private mockServer = new MockAlgorithmServer({ successRate: 0.85 });
 
   constructor(options?: AlgorithmClientOptions) {
     this.baseUrl = options?.baseUrl || '';
@@ -36,6 +38,14 @@ export class AlgorithmClient {
    * Filters out stale/out-of-order responses using tickId.
    */
   public async step(snapshot: WorldSnapshot): Promise<AlgorithmResponse | null> {
+    const useMock =
+      !this.baseUrl ||
+      import.meta.env.VITE_USE_MOCK_ALGORITHM === 'true';
+
+    if (useMock) {
+      return this.mockServer.handleStep(snapshot);
+    }
+
     const endpoint = `${this.baseUrl}/simulation/step`;
 
     try {
@@ -55,8 +65,8 @@ export class AlgorithmClient {
 
       if (!response.ok) {
         this.isAvailable = false;
-        console.warn(`Algorithm API returned status ${response.status}`);
-        return null;
+        console.warn(`Algorithm API returned status ${response.status}, falling back to mock`);
+        return this.mockServer.handleStep(snapshot);
       }
 
       const data: AlgorithmResponse = await response.json();
@@ -75,8 +85,12 @@ export class AlgorithmClient {
       return data;
     } catch (error) {
       this.isAvailable = false;
-      console.warn('Algorithm API call failed, operating in fallback mode:', error);
-      return null;
+      console.warn('Algorithm API call failed, operating in mock fallback mode:', error);
+      return this.mockServer.handleStep(snapshot);
     }
   }
 }
+
+export const algorithmClient = new AlgorithmClient({
+  baseUrl: import.meta.env.VITE_ALGORITHM_URL ?? '',
+});
