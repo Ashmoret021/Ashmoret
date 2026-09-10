@@ -521,8 +521,7 @@ export const App = () => {
     if (renderer) {
       renderer.initDefenseSystems();
     }
-    startClock();
-  }, [startClock]);
+  }, []);
   // NOTE: App.handleRestart is only used as fallback when no onRestart prop is
   // provided. The actual restart path goes through MainLayout.handleRestart,
   // which uses window.__resetSimulationRefs to reset App-level refs.
