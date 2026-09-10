@@ -2,21 +2,21 @@ import React from 'react';
 import { Filter } from 'lucide-react';
 import './LaunchersDronesPanel.css';
 
-export type EventTypeFilter = 'all' | 'single' | 'multi';
-export type DroneCountFilter = 'all' | '1' | '2-5' | '6-10' | '10+';
+export type GroupTypeFilter = 'all' | 'drones' | 'launchers';
+export type UnitCountFilter = 'all' | '1' | '2-5' | '6-10' | '10+';
 
 interface LaunchersDronesFilterProps {
-  selectedEventType: EventTypeFilter;
-  onEventTypeChange: (type: EventTypeFilter) => void;
-  selectedDroneCount: DroneCountFilter;
-  onDroneCountChange: (count: DroneCountFilter) => void;
+  selectedGroupType: GroupTypeFilter;
+  onGroupTypeChange: (type: GroupTypeFilter) => void;
+  selectedUnitCount: UnitCountFilter;
+  onUnitCountChange: (count: UnitCountFilter) => void;
 }
 
 export const LaunchersDronesFilter: React.FC<LaunchersDronesFilterProps> = ({
-  selectedEventType,
-  onEventTypeChange,
-  selectedDroneCount,
-  onDroneCountChange,
+  selectedGroupType,
+  onGroupTypeChange,
+  selectedUnitCount,
+  onUnitCountChange,
 }) => {
   return (
     <div className="launchers-drones-filter-container">
@@ -25,74 +25,74 @@ export const LaunchersDronesFilter: React.FC<LaunchersDronesFilterProps> = ({
         <span className="filter-title">סינון</span>
       </div>
 
-      {/* Row 1: Event Type Filter */}
+      {/* Row 1: Group Type Filter (Drones / Launchers) */}
       <div className="filter-row">
         <div className="filter-options-group">
           <button
             type="button"
-            className={`filter-btn ${selectedEventType === 'all' ? 'active' : ''}`}
-            onClick={() => onEventTypeChange('all')}
+            className={`filter-btn ${selectedGroupType === 'all' ? 'active' : ''}`}
+            onClick={() => onGroupTypeChange('all')}
           >
             הכל
           </button>
           <button
             type="button"
-            className={`filter-btn ${selectedEventType === 'single' ? 'active' : ''}`}
-            onClick={() => onEventTypeChange('single')}
+            className={`filter-btn ${selectedGroupType === 'drones' ? 'active' : ''}`}
+            onClick={() => onGroupTypeChange('drones')}
           >
-            חד-זירתי
+            רחפנים
           </button>
           <button
             type="button"
-            className={`filter-btn ${selectedEventType === 'multi' ? 'active' : ''}`}
-            onClick={() => onEventTypeChange('multi')}
+            className={`filter-btn ${selectedGroupType === 'launchers' ? 'active' : ''}`}
+            onClick={() => onGroupTypeChange('launchers')}
           >
-            רב-זירתי
+            משגרים
           </button>
         </div>
-        <span className="filter-row-label">סוג אירוע</span>
+        <span className="filter-row-label">סוג קבוצה</span>
       </div>
 
-      {/* Row 2: Drone Count Filter */}
+      {/* Row 2: Unit Count Filter */}
       <div className="filter-row">
         <div className="filter-options-group">
           <button
             type="button"
-            className={`filter-btn ${selectedDroneCount === 'all' ? 'active' : ''}`}
-            onClick={() => onDroneCountChange('all')}
+            className={`filter-btn ${selectedUnitCount === 'all' ? 'active' : ''}`}
+            onClick={() => onUnitCountChange('all')}
           >
             הכל
           </button>
           <button
             type="button"
-            className={`filter-btn ${selectedDroneCount === '1' ? 'active' : ''}`}
-            onClick={() => onDroneCountChange('1')}
+            className={`filter-btn ${selectedUnitCount === '1' ? 'active' : ''}`}
+            onClick={() => onUnitCountChange('1')}
           >
             1
           </button>
           <button
             type="button"
-            className={`filter-btn ${selectedDroneCount === '2-5' ? 'active' : ''}`}
-            onClick={() => onDroneCountChange('2-5')}
+            className={`filter-btn ${selectedUnitCount === '2-5' ? 'active' : ''}`}
+            onClick={() => onUnitCountChange('2-5')}
           >
             5-2
           </button>
           <button
             type="button"
-            className={`filter-btn ${selectedDroneCount === '6-10' ? 'active' : ''}`}
-            onClick={() => onDroneCountChange('6-10')}
+            className={`filter-btn ${selectedUnitCount === '6-10' ? 'active' : ''}`}
+            onClick={() => onUnitCountChange('6-10')}
           >
             10-6
           </button>
           <button
             type="button"
-            className={`filter-btn ${selectedDroneCount === '10+' ? 'active' : ''}`}
-            onClick={() => onDroneCountChange('10+')}
+            className={`filter-btn ${selectedUnitCount === '10+' ? 'active' : ''}`}
+            onClick={() => onUnitCountChange('10+')}
           >
             +10
           </button>
         </div>
-        <span className="filter-row-label">כמות רחפנים</span>
+        <span className="filter-row-label">כמות יחידות</span>
       </div>
     </div>
   );

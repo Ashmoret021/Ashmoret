@@ -4,7 +4,8 @@ import { InterceptorsPanel } from "../components/InterceptorsPanel/InterceptorsP
 import { SideNavDrawer, NavViewMode } from "../components/Navigation/SideNavDrawer";
 import { SimulationSummaryPanel } from "../components/SimulationSummary/SimulationSummaryPanel";
 import { ScenarioItem } from "../types/simulation";
-import { INITIAL_SCENARIOS } from "../mock/events";
+import { DroneGroup, LauncherGroup } from "../types/types";
+import { INITIAL_DRONE_GROUPS, INITIAL_LAUNCHER_GROUPS, INITIAL_SCENARIOS } from "../mock/events";
 import "./MainLayout.css";
 import React, { useEffect, useRef, useState } from "react";
 import {
@@ -18,6 +19,7 @@ import L, { Map } from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { useSimulation } from "../simulation/useSimulation";
 import { MapView } from "../ui/MapView";
+import { LaunchersDronesPanel } from "../components/LaunchersDronesPanel/LaunchersDronesPanel";
 
 interface MainLayoutProps {
   logoSrc?: string;
@@ -53,6 +55,8 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
     },
   );
 
+  const [selectedGroup, setSelectedGroup] = useState<DroneGroup | LauncherGroup | null>(null);
+
   const [isStateDialogOpen, setIsStateDialogOpen] = useState(false);
   const { state, pauseClock, resumeClock, setSpeed, startClock } =
     useSimulation();
@@ -79,18 +83,27 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
     console.log("Open Create Scenario modal / action");
   };
 
+  const handleGroupSelect = (group: DroneGroup | LauncherGroup) => {
+    setSelectedGroup(group);
+  };
+
+  const handleCreateGroup = () => {
+    console.log("Open Create Group modal / action");
+  };
+
   const handleViewSimulation = (simulationId: string) => {
     console.log("Viewing simulation:", simulationId);
     setNavView("drones");
   };
 
   useEffect(() => {
-  if (navView === "summary") {
-    setShowMainAdditionalComponents(false); 
-  } else {
-    setShowMainAdditionalComponents(true);
-  }
-}, [navView]);
+    if (navView === "summary") {
+      setShowMainAdditionalComponents(false); 
+    } else {
+      setShowMainAdditionalComponents(true);
+    }
+  }, [navView]);
+
   return (
     <div className="main-layout-container">
       {/* Top Application Header */}
@@ -108,11 +121,9 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
         {/* Navigation Dropdown Drawer (סיכום סימולציות, פריסת מיירטים, פריסת רחפנים וכו') */}
         <SideNavDrawer activeView={navView} onViewChange={setNavView} />
 
-
         {/* View 1: Simulation Summary Panel (Without additional sidebar buttons) */}
         {navView === "summary" ? (
           <SimulationSummaryPanel onViewSimulation={handleViewSimulation} />
-          
         ) : (
           <>
             {/* Tactical Map View */}
@@ -165,18 +176,8 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
               </Dialog>
             </div>
 
-        {/* Events Panel (פריסת רחפנים / תרחישים) */}
-        {navView === "home" && (
-          <EventsPanel
-            scenarios={INITIAL_SCENARIOS}
-            selectedScenarioId={selectedScenario.id}
-            onScenarioSelect={handleScenarioSelect}
-            onCreateScenario={handleCreateScenario}
-          />
-        )}
-
-            {/* Events Panel (פריסת רחפנים / תרחישים / מסך בית) */}
-            {(navView === "drones" || navView === "scenarios") && (
+            {/* Events Panel (פריסת רחפנים / תרחישים) */}
+            {navView === "home" && (
               <EventsPanel
                 scenarios={INITIAL_SCENARIOS}
                 selectedScenarioId={selectedScenario.id}
@@ -185,12 +186,31 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
               />
             )}
 
-            {/* Interceptors Panel (פריסת מיירטים / ניהול הצבה) */}
             {navView === "interceptors" && (
-              <InterceptorsPanel
-                scenarioName={selectedScenario.title}
-                isSafeMode={true}
-                onStartSimulation={onStartSimulation}
+              <LaunchersDronesPanel
+                groups={INITIAL_LAUNCHER_GROUPS}
+                selectedGroupId={selectedGroup?.id}
+                onGroupSelect={handleGroupSelect}
+                onCreateGroup={handleCreateGroup}
+              />
+            )}
+
+            {navView === "drones" && (
+              <LaunchersDronesPanel
+                groups={INITIAL_DRONE_GROUPS}
+                selectedGroupId={selectedGroup?.id}
+                onGroupSelect={handleGroupSelect}
+                onCreateGroup={handleCreateGroup}
+              />
+            )}
+
+            {/* Events Panel (פריסת רחפנים / תרחישים / מסך בית) */}
+            {navView === "scenarios" && (
+              <EventsPanel
+                scenarios={INITIAL_SCENARIOS}
+                selectedScenarioId={selectedScenario.id}
+                onScenarioSelect={handleScenarioSelect}
+                onCreateScenario={handleCreateScenario}
               />
             )}
           </>

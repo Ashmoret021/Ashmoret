@@ -1,34 +1,39 @@
 import React, { useState, useMemo } from 'react';
 import { Layers, Plus, ChevronRight, ChevronLeft } from 'lucide-react';
 import { LaunchersDroneCard } from './LaunchersDroneCard';
-import { LaunchersDronesFilter, EventTypeFilter, DroneCountFilter } from './LaunchersDronesFilter';
-import { ScenarioItem, ScenarioType } from '../../types/simulation';
-import { INITIAL_SCENARIOS } from '../../mock/events';
+import { DroneGroup, LauncherGroup } from '../../types/types';
 import './LaunchersDronesPanel.css';
 
+type EntityGroup = DroneGroup | LauncherGroup;
+type GroupTabFilter = 'all' | 'drones' | 'launchers';
+
 interface LaunchersDronesPanelProps {
-  scenarios?: ScenarioItem[];
-  selectedScenarioId?: string;
+  groups?: EntityGroup[];
+  selectedGroupId?: number;
   isOpen?: boolean;
   onToggleOpen?: () => void;
-  onScenarioSelect?: (scenario: ScenarioItem) => void;
-  onCreateScenario?: () => void;
+  onGroupSelect?: (group: EntityGroup) => void;
+  onCreateGroup?: () => void;
 }
 
-export const LaunchersDropesPanel: React.FC<LaunchersDronesPanelProps> = ({
-  scenarios = INITIAL_SCENARIOS,
-  selectedScenarioId = 'sc-2',
+export const LaunchersDronesPanel: React.FC<LaunchersDronesPanelProps> = ({
+  groups = [],
+  selectedGroupId,
   isOpen: controlledIsOpen,
   onToggleOpen,
-  onScenarioSelect,
-  onCreateScenario,
+  onGroupSelect,
+  onCreateGroup,
 }) => {
   const [internalIsOpen, setInternalIsOpen] = useState(true);
   const isOpen = controlledIsOpen !== undefined ? controlledIsOpen : internalIsOpen;
 
-  const [activeScenarioId, setActiveScenarioId] = useState<string>(selectedScenarioId);
-  const [eventTypeFilter, setEventTypeFilter] = useState<EventTypeFilter>('all');
-  const [droneCountFilter, setDroneCountFilter] = useState<DroneCountFilter>('all');
+  const [activeGroupId, setActiveGroupId] = useState<number | undefined>(selectedGroupId);
+  const [tabFilter, setTabFilter] = useState<GroupTabFilter>('all');
+  const [searchQuery, setSearchQuery] = useState<string>('');
+
+  const isDroneGroup = (group: EntityGroup): group is DroneGroup => {
+    return 'drones' in group;
+  };
 
   const handleToggle = () => {
     if (onToggleOpen) {
@@ -38,29 +43,31 @@ export const LaunchersDropesPanel: React.FC<LaunchersDronesPanelProps> = ({
     }
   };
 
-  const handleSelectScenario = (scenario: ScenarioItem) => {
-    setActiveScenarioId(scenario.id);
-    if (onScenarioSelect) {
-      onScenarioSelect(scenario);
+  const handleSelectGroup = (group: EntityGroup) => {
+    setActiveGroupId(group.id);
+    if (onGroupSelect) {
+      onGroupSelect(group);
     }
   };
 
-  // Filtered scenarios logic
-  const filteredScenarios = useMemo(() => {
-    return scenarios.filter((sc) => {
-      // Filter by event type
-      if (eventTypeFilter === 'single' && sc.type !== ScenarioType.SINGLE_AREA) return false;
-      if (eventTypeFilter === 'multi' && sc.type !== ScenarioType.MULTIPLE_AREAS) return false;
+  // Filtered groups logic
+  const filteredGroups = useMemo(() => {
+    return groups.filter((group) => {
+      // Filter by category tab
+      if (tabFilter === 'drones' && !isDroneGroup(group)) return false;
+      if (tabFilter === 'launchers' && isDroneGroup(group)) return false;
 
-      // Filter by drone count
-      if (droneCountFilter === '1' && sc.drones.length !== 1) return false;
-      if (droneCountFilter === '2-5' && (sc.drones.length < 2 || sc.drones.length > 5)) return false;
-      if (droneCountFilter === '6-10' && (sc.drones.length < 6 || sc.drones.length > 10)) return false;
-      if (droneCountFilter === '10+' && sc.drones.length < 10) return false;
+      // Filter by search query (name or description)
+      if (searchQuery.trim() !== '') {
+        const query = searchQuery.toLowerCase();
+        const matchesName = group.name.toLowerCase().includes(query);
+        const matchesDesc = group.description?.toLowerCase().includes(query) ?? false;
+        if (!matchesName && !matchesDesc) return false;
+      }
 
       return true;
     });
-  }, [scenarios, eventTypeFilter, droneCountFilter]);
+  }, [groups, tabFilter, searchQuery]);
 
   return (
     <aside className={`launchers-drones-panel-wrapper ${isOpen ? 'open' : 'collapsed'}`}>
@@ -76,47 +83,39 @@ export const LaunchersDropesPanel: React.FC<LaunchersDronesPanelProps> = ({
       </button>
 
       <div className="launchers-drones-panel-content">
-        {/* Top Header: Action Button and Scenarios Count */}
+        {/* Top Header: Action Button and Groups Count */}
         <div className="launchers-drones-top-header">
           <button
             type="button"
             className="create-scenario-btn"
-            onClick={onCreateScenario}
+            onClick={onCreateGroup}
           >
             <Plus size={15} />
-            <span>צור תרחיש</span>
+            <span>צור קבוצה</span>
           </button>
 
           <div className="scenarios-title-block">
             <h3 className="scenarios-heading">
-              תרחישים ({scenarios.length})
+              קבוצות ({groups.length})
             </h3>
             <Layers size={19} className="scenarios-icon" />
           </div>
         </div>
 
-        {/* Filter Section */}
-        <LaunchersDronesFilter
-          selectedEventType={eventTypeFilter}
-          onEventTypeChange={setEventTypeFilter}
-          selectedDroneCount={droneCountFilter}
-          onDroneCountChange={setDroneCountFilter}
-        />
-
-        {/* Scrollable list of Scenario / Event cards */}
+        {/* Scrollable list of DroneGroup / LauncherGroup cards */}
         <div className="scenarios-card-list">
-          {filteredScenarios.map((scenario) => (
+          {filteredGroups.map((group) => (
             <LaunchersDroneCard
-              key={scenario.id}
-              scenario={scenario}
-              isSelected={activeScenarioId === scenario.id}
-              onSelect={handleSelectScenario}
+              key={group.id}
+              group={group}
+              isSelected={activeGroupId === group.id}
+              onSelect={handleSelectGroup}
             />
           ))}
 
-          {filteredScenarios.length === 0 && (
+          {filteredGroups.length === 0 && (
             <div className="no-scenarios-empty">
-              <span>לא נמצאו תרחישים התואמים את הסינון</span>
+              <span>לא נמצאו קבוצות התואמות את הסינון</span>
             </div>
           )}
         </div>

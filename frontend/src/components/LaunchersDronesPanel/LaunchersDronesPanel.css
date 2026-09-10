@@ -1,7 +1,8 @@
 /* LaunchersDrones Panel Layout */
 .launchers-drones-panel-wrapper {
   position: absolute;
-  top: 58px; /* below header */
+  top: 0;
+  /* below header */
   right: 0;
   bottom: 0;
   width: 385px;

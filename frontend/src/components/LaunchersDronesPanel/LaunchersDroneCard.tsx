@@ -1,31 +1,23 @@
 import React from 'react';
-import { ChevronLeft, Crosshair, MapPin } from 'lucide-react';
-import { ScenarioItem, SeverityLevel } from '../../types/simulation';
-import { DroneType } from '../../../../types/types';
+import { ChevronLeft, Crosshair, Shield, Info } from 'lucide-react';
+import { DroneType, LauncherType, LauncherGroup, DroneGroup } from '../../types/types';
 import './LaunchersDronesPanel.css';
 
+type EntityGroup = DroneGroup | LauncherGroup;
+
 interface LaunchersDroneCardProps {
-  scenario: ScenarioItem;
+  group: EntityGroup;
   isSelected?: boolean;
-  onSelect?: (scenario: ScenarioItem) => void;
+  onSelect?: (group: EntityGroup) => void;
 }
 
 export const LaunchersDroneCard: React.FC<LaunchersDroneCardProps> = ({
-  scenario,
+  group,
   isSelected = false,
   onSelect,
 }) => {
-  const getSeverityLabel = (severity: SeverityLevel): string => {
-    switch (severity) {
-      case 'low':
-        return 'נמוכה';
-      case 'high':
-        return 'גבוהה';
-      case 'extreme':
-        return 'קיצונית';
-      default:
-        return 'רגילה';
-    }
+  const isDroneGroup = (item: EntityGroup): item is DroneGroup => {
+    return 'drones' in item;
   };
 
   const getDroneTypeClass = (droneType: DroneType): string => {
@@ -43,68 +35,113 @@ export const LaunchersDroneCard: React.FC<LaunchersDroneCardProps> = ({
     }
   };
 
-  const uniqueDroneTypes = Array.from(
-    new Set(scenario.drones?.map((drone) => drone.type) || [])
-  );
+  const getLauncherTypeClass = (launcherType: LauncherType): string => {
+    switch (launcherType) {
+      case LauncherType.ShieldNestLite:
+        return 'badge-type-a';
+      case LauncherType.IronHookSR:
+        return 'badge-type-b';
+      case LauncherType.HorizonEyeMX:
+        return 'badge-type-c';
+      case LauncherType.CloudFenceArea:
+        return 'badge-type-d';
+      default:
+        return 'badge-type-default';
+    }
+  };
+
+  // Perform checks directly on the narrowed union branch
+  const isDrone = isDroneGroup(group);
+
+  const uniqueDroneTypes: DroneType[] = isDroneGroup(group)
+    ? Array.from(new Set(group.drones.map((d) => d.type)))
+    : [];
+
+  const uniqueLauncherTypes: LauncherType[] = !isDroneGroup(group)
+    ? Array.from(new Set(group.launchers.map((l) => l.type)))
+    : [];
+
+  const totalLaunchers: number = !isDroneGroup(group)
+    ? group.launchers.reduce((acc, curr) => acc + (curr.amount ?? 1), 0)
+    : 0;
 
   return (
     <div
       className={`scenario-card ${isSelected ? 'selected' : ''}`}
-      onClick={() => onSelect && onSelect(scenario)}
+      onClick={() => onSelect?.(group)}
       role="button"
       tabIndex={0}
     >
-      {/* Top Header Row: Title on right, Severity Badge on left */}
+      {/* Top Header Row */}
       <div className="card-top-row">
         <div className="scenario-title-wrap">
           {isSelected && <ChevronLeft size={16} className="selected-chevron" />}
-          <h4 className="scenario-title">{scenario.title}</h4>
+          <h4 className="scenario-title">{group.name}</h4>
         </div>
 
-        <span className={`severity-tag severity-${scenario.severity}`}>
-          {getSeverityLabel(scenario.severity)}
+        <span className={`severity-tag ${isDrone ? 'severity-high' : 'severity-low'}`}>
+          {isDrone ? 'קבוצת רחפנים' : 'קבוצת משגרים'}
         </span>
       </div>
 
-      {/* Second Row: Event Type and Drone Count */}
+      {/* Second Row: Unit Count Meta */}
       <div className="card-meta-row">
         <div className="scenario-kind">
-          <span className="meta-label">סוג:</span>
-          <span className="meta-value">{scenario.type}</span>
+          <span className="meta-label">סוג קבוצה:</span>
+          <span className="meta-value">{isDrone ? 'תקיפה / סיור' : 'הגנה'}</span>
         </div>
 
         <div className="drone-count-indicator">
-          <Crosshair size={13} className="meta-icon" />
-          <span>{scenario.drones.length} רחפנים</span>
+          {isDroneGroup(group) ? (
+            <>
+              <Crosshair size={13} className="meta-icon" />
+              <span>{group.drones.length} רחפנים</span>
+            </>
+          ) : (
+            <>
+              <Shield size={13} className="meta-icon" />
+              <span>{totalLaunchers} משגרים</span>
+            </>
+          )}
         </div>
       </div>
 
-      {/* Third Row: Entry Points (Locations) */}
-      <div className="card-locations-row">
-        <div className="entry-point-label-wrap">
-          <MapPin size={13} className="meta-icon" />
-          <span className="meta-label">חדירה:</span>
-        </div>
+      {/* Third Row: Description */}
+      {group.description && (
+        <div className="card-locations-row">
+          <div className="entry-point-label-wrap">
+            <Info size={13} className="meta-icon" />
+            <span className="meta-label">תיאור:</span>
+          </div>
 
-        <div className="entry-point-tags">
-          {scenario.entryPoints.map((point) => (
-            <span key={point} className="location-tag">
-              {point}
-            </span>
-          ))}
+          <div className="group-description-text">{group.description}</div>
         </div>
-      </div>
+      )}
 
-      {/* Fourth Row: Drone Types */}
+      {/* Fourth Row: Equipment Types Badges */}
       <div className="card-drone-types-row">
-        <span className="meta-label">סוגי רחפנים:</span>
+        <span className="meta-label">
+          {isDrone ? 'סוגי רחפנים:' : 'סוגי משגרים:'}
+        </span>
 
         <div className="drone-type-badges">
-          {uniqueDroneTypes.map((droneType) => (
-            <span key={droneType} className={`drone-type-badge ${getDroneTypeClass(droneType)}`}>
-              {droneType}
-            </span>
-          ))}
+          {isDrone
+            ? uniqueDroneTypes.map((droneType) => (
+                <span
+                  key={droneType}
+                  className={`drone-type-badge ${getDroneTypeClass(droneType)}`}
+                >
+                  {droneType}
+                </span>
+              ))
+            : uniqueLauncherTypes.map((launcherType) => (
+                <span
+                  key={launcherType}
+                  className={`drone-type-badge ${getLauncherTypeClass(launcherType)}`}
+                >
+                  {LauncherType[launcherType]}
+                </span>
+              ))}
         </div>
       </div>
     </div>
