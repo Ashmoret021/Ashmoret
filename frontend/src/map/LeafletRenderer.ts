@@ -248,7 +248,7 @@ export class LeafletRenderer {
     for (const [, ivs] of this.interceptorStates) {
       if (ivs.outcome === 'success') {
         const elapsed = simulationTime - ivs.launchTime;
-        if (elapsed >= flightDuration && elapsed < flightDuration + explosionDuration) {
+        if (elapsed >= flightDuration) {
           boomingThreatIds.add(String(ivs.targetId));
         }
       }

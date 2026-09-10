@@ -56,21 +56,11 @@ export const SimulationControls: React.FC<{ onRestart?: () => void }> = ({ onRes
     if (isRunning) {
       pauseClock();
     } else if (isFinished) {
-      handleRestart();
+      onRestart?.();
+      startClock();
     } else if (isPaused) {
       resumeClock();
     } else {
-      startClock();
-    }
-  };
-
-  const handleRestart = () => {
-    if (onRestart) {
-      onRestart();
-      startClock();
-    } else {
-      stopClock();
-      setState({ simulationTime: 0 });
       startClock();
     }
   };
@@ -192,7 +182,7 @@ export const SimulationControls: React.FC<{ onRestart?: () => void }> = ({ onRes
 
           <Tooltip title="אפס">
             <IconButton
-              onClick={handleRestart}
+              onClick={onRestart}
               sx={{
                 backgroundColor: 'rgba(255, 255, 255, 0.1)',
                 color: '#f8fafc',
