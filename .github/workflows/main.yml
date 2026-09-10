@@ -1,0 +1,16 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - '*'
+
+jobs:
+  pipeline:
+    uses: Ashmoret021/Gitops/.github/workflows/main.yml@main
+    with:
+      TAG: "latest"
+      MADOR: "ashmoret"
+    secrets: inherit

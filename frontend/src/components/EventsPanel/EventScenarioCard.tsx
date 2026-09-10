@@ -1,7 +1,6 @@
 import React from 'react';
-import { ChevronLeft, Crosshair, MapPin } from 'lucide-react';
+import { ChevronLeft, Target, Crosshair } from 'lucide-react';
 import { ScenarioItem, SeverityLevel } from '../../types/simulation';
-import { DroneType } from '../../../../types/types';
 import './EventsPanel.css';
 
 interface EventScenarioCardProps {
@@ -28,24 +27,20 @@ export const EventScenarioCard: React.FC<EventScenarioCardProps> = ({
     }
   };
 
-  const getDroneTypeClass = (droneType: DroneType): string => {
-    switch (droneType) {
-      case DroneType.FalconLongX4:
+  const getDroneTypeClass = (type: string): string => {
+    switch (type.toUpperCase()) {
+      case 'A':
         return 'badge-type-a';
-      case DroneType.LoadBeeM2:
+      case 'B':
         return 'badge-type-b';
-      case DroneType.NanoSwarmQ9:
+      case 'C':
         return 'badge-type-c';
-      case DroneType.SkyMiteC7:
+      case 'D':
         return 'badge-type-d';
       default:
         return 'badge-type-default';
     }
   };
-
-  const uniqueDroneTypes = Array.from(
-    new Set(scenario.drones?.map((drone) => drone.type) || [])
-  );
 
   return (
     <div
@@ -54,38 +49,33 @@ export const EventScenarioCard: React.FC<EventScenarioCardProps> = ({
       role="button"
       tabIndex={0}
     >
-      {/* Top Header Row: Title on right, Severity Badge on left */}
+      {/* Top Header Row: Severity Badge and Title */}
       <div className="card-top-row">
+        <span className={`severity-tag severity-${scenario.severity}`}>
+          {getSeverityLabel(scenario.severity)}
+        </span>
+
         <div className="scenario-title-wrap">
           {isSelected && <ChevronLeft size={16} className="selected-chevron" />}
           <h4 className="scenario-title">{scenario.title}</h4>
         </div>
-
-        <span className={`severity-tag severity-${scenario.severity}`}>
-          {getSeverityLabel(scenario.severity)}
-        </span>
       </div>
 
       {/* Second Row: Event Type and Drone Count */}
       <div className="card-meta-row">
-        <div className="scenario-kind">
-          <span className="meta-label">סוג:</span>
-          <span className="meta-value">{scenario.type}</span>
+        <div className="drone-count-indicator">
+          <Target size={14} className="meta-icon" />
+          <span>{scenario.droneCount} רחפנים</span>
         </div>
 
-        <div className="drone-count-indicator">
-          <Crosshair size={13} className="meta-icon" />
-          <span>{scenario.drones.length} רחפנים</span>
+        <div className="scenario-kind">
+          <span className="meta-label">סוג:</span>
+          <span className="meta-value">{scenario.typeLabel}</span>
         </div>
       </div>
 
       {/* Third Row: Entry Points (Locations) */}
       <div className="card-locations-row">
-        <div className="entry-point-label-wrap">
-          <MapPin size={13} className="meta-icon" />
-          <span className="meta-label">חדירה:</span>
-        </div>
-
         <div className="entry-point-tags">
           {scenario.entryPoints.map((point) => (
             <span key={point} className="location-tag">
@@ -93,19 +83,24 @@ export const EventScenarioCard: React.FC<EventScenarioCardProps> = ({
             </span>
           ))}
         </div>
+
+        <div className="entry-point-label-wrap">
+          <Crosshair size={13} className="meta-icon" />
+          <span className="meta-label">חדירה:</span>
+        </div>
       </div>
 
       {/* Fourth Row: Drone Types */}
       <div className="card-drone-types-row">
-        <span className="meta-label">סוגי רחפנים:</span>
-
         <div className="drone-type-badges">
-          {uniqueDroneTypes.map((droneType) => (
-            <span key={droneType} className={`drone-type-badge ${getDroneTypeClass(droneType)}`}>
-              {droneType}
+          {scenario.droneTypes.map((type) => (
+            <span key={type} className={`drone-type-badge ${getDroneTypeClass(type)}`}>
+              {type}
             </span>
           ))}
         </div>
+
+        <span className="meta-label">סוגי רחפנים:</span>
       </div>
     </div>
   );

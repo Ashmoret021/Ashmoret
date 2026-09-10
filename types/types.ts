@@ -64,3 +64,17 @@ export const InterceptorRange: Record<InterceptorType, number> = {
   [InterceptorType.SwarmMist5]: 5000,
   [InterceptorType.MicroNetR]: 7000,
 };
+
+export type LauncherGroup = {
+  id: number;
+  name: string;
+  description?: string;
+  launchers: Launcher[];
+};
+
+export type DroneGroup = {
+  id: number;
+  name: string;
+  description?: string;
+  drones: Drone[];
+};

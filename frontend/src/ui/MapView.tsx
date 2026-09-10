@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
@@ -7,10 +7,11 @@ export interface MapViewProps {
   zoom?: number;
   onMapReady?: (map: L.Map) => void;
   handleMapReady?: (map: L.Map) => void;
+  rulerActive?: boolean;
 }
 
 const DEFAULT_CENTER: [number, number] = [31.0461, 34.8516];
-const DEFAULT_ZOOM = 7;
+const DEFAULT_ZOOM = 6;
 
 /**
  * Geographic bounds that constrain the map view to the Middle East region.
@@ -28,11 +29,18 @@ export const MapView: React.FC<MapViewProps> = React.memo(
     center = DEFAULT_CENTER,
     zoom = DEFAULT_ZOOM,
     onMapReady,
+    handleMapReady,
+    rulerActive = false,
   }) => {
     const mapRef = useRef<HTMLDivElement | null>(null);
     const mapInstanceRef = useRef<L.Map | null>(null);
     const onMapReadyRef = useRef(onMapReady);
     onMapReadyRef.current = onMapReady;
+    const rulerStateRef = useRef<{
+      points: L.LatLng[];
+      markers: L.Marker[];
+      line: L.Polyline | null;
+    }>({ points: [], markers: [], line: null });
 
     useEffect(() => {
       if (!mapRef.current || mapInstanceRef.current) {
@@ -44,7 +52,7 @@ export const MapView: React.FC<MapViewProps> = React.memo(
         zoomControl: false,
         // Hard-lock panning to the Middle East; viscosity=1 creates a solid wall
         maxBounds: MIDDLE_EAST_BOUNDS,
-        maxBoundsViscosity: 0.5,
+        maxBoundsViscosity: 1.0,
         minZoom: MIN_ZOOM,
       }).setView(center, zoom);
 
@@ -68,18 +76,89 @@ export const MapView: React.FC<MapViewProps> = React.memo(
       };
     }, []);
 
+    // --- Ruler helpers ---
+    const clearRuler = () => {
+      const map = mapInstanceRef.current;
+      if (!map) return;
+      const rs = rulerStateRef.current;
+      rs.markers.forEach((m) => map.removeLayer(m));
+      if (rs.line) map.removeLayer(rs.line); // also removes its bound tooltip
+      rulerStateRef.current = { points: [], markers: [], line: null };
+    };
+
+    useEffect(() => {
+      const map = mapInstanceRef.current;
+      if (!map) return;
+
+      const handleRulerClick = (e: L.LeafletMouseEvent) => {
+        const rs = rulerStateRef.current;
+
+        if (rs.points.length >= 2) {
+          clearRuler();
+        }
+
+        const dotIcon = L.divIcon({
+          className: "",
+          html: `<div style="width:10px;height:10px;border-radius:50%;background:#e53935;border:2px solid #ffffff; background: #29ce31;box-shadow:0 0 4px rgba(0,0,0,.5);"></div>`,
+          iconSize: [10, 10],
+          iconAnchor: [5, 5],
+        });
+
+        const marker = L.marker(e.latlng, { icon: dotIcon }).addTo(map);
+        rulerStateRef.current.points.push(e.latlng);
+        rulerStateRef.current.markers.push(marker);
+
+        if (rulerStateRef.current.points.length === 2) {
+          const [p1, p2] = rulerStateRef.current.points;
+          const distKm = (p1.distanceTo(p2) / 1000).toFixed(2);
+
+          const line = L.polyline([p1, p2], {
+            color: "#29ce31",
+            weight: 2,
+            dashArray: "6 4",
+          }).addTo(map);
+
+          const mid = L.latLng((p1.lat + p2.lat) / 2, (p1.lng + p2.lng) / 2);
+
+          line
+            .bindTooltip(`${distKm} ק"מ`, {
+              permanent: true,
+              direction: "center",
+            })
+            .openTooltip(mid);
+
+          rulerStateRef.current.line = line;
+        }
+      };
+
+      if (rulerActive) {
+        map.getContainer().style.cursor = "crosshair";
+        map.on("click", handleRulerClick);
+      } else {
+        map.getContainer().style.cursor = "";
+        map.off("click", handleRulerClick);
+        clearRuler();
+      }
+
+      return () => {
+        map.off("click", handleRulerClick);
+      };
+    }, [rulerActive]);
+
     return (
-      <div
-        ref={mapRef}
-        style={{
-          width: "100%",
-          height: "100%",
-          position: "absolute",
-          top: 0,
-          left: 0,
-          zIndex: 0,
-        }}
-      />
+      <>
+        <div
+          ref={mapRef}
+          style={{
+            width: "100%",
+            height: "100%",
+            position: "absolute",
+            top: 0,
+            left: 0,
+            zIndex: 0,
+          }}
+        />
+      </>
     );
   },
 );

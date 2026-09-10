@@ -1,0 +1,11 @@
+# Build context for frontend/Dockerfile is the repo root, so paths here are
+# relative to the repo root.
+**/node_modules
+**/dist
+**/.env
+**/.env.local
+**/*.tsbuildinfo
+**/npm-debug.log
+.git
+.gitignore
+backend
