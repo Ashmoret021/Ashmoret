@@ -5,7 +5,6 @@ import {
   Radio,
   Wifi,
   ShieldCheck,
-  Crosshair,
   Ruler,
   Layers3,
 } from "lucide-react";
@@ -68,13 +67,11 @@ export const Header: React.FC<HeaderProps> = ({
       <div className="header-right">
         <div className="system-branding">
           <div className="brand-logo-container">
-            {logoSrc ? (
-              <img src={logoSrc} alt="System Logo" className="brand-logo-img" />
-            ) : (
-              <div className="brand-logo-badge">
-                <Crosshair className="brand-crosshair-icon" size={20} />
-              </div>
-            )}
+            <img
+              src={logoSrc || "/ICON.jpg"}
+              alt="Ashmoret logo"
+              className="brand-logo-img"
+            />
           </div>
           <div className="brand-titles">
             <h1 className="system-title">אשמורת</h1>
