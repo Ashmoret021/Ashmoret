@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Layers, Plus, ChevronRight, ChevronLeft } from 'lucide-react';
 import { EventScenarioCard } from './EventScenarioCard';
 import { EventsFilter, EventTypeFilter, DroneCountFilter } from './EventsFilter';
@@ -16,8 +16,8 @@ interface EventsPanelProps {
 }
 
 export const EventsPanel: React.FC<EventsPanelProps> = ({
-  scenarios,
-  selectedScenarioId = 'sc-2',
+  scenarios = INITIAL_SCENARIOS,
+  selectedScenarioId,
   isOpen: controlledIsOpen,
   onToggleOpen,
   onScenarioSelect,
@@ -26,7 +26,12 @@ export const EventsPanel: React.FC<EventsPanelProps> = ({
   const [internalIsOpen, setInternalIsOpen] = useState(true);
   const isOpen = controlledIsOpen !== undefined ? controlledIsOpen : internalIsOpen;
 
-  const [activeScenarioId, setActiveScenarioId] = useState<string>(selectedScenarioId);
+  const [activeScenarioId, setActiveScenarioId] = useState<string | undefined>(selectedScenarioId);
+
+  useEffect(() => {
+    setActiveScenarioId(selectedScenarioId);
+  }, [selectedScenarioId]);
+
   const [eventTypeFilter, setEventTypeFilter] = useState<EventTypeFilter>('all');
   const [droneCountFilter, setDroneCountFilter] = useState<DroneCountFilter>('all');
 
