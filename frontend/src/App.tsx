@@ -273,6 +273,23 @@ export const App = () => {
                   bundle.interceptorState,
                 );
 
+                const interceptorId = bundle.interceptorState.id;
+                const freshState = getState();
+                const updatedInterceptors = {
+                  ...freshState.interceptors,
+                  [interceptorId]: {
+                    id: interceptorId,
+                    launcherId: decision.defenseSystemId,
+                    targetDroneId: targetIdNum,
+                    type: decision.interceptorType,
+                    location: bundle.interceptorState.startPosition,
+                    progress: 0,
+                    status: 'flying' as const,
+                    launchedAt: simTime,
+                  },
+                };
+                setState({ interceptors: updatedInterceptors });
+
                 appendLog(
                   "launch",
                   "שיגור מיירט",
@@ -284,15 +301,23 @@ export const App = () => {
                 const checkRemoval = onTick((_dt, currentSimTime) => {
                   if (currentSimTime >= arrivalSimTime) {
                     const s = getState();
+                    const nextInterceptors = { ...s.interceptors };
+                    if (nextInterceptors[interceptorId]) {
+                      nextInterceptors[interceptorId] = {
+                        ...nextInterceptors[interceptorId],
+                        status: 'intercepted' as const,
+                      };
+                    }
+
                     if (s.threats[targetIdNum]) {
-                      const updated = {
+                      const updatedThreats = {
                         ...s.threats,
                         [targetIdNum]: {
                           ...s.threats[targetIdNum],
                           logicalStatus: "intercepted" as const,
                         },
                       };
-                      setState({ threats: updated });
+                      setState({ threats: updatedThreats, interceptors: nextInterceptors });
 
                       appendLog(
                         "interception",
@@ -300,6 +325,8 @@ export const App = () => {
                         `איום #${targetIdNum} (סוג: ${s.threats[targetIdNum].type ?? "אויב"}) יורט בהצלחה`,
                         s.threats[targetIdNum].location,
                       );
+                    } else {
+                      setState({ interceptors: nextInterceptors });
                     }
                     checkRemoval();
                   }
