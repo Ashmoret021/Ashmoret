@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { ChevronLeft } from 'lucide-react';
 import './SideNavDrawer.css';
 
-export type NavViewMode = 'summary' | 'interceptors' | 'drones' | 'home' | 'map';
+export type NavViewMode = 'summary' | 'interceptors' | 'drones';
 
 interface NavOption {
   id: NavViewMode;
@@ -10,8 +10,6 @@ interface NavOption {
 }
 
 const NAV_OPTIONS: NavOption[] = [
-  { id: 'home', label: 'מסך בית' },
-  { id: 'map', label: 'מילון כלי תעופה' },
   { id: 'summary', label: 'סיכום סימולציות' },
   { id: 'interceptors', label: 'פריסת מיירטים' },
   { id: 'drones', label: 'פריסת רחפנים' },

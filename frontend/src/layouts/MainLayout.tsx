@@ -146,7 +146,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
         <SideNavDrawer activeView={navView} onViewChange={setNavView} />
 
         {/* Events Panel (פריסת רחפנים / תרחישים) */}
-        {navView === "home" && (
+        {navView === "drones" && (
           <EventsPanel
             scenarios={INITIAL_SCENARIOS}
             selectedScenarioId={selectedScenario.id}
