@@ -162,7 +162,7 @@ App.tsx component body
   }
   ```
 
-- [ ] **1.2 עדכון `App.tsx` — הוסף import**
+- [x] **1.2 עדכון `App.tsx` — הוסף import**
 
   ליד שאר imports של `./simulation/`:
   ```ts

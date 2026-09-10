@@ -28,6 +28,7 @@ import {
   stopClock,
 } from "./simulation/SimulationContext";
 import { sampleScenario } from "./simulation/sampleScenario";
+import { activateWaitingThreats, advanceThreatPositions } from "./simulation/ThreatEngine";
 import { LeafletRenderer } from "./map/LeafletRenderer";
 import { visualEventQueue } from "./visual/VisualEventQueue";
 import { processEngagementDecision } from "./visual/VisualEventBuilder";
