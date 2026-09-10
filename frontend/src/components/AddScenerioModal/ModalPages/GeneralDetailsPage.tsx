@@ -115,8 +115,6 @@ export const GeneralDetailsPage: FC<GeneralDetailsPageProps> = ({
 }) => {
   const [internalType, setInternalType] = useState("יחיד");
 
-  const scenarioType = data?.scenarioType ?? internalType;
-
   const handleNameChange = (event: ChangeEvent<HTMLInputElement>) => {
     const val = event.target.value;
     onNameChange?.(val);
@@ -156,7 +154,7 @@ export const GeneralDetailsPage: FC<GeneralDetailsPageProps> = ({
           <Select
             labelId="scenario-type-label"
             id="scenario-type-select"
-            value={scenarioType}
+            value={internalType}
             label="סוג תרחיש"
             onChange={handleSelectChange}
             MenuProps={menuPropsSx}
