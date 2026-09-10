@@ -7,7 +7,7 @@ export const getInterceptorTypeRepository = () => AppDataSource.getRepository(In
 export const getAllInterceptorTypes = async (): Promise<InterceptorType[]> => {
   const repo = getInterceptorTypeRepository();
   return repo.find({
-    relations: { launcherAmmunition: true },
+    relations: { launcherAmmunition: true, typeAmmunition: { launcherType: true } },
     order: { id: 'ASC' },
   });
 };
@@ -16,7 +16,7 @@ export const getInterceptorTypeById = async (id: number): Promise<InterceptorTyp
   const repo = getInterceptorTypeRepository();
   return repo.findOne({
     where: { id },
-    relations: { launcherAmmunition: true },
+    relations: { launcherAmmunition: true, typeAmmunition: { launcherType: true } },
   });
 };
 
