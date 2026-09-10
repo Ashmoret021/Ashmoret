@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import {
   Settings,
   Bell,
@@ -38,6 +38,24 @@ export const Header: React.FC<HeaderProps> = ({
   onLayersToggle,
   layersMenuRef,
 }) => {
+  useEffect(() => {
+    if (!layersOpen || !onLayersToggle) return;
+
+    const handleOutsidePointerDown = (event: PointerEvent) => {
+      const menuAnchor = layersMenuRef?.current;
+      const target = event.target as Node | null;
+
+      if (menuAnchor && target && !menuAnchor.contains(target)) {
+        onLayersToggle();
+      }
+    };
+
+    document.addEventListener("pointerdown", handleOutsidePointerDown);
+    return () => {
+      document.removeEventListener("pointerdown", handleOutsidePointerDown);
+    };
+  }, [layersOpen, onLayersToggle, layersMenuRef]);
+
   return (
     <header className="tactical-header">
       {/* Right section: System branding, logo, and active mode (RTL first) */}
