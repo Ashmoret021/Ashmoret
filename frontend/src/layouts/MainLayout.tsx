@@ -18,6 +18,7 @@ import {
 import L, { Map } from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { useSimulation } from "../simulation/useSimulation";
+import { AddScenerioModal } from '../components';
 import { MapView } from "../ui/MapView";
 import { LaunchersDronesPanel } from "../components/LaunchersDronesPanel/LaunchersDronesPanel";
 
@@ -62,6 +63,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
   const [selectedGroup, setSelectedGroup] = useState<DroneGroup | LauncherGroup | null>(null);
 
   const [isStateDialogOpen, setIsStateDialogOpen] = useState(false);
+  const [isCreateScenarioOpen, setIsCreateScenarioOpen] = useState(false);
   const { state, pauseClock, resumeClock, setSpeed, startClock } =
     useSimulation();
 
@@ -84,7 +86,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
   };
 
   const handleCreateScenario = () => {
-    console.log("Open Create Scenario modal / action");
+    setIsCreateScenarioOpen(true);
   };
 
   const handleGroupSelect = (group: DroneGroup | LauncherGroup) => {
@@ -189,6 +191,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
                 onCreateScenario={handleCreateScenario}
               />
             )}
+            <AddScenerioModal open={isCreateScenarioOpen} onClose={() => setIsCreateScenarioOpen(false)}/>
 
             {navView === "interceptors" && (
               <LaunchersDronesPanel
