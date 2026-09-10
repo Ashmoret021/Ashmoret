@@ -1,5 +1,5 @@
 import type { DroneSimState } from './SimulationContext';
-import type { Location } from '../../../types/types';
+import type { Location } from '../types/types';
 
 const EARTH_RADIUS_M = 6_371_000;
 

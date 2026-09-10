@@ -198,7 +198,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
     <div className="main-layout-container">
       {/* Top Application Header */}
       <Header
-        scenarioName={selectedScenario?.title || defaultScenarioName}
+        scenarioName={selectedScenario?.name || defaultScenarioName}
         simId={simId}
         isConnected={true}
         isSafeMode={true}
@@ -321,6 +321,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
                 onToggleOpen={() => setIsSidebarOpen((open) => !open)}
                 onGroupSelect={handleGroupSelect}
                 onCreateGroup={onAddInterceptorGroup ?? handleCreateGroup}
+                type="launcher"
               />
             )}
             {navView === "drones" && (
@@ -331,6 +332,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
                 onToggleOpen={() => setIsSidebarOpen((open) => !open)}
                 onGroupSelect={handleGroupSelect}
                 onCreateGroup={onAddDroneGroup ?? handleCreateGroup}
+                type="drone"
               />
             )}
           </>
