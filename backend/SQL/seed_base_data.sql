@@ -1,93 +1,89 @@
 -- ============================================================
 -- ASHMORET - DEMO DATA
--- Data Manipulation Language (DML)
+-- נתוני הדגמה
 -- ============================================================
---
--- All SERIAL IDs are generated automatically by PostgreSQL.
--- No explicit IDs are supplied for SERIAL columns.
---
--- Foreign keys are resolved using subqueries against the
--- corresponding reference/group records.
--- ============================================================
-
 
 -- ============================================================
 -- 1. STATIC REFERENCE TABLES
+-- טבלאות עזר סטטיות
 -- ============================================================
 
 INSERT INTO scenario.drone_type (name)
 VALUES
-    ('Quadcopter'),
-    ('Fixed Wing'),
-    ('VTOL'),
-    ('Surveillance Drone');
+    ('רחפן מרובע'),
+    ('רחפן כנף קבועה'),
+    ('רחפן המראה ונחיתה אנכית'),
+    ('רחפן תצפית');
 
 
 INSERT INTO scenario.launcher_type (name, reload_time)
 VALUES
-    ('Surface Launcher', 60),
-    ('Mobile Launcher', 90),
-    ('Heavy Launcher', 120);
+    ('משגר קרקעי', 60),
+    ('משגר נייד', 90),
+    ('משגר כבד', 120);
 
 
 INSERT INTO scenario.interceptor_type (name)
 VALUES
-    ('Interceptor A'),
-    ('Interceptor B'),
-    ('Interceptor C'),
-    ('Interceptor D');
+    ('מיירט א'),
+    ('מיירט ב'),
+    ('מיירט ג'),
+    ('מיירט ד');
 
 
 -- ============================================================
 -- 2. DRONE GROUPS
+-- קבוצות רחפנים
 -- ============================================================
 
 INSERT INTO scenario.drones_group (name, description)
 VALUES
     (
-        'Alpha Drones',
-        'Primary drone group for the northern scenario'
+        'רחפני אלפא',
+        'קבוצת הרחפנים הראשית עבור התרחיש הצפוני'
     ),
     (
-        'Bravo Drones',
-        'Primary drone group for the southern scenario'
+        'רחפני בראבו',
+        'קבוצת הרחפנים הראשית עבור התרחיש הדרומי'
     ),
     (
-        'Charlie Drones',
-        'Long-range surveillance drone group'
+        'רחפני צ׳רלי',
+        'קבוצת רחפני תצפית לטווח ארוך'
     ),
     (
-        'Training Drones',
-        'Drones used for training and testing scenarios'
+        'רחפני אימון',
+        'רחפנים המשמשים לתרחישי אימון ובדיקות'
     );
 
 
 -- ============================================================
 -- 3. LAUNCHER GROUPS
+-- קבוצות משגרים
 -- ============================================================
 
 INSERT INTO scenario.launchers_group (name, description)
 VALUES
     (
-        'Northern Launchers',
-        'Launcher group positioned in the northern area'
+        'משגרי הצפון',
+        'קבוצת משגרים הממוקמת באזור הצפוני'
     ),
     (
-        'Southern Launchers',
-        'Launcher group positioned in the southern area'
+        'משגרי הדרום',
+        'קבוצת משגרים הממוקמת באזור הדרומי'
     ),
     (
-        'Central Launchers',
-        'Launcher group positioned in the central area'
+        'משגרי המרכז',
+        'קבוצת משגרים הממוקמת באזור המרכזי'
     ),
     (
-        'Training Launchers',
-        'Launchers used for training and testing scenarios'
+        'משגרי אימון',
+        'משגרים המשמשים לתרחישי אימון ובדיקות'
     );
 
 
 -- ============================================================
 -- 4. SCENARIOS
+-- תרחישים
 -- ============================================================
 
 INSERT INTO scenario.scenario (
@@ -100,52 +96,53 @@ INSERT INTO scenario.scenario (
 VALUES
     (
         'SCENARIO-001',
-        'Northern Defense',
+        'הגנה צפונית',
         (SELECT id
          FROM scenario.drones_group
-         WHERE name = 'Alpha Drones'),
+         WHERE name = 'רחפני אלפא'),
         (SELECT id
          FROM scenario.launchers_group
-         WHERE name = 'Northern Launchers'),
-        'Single'
+         WHERE name = 'משגרי הצפון'),
+        'יחיד'
     ),
     (
         'SCENARIO-002',
-        'Southern Defense',
+        'הגנה דרומית',
         (SELECT id
          FROM scenario.drones_group
-         WHERE name = 'Bravo Drones'),
+         WHERE name = 'רחפני בראבו'),
         (SELECT id
          FROM scenario.launchers_group
-         WHERE name = 'Southern Launchers'),
-        'Multi'
+         WHERE name = 'משגרי הדרום'),
+        'רב-מערכתי'
     ),
     (
         'SCENARIO-003',
-        'Central Surveillance',
+        'תצפית מרכזית',
         (SELECT id
          FROM scenario.drones_group
-         WHERE name = 'Charlie Drones'),
+         WHERE name = 'רחפני צ׳רלי'),
         (SELECT id
          FROM scenario.launchers_group
-         WHERE name = 'Central Launchers'),
-        'Single'
+         WHERE name = 'משגרי המרכז'),
+        'יחיד'
     ),
     (
         'SCENARIO-004',
-        'Training Exercise',
+        'תרגיל אימון',
         (SELECT id
          FROM scenario.drones_group
-         WHERE name = 'Training Drones'),
+         WHERE name = 'רחפני אימון'),
         (SELECT id
          FROM scenario.launchers_group
-         WHERE name = 'Training Launchers'),
-        'Multi'
+         WHERE name = 'משגרי אימון'),
+        'רב-מערכתי'
     );
 
 
 -- ============================================================
 -- 5. DRONES
+-- רחפנים
 -- ============================================================
 
 INSERT INTO scenario.drone (
@@ -161,7 +158,7 @@ INSERT INTO scenario.drone (
 VALUES
     (
         (SELECT id FROM scenario.drones_group
-         WHERE name = 'Alpha Drones'),
+         WHERE name = 'רחפני אלפא'),
         34.781800,
         32.085300,
         120,
@@ -169,11 +166,11 @@ VALUES
         45,
         25,
         (SELECT id FROM scenario.drone_type
-         WHERE name = 'Quadcopter')
+         WHERE name = 'רחפן מרובע')
     ),
     (
         (SELECT id FROM scenario.drones_group
-         WHERE name = 'Alpha Drones'),
+         WHERE name = 'רחפני אלפא'),
         34.790200,
         32.090100,
         150,
@@ -181,11 +178,11 @@ VALUES
         90,
         30,
         (SELECT id FROM scenario.drone_type
-         WHERE name = 'Quadcopter')
+         WHERE name = 'רחפן מרובע')
     ),
     (
         (SELECT id FROM scenario.drones_group
-         WHERE name = 'Alpha Drones'),
+         WHERE name = 'רחפני אלפא'),
         34.800500,
         32.095500,
         200,
@@ -193,11 +190,11 @@ VALUES
         180,
         35,
         (SELECT id FROM scenario.drone_type
-         WHERE name = 'Fixed Wing')
+         WHERE name = 'רחפן כנף קבועה')
     ),
     (
         (SELECT id FROM scenario.drones_group
-         WHERE name = 'Bravo Drones'),
+         WHERE name = 'רחפני בראבו'),
         34.810000,
         31.950000,
         100,
@@ -205,11 +202,11 @@ VALUES
         270,
         20,
         (SELECT id FROM scenario.drone_type
-         WHERE name = 'VTOL')
+         WHERE name = 'רחפן המראה ונחיתה אנכית')
     ),
     (
         (SELECT id FROM scenario.drones_group
-         WHERE name = 'Bravo Drones'),
+         WHERE name = 'רחפני בראבו'),
         34.820000,
         31.960000,
         130,
@@ -217,11 +214,11 @@ VALUES
         315,
         28,
         (SELECT id FROM scenario.drone_type
-         WHERE name = 'Quadcopter')
+         WHERE name = 'רחפן מרובע')
     ),
     (
         (SELECT id FROM scenario.drones_group
-         WHERE name = 'Charlie Drones'),
+         WHERE name = 'רחפני צ׳רלי'),
         34.750000,
         32.000000,
         250,
@@ -229,11 +226,11 @@ VALUES
         135,
         40,
         (SELECT id FROM scenario.drone_type
-         WHERE name = 'Surveillance Drone')
+         WHERE name = 'רחפן תצפית')
     ),
     (
         (SELECT id FROM scenario.drones_group
-         WHERE name = 'Charlie Drones'),
+         WHERE name = 'רחפני צ׳רלי'),
         34.760000,
         32.010000,
         300,
@@ -241,11 +238,11 @@ VALUES
         225,
         45,
         (SELECT id FROM scenario.drone_type
-         WHERE name = 'Fixed Wing')
+         WHERE name = 'רחפן כנף קבועה')
     ),
     (
         (SELECT id FROM scenario.drones_group
-         WHERE name = 'Training Drones'),
+         WHERE name = 'רחפני אימון'),
         34.770000,
         32.020000,
         80,
@@ -253,12 +250,13 @@ VALUES
         0,
         15,
         (SELECT id FROM scenario.drone_type
-         WHERE name = 'Quadcopter')
+         WHERE name = 'רחפן מרובע')
     );
 
 
 -- ============================================================
 -- 6. LAUNCHERS
+-- משגרים
 -- ============================================================
 
 INSERT INTO scenario.launcher (
@@ -274,85 +272,85 @@ INSERT INTO scenario.launcher (
 VALUES
     (
         (SELECT id FROM scenario.launchers_group
-         WHERE name = 'Northern Launchers'),
+         WHERE name = 'משגרי הצפון'),
         34.770000,
         32.070000,
         50,
         10,
         (SELECT id FROM scenario.launcher_type
-         WHERE name = 'Surface Launcher'),
+         WHERE name = 'משגר קרקעי'),
         4,
         TRUE
     ),
     (
         (SELECT id FROM scenario.launchers_group
-         WHERE name = 'Northern Launchers'),
+         WHERE name = 'משגרי הצפון'),
         34.775000,
         32.075000,
         55,
         12,
         (SELECT id FROM scenario.launcher_type
-         WHERE name = 'Mobile Launcher'),
+         WHERE name = 'משגר נייד'),
         3,
         TRUE
     ),
     (
         (SELECT id FROM scenario.launchers_group
-         WHERE name = 'Southern Launchers'),
+         WHERE name = 'משגרי הדרום'),
         34.830000,
         31.940000,
         45,
         8,
         (SELECT id FROM scenario.launcher_type
-         WHERE name = 'Surface Launcher'),
+         WHERE name = 'משגר קרקעי'),
         5,
         TRUE
     ),
     (
         (SELECT id FROM scenario.launchers_group
-         WHERE name = 'Southern Launchers'),
+         WHERE name = 'משגרי הדרום'),
         34.835000,
         31.945000,
         60,
         15,
         (SELECT id FROM scenario.launcher_type
-         WHERE name = 'Heavy Launcher'),
+         WHERE name = 'משגר כבד'),
         2,
         FALSE
     ),
     (
         (SELECT id FROM scenario.launchers_group
-         WHERE name = 'Central Launchers'),
+         WHERE name = 'משגרי המרכז'),
         34.760000,
         32.030000,
         70,
         20,
         (SELECT id FROM scenario.launcher_type
-         WHERE name = 'Mobile Launcher'),
+         WHERE name = 'משגר נייד'),
         4,
         TRUE
     ),
     (
         (SELECT id FROM scenario.launchers_group
-         WHERE name = 'Central Launchers'),
+         WHERE name = 'משגרי המרכז'),
         34.765000,
         32.035000,
         75,
         25,
         (SELECT id FROM scenario.launcher_type
-         WHERE name = 'Surface Launcher'),
+         WHERE name = 'משגר קרקעי'),
         6,
         TRUE
     ),
     (
         (SELECT id FROM scenario.launchers_group
-         WHERE name = 'Training Launchers'),
+         WHERE name = 'משגרי אימון'),
         34.750000,
         32.010000,
         30,
         5,
         (SELECT id FROM scenario.launcher_type
-         WHERE name = 'Mobile Launcher'),
+         WHERE name = 'משגר נייד'),
         2,
         TRUE
     );
@@ -360,10 +358,7 @@ VALUES
 
 -- ============================================================
 -- 7. LAUNCHER AMMUNITION
--- ============================================================
---
--- Launcher IDs are generated automatically, so they are
--- resolved using the launcher's unique position/group.
+-- תחמושת משגרים
 -- ============================================================
 
 INSERT INTO scenario.launcher_ammunition (
@@ -372,19 +367,19 @@ INSERT INTO scenario.launcher_ammunition (
     amount
 )
 VALUES
-    -- Northern Launcher 1
+    -- משגר צפוני 1
     (
         (
             SELECT l.id
             FROM scenario.launcher l
             JOIN scenario.launchers_group lg
                 ON lg.id = l.launchers_group_id
-            WHERE lg.name = 'Northern Launchers'
+            WHERE lg.name = 'משגרי הצפון'
               AND l.longitude = 34.770000
               AND l.latitude = 32.070000
         ),
         (SELECT id FROM scenario.interceptor_type
-         WHERE name = 'Interceptor A'),
+         WHERE name = 'מיירט א'),
         10
     ),
     (
@@ -393,12 +388,12 @@ VALUES
             FROM scenario.launcher l
             JOIN scenario.launchers_group lg
                 ON lg.id = l.launchers_group_id
-            WHERE lg.name = 'Northern Launchers'
+            WHERE lg.name = 'משגרי הצפון'
               AND l.longitude = 34.770000
               AND l.latitude = 32.070000
         ),
         (SELECT id FROM scenario.interceptor_type
-         WHERE name = 'Interceptor B'),
+         WHERE name = 'מיירט ב'),
         5
     ),
     (
@@ -407,28 +402,28 @@ VALUES
             FROM scenario.launcher l
             JOIN scenario.launchers_group lg
                 ON lg.id = l.launchers_group_id
-            WHERE lg.name = 'Northern Launchers'
+            WHERE lg.name = 'משגרי הצפון'
               AND l.longitude = 34.770000
               AND l.latitude = 32.070000
         ),
         (SELECT id FROM scenario.interceptor_type
-         WHERE name = 'Interceptor C'),
+         WHERE name = 'מיירט ג'),
         2
     ),
 
-    -- Northern Launcher 2
+    -- משגר צפוני 2
     (
         (
             SELECT l.id
             FROM scenario.launcher l
             JOIN scenario.launchers_group lg
                 ON lg.id = l.launchers_group_id
-            WHERE lg.name = 'Northern Launchers'
+            WHERE lg.name = 'משגרי הצפון'
               AND l.longitude = 34.775000
               AND l.latitude = 32.075000
         ),
         (SELECT id FROM scenario.interceptor_type
-         WHERE name = 'Interceptor A'),
+         WHERE name = 'מיירט א'),
         8
     ),
     (
@@ -437,28 +432,28 @@ VALUES
             FROM scenario.launcher l
             JOIN scenario.launchers_group lg
                 ON lg.id = l.launchers_group_id
-            WHERE lg.name = 'Northern Launchers'
+            WHERE lg.name = 'משגרי הצפון'
               AND l.longitude = 34.775000
               AND l.latitude = 32.075000
         ),
         (SELECT id FROM scenario.interceptor_type
-         WHERE name = 'Interceptor B'),
+         WHERE name = 'מיירט ב'),
         4
     ),
 
-    -- Southern Launcher 1
+    -- משגר דרומי 1
     (
         (
             SELECT l.id
             FROM scenario.launcher l
             JOIN scenario.launchers_group lg
                 ON lg.id = l.launchers_group_id
-            WHERE lg.name = 'Southern Launchers'
+            WHERE lg.name = 'משגרי הדרום'
               AND l.longitude = 34.830000
               AND l.latitude = 31.940000
         ),
         (SELECT id FROM scenario.interceptor_type
-         WHERE name = 'Interceptor A'),
+         WHERE name = 'מיירט א'),
         12
     ),
     (
@@ -467,12 +462,12 @@ VALUES
             FROM scenario.launcher l
             JOIN scenario.launchers_group lg
                 ON lg.id = l.launchers_group_id
-            WHERE lg.name = 'Southern Launchers'
+            WHERE lg.name = 'משגרי הדרום'
               AND l.longitude = 34.830000
               AND l.latitude = 31.940000
         ),
         (SELECT id FROM scenario.interceptor_type
-         WHERE name = 'Interceptor C'),
+         WHERE name = 'מיירט ג'),
         6
     ),
     (
@@ -481,44 +476,44 @@ VALUES
             FROM scenario.launcher l
             JOIN scenario.launchers_group lg
                 ON lg.id = l.launchers_group_id
-            WHERE lg.name = 'Southern Launchers'
+            WHERE lg.name = 'משגרי הדרום'
               AND l.longitude = 34.830000
               AND l.latitude = 31.940000
         ),
         (SELECT id FROM scenario.interceptor_type
-         WHERE name = 'Interceptor D'),
+         WHERE name = 'מיירט ד'),
         3
     ),
 
-    -- Southern Launcher 2
+    -- משגר דרומי 2
     (
         (
             SELECT l.id
             FROM scenario.launcher l
             JOIN scenario.launchers_group lg
                 ON lg.id = l.launchers_group_id
-            WHERE lg.name = 'Southern Launchers'
+            WHERE lg.name = 'משגרי הדרום'
               AND l.longitude = 34.835000
               AND l.latitude = 31.945000
         ),
         (SELECT id FROM scenario.interceptor_type
-         WHERE name = 'Interceptor B'),
+         WHERE name = 'מיירט ב'),
         10
     ),
 
-    -- Central Launcher 1
+    -- משגר מרכזי 1
     (
         (
             SELECT l.id
             FROM scenario.launcher l
             JOIN scenario.launchers_group lg
                 ON lg.id = l.launchers_group_id
-            WHERE lg.name = 'Central Launchers'
+            WHERE lg.name = 'משגרי המרכז'
               AND l.longitude = 34.760000
               AND l.latitude = 32.030000
         ),
         (SELECT id FROM scenario.interceptor_type
-         WHERE name = 'Interceptor A'),
+         WHERE name = 'מיירט א'),
         5
     ),
     (
@@ -527,12 +522,12 @@ VALUES
             FROM scenario.launcher l
             JOIN scenario.launchers_group lg
                 ON lg.id = l.launchers_group_id
-            WHERE lg.name = 'Central Launchers'
+            WHERE lg.name = 'משגרי המרכז'
               AND l.longitude = 34.760000
               AND l.latitude = 32.030000
         ),
         (SELECT id FROM scenario.interceptor_type
-         WHERE name = 'Interceptor B'),
+         WHERE name = 'מיירט ב'),
         5
     ),
     (
@@ -541,28 +536,28 @@ VALUES
             FROM scenario.launcher l
             JOIN scenario.launchers_group lg
                 ON lg.id = l.launchers_group_id
-            WHERE lg.name = 'Central Launchers'
+            WHERE lg.name = 'משגרי המרכז'
               AND l.longitude = 34.760000
               AND l.latitude = 32.030000
         ),
         (SELECT id FROM scenario.interceptor_type
-         WHERE name = 'Interceptor D'),
+         WHERE name = 'מיירט ד'),
         2
     ),
 
-    -- Central Launcher 2
+    -- משגר מרכזי 2
     (
         (
             SELECT l.id
             FROM scenario.launcher l
             JOIN scenario.launchers_group lg
                 ON lg.id = l.launchers_group_id
-            WHERE lg.name = 'Central Launchers'
+            WHERE lg.name = 'משגרי המרכז'
               AND l.longitude = 34.765000
               AND l.latitude = 32.035000
         ),
         (SELECT id FROM scenario.interceptor_type
-         WHERE name = 'Interceptor A'),
+         WHERE name = 'מיירט א'),
         15
     ),
     (
@@ -571,28 +566,28 @@ VALUES
             FROM scenario.launcher l
             JOIN scenario.launchers_group lg
                 ON lg.id = l.launchers_group_id
-            WHERE lg.name = 'Central Launchers'
+            WHERE lg.name = 'משגרי המרכז'
               AND l.longitude = 34.765000
               AND l.latitude = 32.035000
         ),
         (SELECT id FROM scenario.interceptor_type
-         WHERE name = 'Interceptor C'),
+         WHERE name = 'מיירט ג'),
         5
     ),
 
-    -- Training Launcher
+    -- משגר אימון
     (
         (
             SELECT l.id
             FROM scenario.launcher l
             JOIN scenario.launchers_group lg
                 ON lg.id = l.launchers_group_id
-            WHERE lg.name = 'Training Launchers'
+            WHERE lg.name = 'משגרי אימון'
               AND l.longitude = 34.750000
               AND l.latitude = 32.010000
         ),
         (SELECT id FROM scenario.interceptor_type
-         WHERE name = 'Interceptor A'),
+         WHERE name = 'מיירט א'),
         5
     ),
     (
@@ -601,12 +596,12 @@ VALUES
             FROM scenario.launcher l
             JOIN scenario.launchers_group lg
                 ON lg.id = l.launchers_group_id
-            WHERE lg.name = 'Training Launchers'
+            WHERE lg.name = 'משגרי אימון'
               AND l.longitude = 34.750000
               AND l.latitude = 32.010000
         ),
         (SELECT id FROM scenario.interceptor_type
-         WHERE name = 'Interceptor B'),
+         WHERE name = 'מיירט ב'),
         3
     );
 
