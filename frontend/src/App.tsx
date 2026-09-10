@@ -560,7 +560,7 @@ export const App = () => {
             estimatedDamage="1"
             flightDistance={300}
             droneName="meofefi"
-            hebrewName="מעופפי"
+            hebrewName="מעופפי מעופף"
             onClose={() => setSelectedDrone(null)}
           />
         )}
