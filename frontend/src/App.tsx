@@ -14,6 +14,7 @@ import { SimulationControls } from "./ui/SimulationControls";
 import { SimulationStats } from "./ui/SimulationStats";
 import { Drone, DroneType } from "../../types/types";
 import DroneModal from "./components/DroneModal/DroneModal";
+import { DefenseSide } from "./components/DefenseSide/defenseSide";
 import { useCallback, useEffect, useRef, useState } from "react";
 import "leaflet/dist/leaflet.css";
 import { MapView } from "./ui/MapView";
@@ -45,6 +46,7 @@ export const App = () => {
   const engagedDronesRef = useRef<Set<number>>(new Set());
   const [layers, setLayers] = useState<string[]>(["🗺️ מפה רגילה"]);
   const [selectedDrone, setSelectedDrone] = useState<Drone | null>(null);
+  const [map, setMap] = useState<L.Map | null>(null);
 
   const tickIdRef = useRef<number>(0);
   const lastApiTickSimTimeRef = useRef<number>(-1);
@@ -345,6 +347,7 @@ export const App = () => {
   }, []);
 
   const handleMapReady = useCallback((map: L.Map) => {
+    setMap(map);
     const renderer = new LeafletRenderer(map);
     rendererRef.current = renderer;
 
@@ -531,6 +534,7 @@ export const App = () => {
         <EventLog />
         <SimulationStats />
         <SimulationControls onRestart={handleRestart} />
+        <DefenseSide map={map} />
       </div>
     </>
   );
