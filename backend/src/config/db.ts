@@ -14,6 +14,12 @@ const dbSchema = process.env.DB_SCHEMA?.trim() || 'scenario_management';
 
 export const AppDataSource = new DataSource({
   type: 'postgres',
+  host: process.env.DB_HOST || 'localhost',
+  port: Number(process.env.DB_PORT) || 5432,
+  username: process.env.DB_USER || 'pp',
+  password: process.env.DB_PASSWORD || 'postgres',
+  database: process.env.DB_NAME || 'pp',
+  schema: process.env.DB_SCHEMA || 'scenario',
   host: dbHost,
   port: dbPort,
   username: dbUser,
