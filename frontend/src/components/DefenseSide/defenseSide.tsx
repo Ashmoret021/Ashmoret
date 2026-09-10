@@ -424,6 +424,7 @@ export const DefenseSide: React.FC<DefenseSideProps> = ({
     console.log("Defense side:", {
       defenseDetails,
     });
+    onClose();
   };
 
   const handleCancel = () => {
@@ -864,7 +865,7 @@ export const DefenseSide: React.FC<DefenseSideProps> = ({
             fontFamily:
               "Arial, Helvetica, sans-serif",
             color: "#172033",
-            zIndex: 1100,
+            zIndex: 11000,
             animation:
               "defenseSideSlideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1)",
           }}

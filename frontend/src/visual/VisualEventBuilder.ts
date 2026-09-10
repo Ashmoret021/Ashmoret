@@ -13,7 +13,7 @@
  * Spec references: §12, §14, §15, §16
  */
 
-import type { Location } from '../../../types/types';
+import type { Location } from '../types/types';
 import type {
   SimulationState,
   DroneSimState,
@@ -118,23 +118,32 @@ function getPositionAtProgress(route: Location[], targetProgress: number): LatLn
 /**
  * Projects a threat's position `dt` simulation-seconds into the future.
  *
- * Uses `drone.velocity` (m/s) and the total route length to compute how much
- * additional progress the threat accumulates, then resolves the coordinate.
+ * Derives the progress rate from the threat's ACTUAL state (progress / elapsed)
+ * rather than from velocity, making it consistent with whatever movement model
+ * the engine uses (e.g. App.tsx's time-based `elapsed / flightDuration` model).
  *
- * @param threat   The DroneSimState to project.
- * @param dt       Simulation time delta in seconds to project forward.
+ * @param threat        The DroneSimState to project.
+ * @param dt            Simulation time delta in seconds to project forward.
+ * @param simulationTime Current simulation time, used to compute elapsed time.
  */
-function getThreatPositionAfter(threat: DroneSimState, dt: number): LatLng {
-  const routeLength = calculateRouteLength(threat.route);
+function getThreatPositionAfter(
+  threat: DroneSimState,
+  dt: number,
+  simulationTime: number,
+): LatLng {
+  const elapsed = simulationTime - threat.startTime;
 
-  if (routeLength === 0 || threat.velocity <= 0) {
-    // Stationary or degenerate route: stay at current position.
+  // If the threat has not started yet, or has no meaningful progress,
+  // return its current location (which may be route[0] if just activated).
+  if (elapsed <= 0 || threat.progress <= 0) {
     return { latitude: threat.location.latitude, longitude: threat.location.longitude };
   }
 
-  const distanceTravelled = threat.velocity * dt;
-  const progressDelta = distanceTravelled / routeLength;
-  const futureProgress = Math.min(1, threat.progress + progressDelta);
+  // Derive the actual progress rate from current state.
+  // This is always consistent with however the engine moves the threat
+  // (time-based, velocity-based, or otherwise).
+  const progressRate = threat.progress / elapsed; // progress-units per second
+  const futureProgress = Math.min(1, threat.progress + progressRate * dt);
 
   return getPositionAtProgress(threat.route, futureProgress);
 }
@@ -208,7 +217,7 @@ export function processEngagementDecision(
   // 3. Calculate the intercept point (spec §15)
   //    "Where will the threat be in VISUAL_INTERCEPT_DURATION_S seconds?"
   // ------------------------------------------------------------------
-  const interceptPoint = getThreatPositionAfter(threat, VISUAL_INTERCEPT_DURATION_S);
+  const interceptPoint = getThreatPositionAfter(threat, VISUAL_INTERCEPT_DURATION_S, simulationTime);
 
   // ------------------------------------------------------------------
   // 4. Build the InterceptorVisualState

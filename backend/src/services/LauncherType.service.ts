@@ -1,8 +1,9 @@
-import { AppDataSource } from '../config/db';
-import { LauncherType } from '../Entities';
-import { logger } from '../middleware/logger';
+import { AppDataSource } from "../config/db";
+import { LauncherType } from "../Entities";
+import { logger } from "../middleware/logger";
 
-export const getLauncherTypeRepository = () => AppDataSource.getRepository(LauncherType);
+export const getLauncherTypeRepository = () =>
+  AppDataSource.getRepository(LauncherType);
 
 export type LauncherTypeInput = Partial<LauncherType> & {
   reloadTime?: number;
@@ -12,11 +13,13 @@ export const getAllLauncherTypes = async (): Promise<LauncherType[]> => {
   const repo = getLauncherTypeRepository();
   return repo.find({
     relations: { launchers: true },
-    order: { id: 'ASC' },
+    order: { id: "ASC" },
   });
 };
 
-export const getLauncherTypeById = async (id: number): Promise<LauncherType | null> => {
+export const getLauncherTypeById = async (
+  id: number,
+): Promise<LauncherType | null> => {
   const repo = getLauncherTypeRepository();
   return repo.findOne({
     where: { id },
@@ -24,15 +27,16 @@ export const getLauncherTypeById = async (id: number): Promise<LauncherType | nu
   });
 };
 
-export const createLauncherType = async (data: LauncherTypeInput): Promise<LauncherType> => {
+export const createLauncherType = async (
+  data: LauncherTypeInput,
+): Promise<LauncherType> => {
   const repo = getLauncherTypeRepository();
   const reloadTime = data.reload_time ?? data.reloadTime;
   if (reloadTime === undefined) {
-    throw new Error('reload_time is required');
+    throw new Error("reload_time is required");
   }
 
   const item = repo.create({
-    id: data.id,
     name: data.name,
     reload_time: reloadTime,
   });
@@ -43,7 +47,7 @@ export const createLauncherType = async (data: LauncherTypeInput): Promise<Launc
 
 export const updateLauncherType = async (
   id: number,
-  data: Partial<LauncherTypeInput>
+  data: Partial<LauncherTypeInput>,
 ): Promise<LauncherType | null> => {
   const repo = getLauncherTypeRepository();
   const existing = await repo.findOneBy({ id });
@@ -57,7 +61,7 @@ export const updateLauncherType = async (
     updatePayload.reload_time = data.reload_time ?? data.reloadTime;
   }
 
-  await repo.update(id, updatePayload);
+  await repo.update(id, updatePayload as any);
   const updated = await repo.findOneBy({ id });
   if (updated) {
     logger.info(`Updated launcher type with id: ${id}`);

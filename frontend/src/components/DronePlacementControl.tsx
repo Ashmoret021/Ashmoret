@@ -228,7 +228,6 @@ export const DronePlacementControl: React.FC<DronePlacementProps> = ({
             mode: wave.placementMode || "single",
             count: wave.placementMode === "batch" ? currentBatchSize : 1,
           });
-          onClose();
         }}
         style={{
           width: "100%",

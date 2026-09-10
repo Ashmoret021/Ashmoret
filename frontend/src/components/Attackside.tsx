@@ -16,6 +16,8 @@ export type { DroneWave };
 export interface AttackSideProps {
   open: boolean;
   onClose: () => void;
+  onCancel?: () => void;
+  isPlacementModeActive?: boolean;
   waves: DroneWave[];
   setWaves: React.Dispatch<React.SetStateAction<DroneWave[]>>;
   placedDrones: PlacedDrone[];
@@ -32,12 +34,14 @@ export interface AttackSideProps {
   setAttackName: React.Dispatch<React.SetStateAction<string>>;
   attackDescription: string;
   setAttackDescription: React.Dispatch<React.SetStateAction<string>>;
-  onSaveScenario?: () => void;
+  onSaveScenario?: () => Promise<boolean | void> | boolean | void;
 }
 
 export const AttackSide: React.FC<AttackSideProps> = ({
   open,
   onClose,
+  onCancel,
+  isPlacementModeActive = false,
   waves,
   setWaves,
   placedDrones,
@@ -100,11 +104,18 @@ export const AttackSide: React.FC<AttackSideProps> = ({
   };
 
   const handleCancel = () => {
+    if (onCancel) {
+      onCancel();
+      return;
+    }
     onClose();
   };
 
-  const handleSave = () => {
-    onSaveScenario?.();
+  const handleSave = async () => {
+    const result = await Promise.resolve(onSaveScenario?.());
+    if (result === false) {
+      return;
+    }
     onClose();
   };
 
@@ -138,12 +149,13 @@ export const AttackSide: React.FC<AttackSideProps> = ({
     <>
       {/* Backdrop */}
       <div
-        onClick={onClose}
+        onClick={isPlacementModeActive ? undefined : onClose}
         style={{
           position: "fixed",
           inset: 0,
-          background: "rgba(20, 29, 40, 0.24)",
-          backdropFilter: "blur(2px)",
+          background: isPlacementModeActive ? "transparent" : "rgba(20, 29, 40, 0.24)",
+          backdropFilter: isPlacementModeActive ? "none" : "blur(2px)",
+          pointerEvents: isPlacementModeActive ? "none" : "auto",
           zIndex: 1400,
         }}
       />
@@ -184,7 +196,7 @@ export const AttackSide: React.FC<AttackSideProps> = ({
         >
           <button
             type="button"
-            onClick={onClose}
+            onClick={handleCancel}
             aria-label="סגירה"
             style={{
               position: "absolute",

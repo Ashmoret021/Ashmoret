@@ -184,6 +184,10 @@ export class LeafletRenderer {
   }
 
   initDefenseSystems(): void {
+    // Clear any existing defense markers before building new ones
+    for (const m of this.defenseMarkers.values()) m.remove();
+    this.defenseMarkers.clear();
+
     const state = getState();
     for (const [id, launcher] of Object.entries(state.launchers)) {
       this.ensureDefenseMarker(String(id), launcher);
@@ -288,9 +292,10 @@ export class LeafletRenderer {
       if (this.threatMarkers.has(id)) {
         const marker = this.threatMarkers.get(id)!;
         marker.setLatLng(toLeaflet(pos));
+        marker.setIcon(createThreatIcon(threat.heading, `איום ${id}`, threat.type));
       } else {
         const marker = L.marker(toLeaflet(pos), {
-          icon: createThreatIcon(threat.heading, `איום ${id}`),
+          icon: createThreatIcon(threat.heading, `איום ${id}`, threat.type),
         });
         marker.addTo(this.map);
         this.threatMarkers.set(id, marker);
@@ -333,7 +338,7 @@ export class LeafletRenderer {
     };
 
     const marker = L.marker(toLeaflet(pos), {
-      icon: createDefenseIcon(`סוללה ${id}`),
+      icon: createDefenseIcon(`סוללה ${id}`, launcher.type),
     });
     marker.addTo(this.map);
     this.defenseMarkers.set(id, marker);
@@ -468,6 +473,7 @@ export class LeafletRenderer {
     this.interceptorMarkers.clear();
     this.defenseMarkers.clear();
     this.impactMarkers.clear();
+    this.flashMarkers.clear();
   }
 }
 
