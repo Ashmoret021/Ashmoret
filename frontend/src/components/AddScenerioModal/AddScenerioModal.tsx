@@ -57,6 +57,8 @@ export const AddScenerioModal: FC<AddScenerioModalProps> = ({ open, onClose }) =
     scenarioName: "",
     scenarioType: "Single",
   });
+
+  const [name, setName] = useState("");
   const [selectedDroneGroup, setSelectedDroneGroup] = useState(0);
   const [selectedLauncherGroup, setSelectedLauncherGroup] = useState(0);
 
@@ -84,6 +86,8 @@ export const AddScenerioModal: FC<AddScenerioModalProps> = ({ open, onClose }) =
   const handleClose = () => {
     onClose();
     setPage(0);
+    setName("");
+    setCanMovePage(false);
   };
 
   return (
@@ -196,6 +200,8 @@ export const AddScenerioModal: FC<AddScenerioModalProps> = ({ open, onClose }) =
                 setGeneralData((prev) => ({ ...prev, ...updated }))
               }
               setCanMovePage={setCanMovePage}
+              name={name}
+              onNameChange={setName}
             />
           )}
 

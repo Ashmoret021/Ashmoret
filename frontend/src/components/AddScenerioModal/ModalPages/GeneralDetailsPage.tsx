@@ -19,6 +19,8 @@ export interface GeneralDetailsPageProps {
   data?: GeneralDetailsData;
   onChange?: (data: Partial<GeneralDetailsData>) => void;
   setCanMovePage?: (canMovePage: boolean) => void;
+  name?: string;
+  onNameChange?: (name: string) => void;
 }
 
 const darkInputSx = {
@@ -107,17 +109,17 @@ const menuPropsSx = {
 export const GeneralDetailsPage: FC<GeneralDetailsPageProps> = ({
   data,
   onChange,
-  setCanMovePage
+  setCanMovePage,
+  name,
+  onNameChange
 }) => {
-  const [internalName, setInternalName] = useState("");
   const [internalType, setInternalType] = useState("יחיד");
 
-  const scenarioName = data?.scenarioName ?? internalName;
   const scenarioType = data?.scenarioType ?? internalType;
 
   const handleNameChange = (event: ChangeEvent<HTMLInputElement>) => {
     const val = event.target.value;
-    setInternalName(val);
+    onNameChange?.(val);
     onChange?.({ scenarioName: val });
     if (val) {
       setCanMovePage?.(true);
@@ -143,7 +145,7 @@ export const GeneralDetailsPage: FC<GeneralDetailsPageProps> = ({
           variant="outlined"
           label="שם התרחיש"
           placeholder="הזן שם לתרחיש"
-          value={scenarioName}
+          value={name}
           onChange={handleNameChange}
           inputProps={{ dir: "rtl", style: { textAlign: "right" } }}
           sx={darkInputSx}
