@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" fill="none">
+  <title>HorizonEye-MX</title>
+  <desc>Green triangular long-range sensor and defense-system icon</desc>
+  <path d="M32 6 58 54H6L32 6Z" stroke="#2EDC88" stroke-width="7" stroke-linejoin="miter"/>
+  <path d="M18 34c7-8 21-8 28 0-7 8-21 8-28 0Z" fill="#2EDC88"/>
+  <circle cx="32" cy="34" r="5" fill="#10201A"/>
+</svg>
