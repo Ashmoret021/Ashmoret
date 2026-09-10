@@ -134,6 +134,11 @@
             "nullable": false,
             "description": "מהירות הרחפן"
           },
+          "start_time": {
+            "type": "number",
+            "nullable": false,
+            "description": "זמן תחילת הפעולה של הרחפן"
+          },
           "type": {
             "type": "integer",
             "nullable": false,

@@ -34,6 +34,9 @@ export class Drone {
   @Column({ type: "float" })
   velocity!: number;
 
+  @Column({ type: "float", name: "start_time" })
+  startTime!: number;
+
   @Column({ type: "int" })
   type!: number;
 
