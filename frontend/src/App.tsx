@@ -5,8 +5,9 @@ import "../src/styles/App.css";
 import { CoordinatesControl } from "./components/CoordinatesControl";
 import { MainLayout } from "./layouts/MainLayout";
 
+import {Location } from "../src/types";
 import axios from "axios";
-import { Drone, DroneType } from "../../types/types";
+import { Drone, DroneType, Launcher } from "../../types/types";
 import { algorithmClient } from "./algorithm/AlgorithmClient";
 import { WorldSnapshotBuilder } from "./algorithm/WorldSnapshotBuilder";
 import AttackSide from "./components/Attackside";
@@ -44,6 +45,7 @@ import {
 } from "./utils/droneMarker";
 import { processEngagementDecision } from "./visual/VisualEventBuilder";
 import { visualEventQueue } from "./visual/VisualEventQueue";
+import { launcherToRange } from "./types";
 
 export const App = () => {
   const mapInstanceRef = useRef<L.Map | null>(null);
@@ -472,6 +474,47 @@ export const App = () => {
             }
           },
         });
+        
+
+    axios.get("api/launchers/").then((response)=> {
+      console.log(response.data)
+      const launchers = response.data;
+        const launcherCircles: [Location, number][] = launchers.map(
+          (launcher: Launcher) => [
+            launcher.location,
+            launcherToRange.get(launcher.type)
+          ]
+        )
+
+      const geoJson: GeoJSON.FeatureCollection = {
+        type: "FeatureCollection",
+        features: launcherCircles.map(([location, radius]) => ({
+          type: "Feature",
+          properties: {
+            radius: radius
+          },
+          geometry: {
+            type: "Point",
+            coordinates: [location.longitude, location.latitude]
+          }
+        }))
+        };
+      const launcherCirclesLayer = L.geoJSON(geoJson, {
+        interactive: false,
+        style: {
+          color: "#4196f8",
+          fillColor: "#4196f8",
+          fillOpacity: 0.35,
+        },
+      });
+   
+      layerControl.addOverlay(launcherCirclesLayer, "טווח השפעות")
+      console.log("Im here")
+      })
+      .catch((error) => {
+      console.error("Failed to load cities layer:", error);
+  });
+
 
         mapArg.on("overlayadd", (e: L.LayersControlEvent) => {
           if (e.name === "🛡️ מיקומים רגישים") {
@@ -484,6 +527,7 @@ export const App = () => {
       .catch((error) => {
         console.error("Failed to load sensitives layer:", error);
       });
+    
   }, []);
 
   const handleLayersToggle = useCallback(() => {
@@ -1196,3 +1240,5 @@ export const App = () => {
     </>
   );
 };
+
+
