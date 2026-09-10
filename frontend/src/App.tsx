@@ -28,7 +28,7 @@ import {
   stopClock,
 } from "./simulation/SimulationContext";
 import { sampleScenario } from "./simulation/sampleScenario";
-import { activateWaitingThreats, advanceThreatPositions } from "./simulation/ThreatEngine";
+import { activateWaitingThreats } from "./simulation/ThreatEngine";
 import { LeafletRenderer } from "./map/LeafletRenderer";
 import { visualEventQueue } from "./visual/VisualEventQueue";
 import { processEngagementDecision } from "./visual/VisualEventBuilder";
@@ -50,15 +50,12 @@ export const App = () => {
   const tickIdRef = useRef<number>(0);
   const lastApiTickSimTimeRef = useRef<number>(-1);
   const pendingApiCallRef = useRef<boolean>(false);
+  // Monotonically-increasing counter, incremented every time the simulation
+  // is reset. Async algorithm callbacks capture this at call time and skip
+  // processing if the generation has changed (stale response guard).
+  const simulationGenerationRef = useRef<number>(0);
 
   useEffect(() => {
-    // Load default realistic scenario once on mount
-    loadScenario(sampleScenario);
-    engagedDronesRef.current.clear();
-    tickIdRef.current = 0;
-    lastApiTickSimTimeRef.current = -1;
-    pendingApiCallRef.current = false;
-
     // ── Simulation Tick Processor ──────────────────────────────────────────
     const unsubscribe = onTick((_deltaTime, simTime) => {
       const state = getState();
@@ -68,17 +65,77 @@ export const App = () => {
       let changed = false;
       let updatedThreats = { ...threats };
 
-      // --- Dev 1: Threat activation + movement via ThreatEngine ---
+      // --- Dev 1: Threat activation + movement ---
       const prevThreats = updatedThreats;
+
+      // A. Activate threats whose startTime has arrived (via ThreatEngine)
       updatedThreats = activateWaitingThreats(updatedThreats, simTime);
+
+      // Log newly activated threats
       for (const [idStr, t] of Object.entries(updatedThreats)) {
         if (t.logicalStatus === 'active' && prevThreats[Number(idStr)]?.logicalStatus === 'waiting') {
           appendLog('detection', 'זיהוי איום', `איום #${idStr} זוהה באוויר`, t.route[0]);
         }
       }
-      updatedThreats = advanceThreatPositions(updatedThreats, simTime);
+
+      // B. Advance positions using fixed 40s flight duration (matches original behavior)
+      const flightDuration = 40;
+      const next = { ...updatedThreats };
+      for (const [idStr, threat] of Object.entries(updatedThreats)) {
+        if (threat.logicalStatus !== 'active' && threat.logicalStatus !== 'interceptPending') continue;
+        if (!threat.route || threat.route.length < 2) continue;
+
+        const elapsed = simTime - threat.startTime;
+        if (elapsed < 0) continue;
+
+        const progress = Math.min(1, elapsed / flightDuration);
+        const start = threat.route[0];
+        const end = threat.route[threat.route.length - 1];
+        const location = {
+          latitude:  start.latitude  + (end.latitude  - start.latitude)  * progress,
+          longitude: start.longitude + (end.longitude - start.longitude) * progress,
+          asl: start.asl + (end.asl - start.asl) * progress,
+          agl: start.agl + (end.agl - start.agl) * progress,
+        };
+        next[Number(idStr)] = { ...threat, progress, location };
+      }
+      updatedThreats = next;
+
+      // C. Detect newly-impacted threats (progress reached 1) and fire impact events
+      for (const [idStr, t] of Object.entries(updatedThreats)) {
+        const id = Number(idStr);
+        const prev = prevThreats[id];
+        if (
+          t.progress >= 1 &&
+          t.logicalStatus !== 'intercepted' &&
+          t.logicalStatus !== 'impacted' &&
+          prev?.logicalStatus !== 'impacted'
+        ) {
+          updatedThreats = {
+            ...updatedThreats,
+            [id]: { ...t, logicalStatus: 'impacted' },
+          };
+
+          visualEventQueue.enqueue({
+            id: `evt-impact-${id}`,
+            type: 'impact',
+            startTime: simTime,
+            targetId: `איום ${id}`,
+            position: t.location,
+            status: 'pending',
+          });
+
+          appendLog(
+            'impact',
+            'פגיעה בשטח',
+            `איום #${id} (סוג: ${t.type ?? 'אויב'}) פגע בשטח`,
+            t.location,
+          );
+        }
+      }
+
       changed = updatedThreats !== prevThreats;
-      // --- End Dev 1 ---
+      // --- End movement ---
 
       if (changed) {
         setState({ threats: updatedThreats });
@@ -98,8 +155,14 @@ export const App = () => {
           tickIdRef.current,
         );
 
+        // Capture current generation — if it changes before this promise resolves,
+        // the scenario was switched/reset and we should discard the response.
+        const capturedGeneration = simulationGenerationRef.current;
+
         algorithmClient.step(snapshot).then((response) => {
           pendingApiCallRef.current = false;
+          // Guard: discard stale results from a previous simulation run
+          if (capturedGeneration !== simulationGenerationRef.current) return;
           if (!response || !response.engagements) return;
 
           const currentState = getState();
@@ -188,6 +251,16 @@ export const App = () => {
 
     renderer.initDefenseSystems();
     renderer.start();
+    (window as any).__leafletRenderer = renderer;
+    (window as any).__clearEngagedDrones = () => engagedDronesRef.current.clear();
+    // Full simulation state reset — called by MainLayout on scenario switch / restart
+    (window as any).__resetSimulationRefs = () => {
+      simulationGenerationRef.current += 1; // invalidate any in-flight async callbacks
+      tickIdRef.current = 0;
+      lastApiTickSimTimeRef.current = -1;
+      pendingApiCallRef.current = false;
+      engagedDronesRef.current.clear();
+    };
 
     // Map layer controls and GeoJSON overlays from dev
     const streetLayer = L.tileLayer(
@@ -251,6 +324,7 @@ export const App = () => {
   const handleRestart = useCallback(() => {
     stopClock();
     algorithmClient.reset();
+    simulationGenerationRef.current += 1; // invalidate any in-flight async callbacks
     tickIdRef.current = 0;
     lastApiTickSimTimeRef.current = -1;
     pendingApiCallRef.current = false;
@@ -268,6 +342,9 @@ export const App = () => {
       renderer.initDefenseSystems();
     }
   }, []);
+  // NOTE: App.handleRestart is only used as fallback when no onRestart prop is
+  // provided. The actual restart path goes through MainLayout.handleRestart,
+  // which uses window.__resetSimulationRefs to reset App-level refs.
 
   useEffect(() => {
     return () => {
@@ -346,9 +423,6 @@ export const App = () => {
             onClose={() => setSelectedDrone(null)}
           />
         )}
-        <EventLog />
-        <SimulationStats />
-        <SimulationControls onRestart={handleRestart} />
       </div>
     </>
   );

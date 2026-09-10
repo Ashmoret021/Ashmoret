@@ -20,6 +20,13 @@ import L, { Map } from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { useSimulation } from "../simulation/useSimulation";
 import { MapView } from "../ui/MapView";
+import { EventLog } from "../ui/EventLog";
+import { SimulationControls } from "../ui/SimulationControls";
+import { SimulationStats } from "../ui/SimulationStats";
+import { clearScenario, loadScenario, stopClock } from "../simulation/SimulationContext";
+import { sampleScenario, getScenarioById } from "../simulation/sampleScenario";
+import { visualEventQueue } from "../visual/VisualEventQueue";
+import { algorithmClient } from "../algorithm/AlgorithmClient";
 
 interface MainLayoutProps {
   logoSrc?: string;
@@ -33,25 +40,13 @@ interface MainLayoutProps {
 export const MainLayout: React.FC<MainLayoutProps> = ({
   logoSrc,
   scenarioName,
-  defaultScenarioName = "רב-זירתי - צפון ומזרח",
+  defaultScenarioName = "בחר תרחיש להתחלה",
   simId = "SIM-01",
   onStartSimulation,
   handleMapReady,
 }) => {
-  const initialScenarioTitle = scenarioName || defaultScenarioName;
   const [navView, setNavView] = useState<NavViewMode>("drones");
-  const [selectedScenario, setSelectedScenario] = useState<ScenarioItem>(
-    INITIAL_SCENARIOS[1] || {
-      id: "sc-2",
-      title: initialScenarioTitle,
-      severity: "high",
-      type: "multi",
-      typeLabel: "רב-זירתי",
-      droneCount: 5,
-      entryPoints: ["צפון", "מזרח"],
-      droneTypes: ["A", "B", "C"],
-    },
-  );
+  const [selectedScenario, setSelectedScenario] = useState<ScenarioItem | null>(null);
 
   const [isStateDialogOpen, setIsStateDialogOpen] = useState(false);
   const { state, pauseClock, resumeClock, setSpeed, startClock } =
@@ -72,7 +67,52 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
   };
 
   const handleScenarioSelect = (scenario: ScenarioItem) => {
-    setSelectedScenario(scenario);
+    const renderer = (window as any).__leafletRenderer;
+
+    if (selectedScenario?.id === scenario.id) {
+      // Toggle off / deselect scenario
+      setSelectedScenario(null);
+      stopClock();
+      clearScenario();
+      visualEventQueue.clear();
+      algorithmClient.reset();
+      (window as any).__resetSimulationRefs?.();
+      if (renderer) {
+        renderer.resetVisuals();
+      }
+    } else {
+      setSelectedScenario(scenario);
+      stopClock();
+      clearScenario();
+      visualEventQueue.clear();
+      algorithmClient.reset();
+      (window as any).__resetSimulationRefs?.();
+      if (renderer) {
+        renderer.resetVisuals();
+      }
+      // Load specific scenario into simulation context
+      loadScenario(getScenarioById(scenario.id));
+      if (renderer) {
+        renderer.initDefenseSystems();
+      }
+    }
+  };
+
+  const handleRestart = () => {
+    const renderer = (window as any).__leafletRenderer;
+    stopClock();
+    algorithmClient.reset();
+    visualEventQueue.clear();
+    (window as any).__resetSimulationRefs?.();
+    if (renderer) {
+      renderer.resetVisuals();
+    }
+    if (selectedScenario) {
+      loadScenario(getScenarioById(selectedScenario.id));
+      if (renderer) {
+        renderer.initDefenseSystems();
+      }
+    }
   };
 
   const handleCreateScenario = () => {
@@ -83,18 +123,21 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
     <div className="main-layout-container">
       {/* Top Application Header */}
       <Header
-        scenarioName={selectedScenario.title}
+        scenarioName={selectedScenario?.title || defaultScenarioName}
         simId={simId}
         isConnected={true}
         isSafeMode={true}
-        statusMode="תכנון תרחיש"
+        statusMode={selectedScenario ? "תרחיש פעיל" : "תכנון תרחיש"}
         logoSrc={logoSrc}
       />
 
       {/* Main Workspace: Tactical Map with Right Navigation Drawer & Sidebars */}
       <main className="main-viewport">
-        <div style={{ height: "100vh", position: "relative", width: "100vw" }}>
+        <div style={{ height: "100%", position: "relative", width: "100%" }}>
           <MapView onMapReady={handleMapReady} />
+          {selectedScenario && <EventLog />}
+          {selectedScenario && <SimulationStats />}
+          {selectedScenario && <SimulationControls onRestart={handleRestart} />}
           <Dialog
             fullWidth
             maxWidth="md"
@@ -149,7 +192,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
         {navView === "drones" && (
           <EventsPanel
             scenarios={INITIAL_SCENARIOS}
-            selectedScenarioId={selectedScenario.id}
+            selectedScenarioId={selectedScenario?.id}
             onScenarioSelect={handleScenarioSelect}
             onCreateScenario={handleCreateScenario}
           />
@@ -158,7 +201,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
         {/* Interceptors Panel (פריסת מיירטים / ניהול הצבה) */}
         {navView === "interceptors" && (
           <InterceptorsPanel
-            scenarioName={selectedScenario.title}
+            scenarioName={selectedScenario?.title || defaultScenarioName}
             isSafeMode={true}
             onStartSimulation={onStartSimulation}
           />
@@ -167,7 +210,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
         {/* Simulation Summary Placeholder (סיכום סימולציות) */}
         {navView === "summary" && (
           <InterceptorsPanel
-            scenarioName={selectedScenario.title}
+            scenarioName={selectedScenario?.title || defaultScenarioName}
             isSafeMode={true}
             onStartSimulation={onStartSimulation}
           />
