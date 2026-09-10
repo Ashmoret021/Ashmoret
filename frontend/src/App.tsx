@@ -245,6 +245,18 @@ export const App = () => {
       }
 
       if (changed) {
+        // Re-read fresh state to avoid overwriting logicalStatus changes
+        // made by checkRemoval callbacks that may have run in this same tick
+        const freshThreats = getState().threats;
+        for (const [idStr, threat] of Object.entries(updatedThreats)) {
+          const freshThreat = freshThreats[Number(idStr)];
+          if (freshThreat && freshThreat.logicalStatus === "intercepted") {
+            updatedThreats[Number(idStr)] = {
+              ...threat,
+              logicalStatus: "intercepted",
+            };
+          }
+        }
         setState({ threats: updatedThreats });
       }
 
@@ -326,6 +338,17 @@ export const App = () => {
           }
 
           if (threatsStateUpdated) {
+            // Merge with fresh state to avoid overwriting intercepted status
+            const freshThreats = getState().threats;
+            for (const [idStr, t] of Object.entries(nextThreats)) {
+              const freshT = freshThreats[Number(idStr)];
+              if (freshT && freshT.logicalStatus === "intercepted") {
+                nextThreats[Number(idStr)] = {
+                  ...t,
+                  logicalStatus: "intercepted",
+                };
+              }
+            }
             setState({ threats: nextThreats });
           }
         });

@@ -57,7 +57,12 @@ export default function DroneModal({
       };
 
   return (
-    <div style={floatingStyle}>
+    <div
+      style={floatingStyle}
+      onClick={(e) => e.stopPropagation()}
+      onMouseDown={(e) => e.stopPropagation()}
+      onPointerDown={(e) => e.stopPropagation()}
+    >
       <Box className="drone-dialog-glass">
         {position && <div className="drone-modal-pin-arrow" />}
         {/* Header with status pulse indicator */}
