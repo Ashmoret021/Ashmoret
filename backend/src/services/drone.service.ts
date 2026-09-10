@@ -28,7 +28,7 @@ export const getDroneById = async (id: number): Promise<Drone | null> => {
 export const createDrone = async (data: DroneInput): Promise<Drone> => {
   const repo = getDroneRepository();
   const drone = repo.create({
-    id: data.id,
+    // id: data.id,
     dronesGroupId: data.dronesGroupId ?? data.drones_group_id,
     longitude: data.longitude,
     latitude: data.latitude,
