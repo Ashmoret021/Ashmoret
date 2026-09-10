@@ -1,4 +1,4 @@
-import { Drone, Launcher } from "../../../types/types.ts";
+import { Drone, Launcher } from "./types";
 
 export enum Direction {
   NORTH = 'צפון',
