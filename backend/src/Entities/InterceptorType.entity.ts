@@ -5,7 +5,7 @@ export class InterceptorType {
   @PrimaryGeneratedColumn()
   id!: number;
 
-  @Column({ unique: true })
+  @Column({ type: "varchar", unique: true })
   name!: string;
 
   @OneToMany(() => LauncherAmmunition, (launcherAmmunition: LauncherAmmunition) => launcherAmmunition.interceptorType)

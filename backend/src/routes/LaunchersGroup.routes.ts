@@ -1,18 +1,18 @@
 import { Router } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import {
-  getAllDronesGroups,
-  getDronesGroupById,
-  createDronesGroup,
-  updateDronesGroup,
-  deleteDronesGroup,
-} from '../services/drones-group.service';
+  getAllLaunchersGroups,
+  getLaunchersGroupById,
+  createLaunchersGroup,
+  updateLaunchersGroup,
+  deleteLaunchersGroup,
+} from '../services/LaunchersGroup.service';
 
 const router = Router();
 
 router.get('/', async (_req, res, next) => {
   try {
-    const groups = await getAllDronesGroups();
+    const groups = await getAllLaunchersGroups();
     res.status(StatusCodes.OK).json({ status: 'ok', data: groups });
   } catch (err) {
     next(err);
@@ -27,9 +27,9 @@ router.get('/:id', async (req, res, next) => {
       return;
     }
 
-    const group = await getDronesGroupById(id);
+    const group = await getLaunchersGroupById(id);
     if (!group) {
-      res.status(StatusCodes.NOT_FOUND).json({ status: 'error', message: 'Drones group not found' });
+      res.status(StatusCodes.NOT_FOUND).json({ status: 'error', message: 'Launchers group not found' });
       return;
     }
     res.status(StatusCodes.OK).json({ status: 'ok', data: group });
@@ -40,7 +40,7 @@ router.get('/:id', async (req, res, next) => {
 
 router.post('/', async (req, res, next) => {
   try {
-    const created = await createDronesGroup(req.body);
+    const created = await createLaunchersGroup(req.body);
     res.status(StatusCodes.CREATED).json({ status: 'ok', data: created });
   } catch (err) {
     next(err);
@@ -55,9 +55,9 @@ router.put('/:id', async (req, res, next) => {
       return;
     }
 
-    const updated = await updateDronesGroup(id, req.body);
+    const updated = await updateLaunchersGroup(id, req.body);
     if (!updated) {
-      res.status(StatusCodes.NOT_FOUND).json({ status: 'error', message: 'Drones group not found' });
+      res.status(StatusCodes.NOT_FOUND).json({ status: 'error', message: 'Launchers group not found' });
       return;
     }
     res.status(StatusCodes.OK).json({ status: 'ok', data: updated });
@@ -74,12 +74,12 @@ router.delete('/:id', async (req, res, next) => {
       return;
     }
 
-    const deleted = await deleteDronesGroup(id);
+    const deleted = await deleteLaunchersGroup(id);
     if (!deleted) {
-      res.status(StatusCodes.NOT_FOUND).json({ status: 'error', message: 'Drones group not found' });
+      res.status(StatusCodes.NOT_FOUND).json({ status: 'error', message: 'Launchers group not found' });
       return;
     }
-    res.status(StatusCodes.OK).json({ status: 'ok', message: 'Drones group deleted successfully' });
+    res.status(StatusCodes.OK).json({ status: 'ok', message: 'Launchers group deleted successfully' });
   } catch (err) {
     next(err);
   }

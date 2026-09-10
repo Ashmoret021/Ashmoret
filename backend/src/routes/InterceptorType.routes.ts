@@ -1,18 +1,18 @@
 import { Router } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import {
-  getAllDroneTypes,
-  getDroneTypeById,
-  createDroneType,
-  updateDroneType,
-  deleteDroneType,
-} from '../services/drone-type.service';
+  getAllInterceptorTypes,
+  getInterceptorTypeById,
+  createInterceptorType,
+  updateInterceptorType,
+  deleteInterceptorType,
+} from '../services/InterceptorType.service';
 
 const router = Router();
 
 router.get('/', async (_req, res, next) => {
   try {
-    const types = await getAllDroneTypes();
+    const types = await getAllInterceptorTypes();
     res.status(StatusCodes.OK).json({ status: 'ok', data: types });
   } catch (err) {
     next(err);
@@ -27,9 +27,9 @@ router.get('/:id', async (req, res, next) => {
       return;
     }
 
-    const item = await getDroneTypeById(id);
+    const item = await getInterceptorTypeById(id);
     if (!item) {
-      res.status(StatusCodes.NOT_FOUND).json({ status: 'error', message: 'Drone type not found' });
+      res.status(StatusCodes.NOT_FOUND).json({ status: 'error', message: 'Interceptor type not found' });
       return;
     }
     res.status(StatusCodes.OK).json({ status: 'ok', data: item });
@@ -40,7 +40,7 @@ router.get('/:id', async (req, res, next) => {
 
 router.post('/', async (req, res, next) => {
   try {
-    const created = await createDroneType(req.body);
+    const created = await createInterceptorType(req.body);
     res.status(StatusCodes.CREATED).json({ status: 'ok', data: created });
   } catch (err) {
     next(err);
@@ -55,9 +55,9 @@ router.put('/:id', async (req, res, next) => {
       return;
     }
 
-    const updated = await updateDroneType(id, req.body);
+    const updated = await updateInterceptorType(id, req.body);
     if (!updated) {
-      res.status(StatusCodes.NOT_FOUND).json({ status: 'error', message: 'Drone type not found' });
+      res.status(StatusCodes.NOT_FOUND).json({ status: 'error', message: 'Interceptor type not found' });
       return;
     }
     res.status(StatusCodes.OK).json({ status: 'ok', data: updated });
@@ -74,12 +74,12 @@ router.delete('/:id', async (req, res, next) => {
       return;
     }
 
-    const deleted = await deleteDroneType(id);
+    const deleted = await deleteInterceptorType(id);
     if (!deleted) {
-      res.status(StatusCodes.NOT_FOUND).json({ status: 'error', message: 'Drone type not found' });
+      res.status(StatusCodes.NOT_FOUND).json({ status: 'error', message: 'Interceptor type not found' });
       return;
     }
-    res.status(StatusCodes.OK).json({ status: 'ok', message: 'Drone type deleted successfully' });
+    res.status(StatusCodes.OK).json({ status: 'ok', message: 'Interceptor type deleted successfully' });
   } catch (err) {
     next(err);
   }

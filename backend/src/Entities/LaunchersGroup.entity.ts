@@ -7,8 +7,11 @@ export class LaunchersGroup {
   @PrimaryGeneratedColumn()
   id!: number;
 
-  @Column()
+  @Column({ type: "varchar" })
   name!: string;
+
+  @Column({ type: "text", nullable: true })
+  description?: string;
 
   @OneToMany(() => Launcher, (launcher: Launcher) => launcher.launchersGroup)
   launchers!: Launcher[];
