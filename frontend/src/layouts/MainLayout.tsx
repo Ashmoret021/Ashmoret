@@ -29,6 +29,8 @@ interface MainLayoutProps {
   onStartSimulation?: () => void;
   handleMapReady?: (map: Map) => void;
   setShowMainAdditionalComponents: React.Dispatch<React.SetStateAction<boolean>>;
+  onAddDroneGroup?: () => void;
+  onAddInterceptorGroup?: () => void;
 }
 
 export const MainLayout: React.FC<MainLayoutProps> = ({
@@ -38,7 +40,9 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
   simId = "SIM-01",
   onStartSimulation,
   handleMapReady,
-  setShowMainAdditionalComponents
+  setShowMainAdditionalComponents,
+  onAddDroneGroup,
+  onAddInterceptorGroup,
 }) => {
   const initialScenarioTitle = scenarioName || defaultScenarioName;
   const [navView, setNavView] = useState<NavViewMode>("drones");
@@ -191,7 +195,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
                 groups={INITIAL_LAUNCHER_GROUPS}
                 selectedGroupId={selectedGroup?.id}
                 onGroupSelect={handleGroupSelect}
-                onCreateGroup={handleCreateGroup}
+                onCreateGroup={onAddInterceptorGroup ?? handleCreateGroup}
               />
             )}
 
@@ -200,7 +204,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
                 groups={INITIAL_DRONE_GROUPS}
                 selectedGroupId={selectedGroup?.id}
                 onGroupSelect={handleGroupSelect}
-                onCreateGroup={handleCreateGroup}
+                onCreateGroup={onAddDroneGroup ?? handleCreateGroup}
               />
             )}
 

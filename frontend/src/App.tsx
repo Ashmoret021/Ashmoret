@@ -1,5 +1,4 @@
 import React from "react";
-import { createPortal } from "react-dom";
 import { MainLayout } from "./layouts/MainLayout";
 import {
   Button,
@@ -17,7 +16,6 @@ import { SimulationStats } from "./ui/SimulationStats";
 import { Drone, DroneType } from "../../types/types";
 import DroneModal from "./components/DroneModal/DroneModal";
 import { DefenseSide } from "./components/DefenseSide/defenseSide";
-import { TemporaryAddButton } from "./components/TemporaryAddButton";
 import AttackSide from "./components/Attackside";
 import { createWave } from "./constants/droneConstants";
 import { PlacementHUD } from "./components/PlacementHUD";
@@ -70,8 +68,8 @@ export const App = () => {
   const pendingApiCallRef = useRef<boolean>(false);
 
   // ── Attack Side (wave placement builder) state ─────────────────────────
-  const [buttonContainer, setButtonContainer] = useState<HTMLElement | null>(null);
   const [attackModalOpen, setAttackModalOpen] = useState(false);
+  const [defenseModalOpen, setDefenseModalOpen] = useState(false);
   const [currentScenarioId, setCurrentScenarioId] = useState<string | null>(() => {
     return storageService.getActiveScenarioId();
   });
@@ -428,21 +426,6 @@ export const App = () => {
 
     const markersLayer = L.layerGroup().addTo(map);
     markersLayerRef.current = markersLayer;
-
-    // Custom control for the "add attack wave" button (rendered via portal)
-    const AddButtonControl = L.Control.extend({
-      options: { position: "topright" },
-      onAdd: function () {
-        const div = L.DomUtil.create("div", "custom-add-button-wrapper");
-        div.style.display = "flex";
-        div.style.alignItems = "center";
-        div.style.marginRight = "12px";
-        div.style.pointerEvents = "auto";
-        setButtonContainer(div);
-        return div;
-      },
-    });
-    map.addControl(new AddButtonControl());
 
     // Map layer controls and GeoJSON overlays from dev
     const streetLayer = L.tileLayer(
@@ -869,6 +852,8 @@ export const App = () => {
           onStartSimulation={handleStartSimulation}
           handleMapReady={handleMapReady}
           setShowMainAdditionalComponents={setShowMainAdditionalComponents}
+          onAddDroneGroup={() => setAttackModalOpen(true)}
+          onAddInterceptorGroup={() => setDefenseModalOpen(true)}
         />
         {selectedDrone && (
           <DroneModal
@@ -885,7 +870,11 @@ export const App = () => {
             <EventLog />
             <SimulationStats />
             <SimulationControls onRestart={handleRestart} />
-            <DefenseSide map={map} />
+            <DefenseSide
+              map={map}
+              open={defenseModalOpen}
+              onClose={() => setDefenseModalOpen(false)}
+            />
 
             {/* Floating Placement HUD for attack-side drone placement */}
             {activePlacingWave && (
@@ -901,14 +890,6 @@ export const App = () => {
                 }}
               />
             )}
-
-            {/* Render Add Button into Leaflet Control via Portal to ensure side-by-side positioning */}
-            {!activePlacingWave &&
-              buttonContainer &&
-              createPortal(
-                <TemporaryAddButton onClick={() => setAttackModalOpen(true)} />,
-                buttonContainer,
-              )}
           </>
         )}
 

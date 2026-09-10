@@ -191,16 +191,16 @@ const createInterceptionIcon = (index: number) => {
 };
 
 export interface DefenseSideProps {
-  initialOpen?: boolean;
+  open: boolean;
+  onClose: () => void;
   map?: L.Map | null;
 }
 
 export const DefenseSide: React.FC<DefenseSideProps> = ({
-  initialOpen = false,
+  open,
+  onClose,
   map,
 }) => {
-  const [isOpen, setIsOpen] = useState(initialOpen);
-
   const [defenseDetails, setDefenseDetails] = useState<DefenseDetails[]>([
     createEmptyDefense(),
   ]);
@@ -434,7 +434,7 @@ export const DefenseSide: React.FC<DefenseSideProps> = ({
     markersRef.current.forEach((marker) => marker.remove());
     markersRef.current.clear();
 
-    setIsOpen(false);
+    onClose();
   };
 
   /*
@@ -843,60 +843,7 @@ export const DefenseSide: React.FC<DefenseSideProps> = ({
         </div>
       )}
 
-      {!isOpen && (
-        <button
-          type="button"
-          onClick={() => setIsOpen(true)}
-          className="defense-side-open-btn"
-          aria-label="פתח צד הגנה"
-          title="פתח צד הגנה"
-          style={{
-            position: "fixed",
-            top: "24px",
-            right: "24px",
-            zIndex: 1100,
-            display: "flex",
-            alignItems: "center",
-            gap: "10px",
-            padding: "12px 20px",
-            background:
-              "linear-gradient(135deg, #102a56 0%, #174b91 100%)",
-            color: "#fff",
-            border:
-              "1px solid rgba(255, 255, 255, 0.2)",
-            borderRadius: "12px",
-            boxShadow:
-              "0 8px 24px rgba(16, 42, 86, 0.25)",
-            cursor: "pointer",
-            fontSize: "15px",
-            fontWeight: 700,
-            fontFamily:
-              "Arial, Helvetica, sans-serif",
-            direction: "rtl",
-            transition:
-              "transform 0.2s ease, box-shadow 0.2s ease",
-          }}
-        >
-          <div
-            style={{
-              width: "28px",
-              height: "28px",
-              borderRadius: "7px",
-              background: "rgba(255, 255, 255, 0.15)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontSize: "16px",
-            }}
-          >
-            🛡
-          </div>
-
-          <span>יצירת צד ההגנה</span>
-        </button>
-      )}
-
-      {isOpen && (
+      {open && (
         <div
           dir="rtl"
           style={{
@@ -989,7 +936,7 @@ export const DefenseSide: React.FC<DefenseSideProps> = ({
 
               <button
                 type="button"
-                onClick={() => setIsOpen(false)}
+                onClick={() => onClose()}
                 className="defense-side-close-btn"
                 aria-label="סגור צד הגנה"
                 title="סגור"
