@@ -10,6 +10,7 @@ interface EventsPanelProps {
   selectedScenarioId?: string;
   isOpen?: boolean;
   onToggleOpen?: () => void;
+  onOpenStateChange?: (isOpen: boolean) => void;
   onScenarioSelect?: (scenario: ScenarioItem) => void;
   onCreateScenario?: () => void;
 }
@@ -19,6 +20,7 @@ export const EventsPanel: React.FC<EventsPanelProps> = ({
   selectedScenarioId = 'sc-2',
   isOpen: controlledIsOpen,
   onToggleOpen,
+  onOpenStateChange,
   onScenarioSelect,
   onCreateScenario,
 }) => {
@@ -33,7 +35,11 @@ export const EventsPanel: React.FC<EventsPanelProps> = ({
     if (onToggleOpen) {
       onToggleOpen();
     } else {
-      setInternalIsOpen(!internalIsOpen);
+      setInternalIsOpen((open) => {
+        const nextOpen = !open;
+        onOpenStateChange?.(nextOpen);
+        return nextOpen;
+      });
     }
   };
 
@@ -47,13 +53,13 @@ export const EventsPanel: React.FC<EventsPanelProps> = ({
   // Filtered scenarios logic
   const filteredScenarios = useMemo(() => {
     return scenarios.filter((sc) => {
-      const droneCount = sc.drones.length;
+      // Drone count comes from the populated dronesGroup on the DB-shaped scenario.
+      const droneCount = sc.dronesGroup?.drones.length ?? 0;
 
       // Filter by event type
       if (eventTypeFilter === 'single' && sc.type !== ScenarioType.SINGLE_AREA) return false;
       if (eventTypeFilter === 'multi' && sc.type !== ScenarioType.MULTIPLE_AREAS) return false;
 
-      // Filter by drone count
       if (droneCountFilter === '1' && droneCount !== 1) return false;
       if (droneCountFilter === '2-5' && (droneCount < 2 || droneCount > 5)) return false;
       if (droneCountFilter === '6-10' && (droneCount < 6 || droneCount > 10)) return false;

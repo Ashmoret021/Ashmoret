@@ -13,7 +13,7 @@
  * Spec references: §12, §14, §15, §16
  */
 
-import type { Location } from '../../../types/types';
+import type { Location } from '../types/types';
 import type {
   SimulationState,
   DroneSimState,

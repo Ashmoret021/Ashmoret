@@ -26,11 +26,13 @@ const NAV_OPTIONS: NavOption[] = [
 interface SideNavDrawerProps {
   activeView: NavViewMode;
   onViewChange: (view: NavViewMode) => void;
+  sidebarOpen?: boolean;
 }
 
 export const SideNavDrawer: React.FC<SideNavDrawerProps> = ({
   activeView,
   onViewChange,
+  sidebarOpen = true,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -62,7 +64,7 @@ export const SideNavDrawer: React.FC<SideNavDrawerProps> = ({
   return (
     <div
       ref={containerRef}
-      className={`side-nav-container ${isOpen ? 'expanded' : ''}`}
+      className={`side-nav-container ${isOpen ? 'expanded' : ''} ${sidebarOpen ? 'sidebar-open' : 'sidebar-collapsed'}`}
     >
       {/* When closed: Top-right tab with ChevronDown */}
       {!isOpen && (
