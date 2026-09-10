@@ -55,7 +55,7 @@ export const AddScenerioModal: FC<AddScenerioModalProps> = ({ open, onClose }) =
   // Scenario Wizard State
   const [generalData, setGeneralData] = useState({
     scenarioName: "",
-    scenarioType: "Single",
+    scenarioType: "יחיד",
   });
 
   const [name, setName] = useState("");
