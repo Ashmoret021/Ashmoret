@@ -134,24 +134,27 @@ export const EventLog: React.FC = () => {
           sx={{
             display: "flex",
             alignItems: "center",
-            justifyContent: "space-between",
+            gap: 1,
             cursor: "pointer",
           }}
           onClick={() => setIsExpanded((prev) => !prev)}
         >
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-            <Badge badgeContent={logEntries.length} color="primary" max={99}>
-              <HistoryIcon sx={{ color: "#38bdf8" }} />
-            </Badge>
-            <Typography
-              variant="subtitle2"
-              sx={{ fontWeight: 700, color: "#f8fafc", mr: 1 }}
-            >
-              יומן אירועים
-            </Typography>
-          </Box>
+          <Typography
+            variant="subtitle2"
+            sx={{ fontWeight: 700, color: "#f8fafc" }}
+          >
+            יומן אירועים
+          </Typography>
+
+          <Badge badgeContent={logEntries.length} color="primary" max={99}>
+            <HistoryIcon sx={{ color: "#38bdf8" }} />
+          </Badge>
+
           <Tooltip title={isExpanded ? "מזער" : "הרחב"}>
-            <IconButton size="small" sx={{ color: "#94a3b8" }}>
+            <IconButton
+              size="small"
+              sx={{ color: "#94a3b8", marginRight: "auto" }}
+            >
               {isExpanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
             </IconButton>
           </Tooltip>

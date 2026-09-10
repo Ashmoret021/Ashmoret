@@ -118,29 +118,18 @@ export const SimulationStats: React.FC<SimulationStatsProps> = () => {
           sx={{
             display: "flex",
             alignItems: "center",
-            justifyContent: "space-between",
+            gap: 1,
             cursor: "pointer",
             userSelect: "none",
           }}
           onClick={() => setIsExpanded((prev) => !prev)}
         >
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-            <Typography
-              variant="subtitle2"
-              sx={{ fontWeight: 700, color: "#f8fafc" }}
-            >
-              לוח סטטיסטיקות
-            </Typography>
-            <Tooltip title={isExpanded ? "מזער לוח" : "הרחב לוח"}>
-              <IconButton size="small" sx={{ color: "#94a3b8", p: 0.25 }}>
-                {isExpanded ? (
-                  <ExpandLessIcon fontSize="small" />
-                ) : (
-                  <ExpandMoreIcon fontSize="small" />
-                )}
-              </IconButton>
-            </Tooltip>
-          </Box>
+          <Typography
+            variant="subtitle2"
+            sx={{ fontWeight: 700, color: "#f8fafc" }}
+          >
+            לוח סטטיסטיקות
+          </Typography>
 
           <Box
             sx={{
@@ -167,6 +156,19 @@ export const SimulationStats: React.FC<SimulationStatsProps> = () => {
               {isConnected ? "מחובר" : "גיבוי"}
             </Typography>
           </Box>
+
+          <Tooltip title={isExpanded ? "מזער לוח" : "הרחב לוח"}>
+            <IconButton
+              size="small"
+              sx={{ color: "#94a3b8", p: 0.25, marginRight: "auto" }}
+            >
+              {isExpanded ? (
+                <ExpandLessIcon fontSize="small" />
+              ) : (
+                <ExpandMoreIcon fontSize="small" />
+              )}
+            </IconButton>
+          </Tooltip>
         </Box>
 
         <Collapse in={isExpanded}>
