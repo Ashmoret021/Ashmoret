@@ -20,6 +20,10 @@ import "leaflet/dist/leaflet.css";
 import { useSimulation } from "../simulation/useSimulation";
 import { MapView } from "../ui/MapView";
 import { LaunchersDronesPanel } from "../components/LaunchersDronesPanel/LaunchersDronesPanel";
+import AircraftSidebar from "../components/AircraftSidebar/AircraftSidebar";
+import { PlacedDrone } from "../types/drone";
+import { SimulationControls } from "../ui/SimulationControls";
+
 
 interface MainLayoutProps {
   logoSrc?: string;
@@ -108,6 +112,51 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
     }
   }, [navView]);
 
+  const MOCK_PLACED_DRONES: PlacedDrone[] = [
+      {
+        id: "DRN-W1-01-A1B2",
+        name: "רחפן 1 (גל 1)",
+        waveId: 1,
+        waveIndex: 1,
+        droneType: "FalconLongX4",
+        latitude: 33.0123,
+        longitude: 35.1234,
+        altitude: 120,
+        heading: 45,
+        angle: 45,
+        status: "ready",
+        placedAt: "2026-09-10T12:00:00.000Z",
+      },
+      {
+        id: "DRN-W1-02-C3D4",
+        name: "רחפן 2 (גל 1)",
+        waveId: 1,
+        waveIndex: 1,
+        droneType: "FalconLongX4",
+        latitude: 33.0250,
+        longitude: 35.1350,
+        altitude: 150,
+        heading: 60,
+        angle: 60,
+        status: "ready",
+        placedAt: "2026-09-10T12:05:00.000Z",
+      },
+      {
+        id: "DRN-W2-01-E5F6",
+        name: "רחפן 1 (גל 2)",
+        waveId: 2,
+        waveIndex: 2,
+        droneType: "Hermes450",
+        latitude: 32.8500,
+        longitude: 35.2000,
+        altitude: 200,
+        heading: 90,
+        angle: 90,
+        status: "ready",
+        placedAt: "2026-09-10T12:10:00.000Z",
+      },
+    ];
+
   return (
     <div className="main-layout-container">
       {/* Top Application Header */}
@@ -189,6 +238,13 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
                 onCreateScenario={handleCreateScenario}
               />
             )}
+
+            {navView === "aircraft_dict" && (<>
+              <AircraftSidebar
+                aircrafts={[]}
+              />
+
+            </>)}
 
             {navView === "interceptors" && (
               <LaunchersDronesPanel

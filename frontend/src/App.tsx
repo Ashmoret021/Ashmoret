@@ -904,10 +904,6 @@ export const App = () => {
         )}
         {showMainAdditionalComponents && (
           <>
-            {/* Render AircraftSidebar on the left side */}
-            <AircraftSidebar aircrafts={aircraftsData} />
-            {/*<EventLog />*/}
-            {/*<SimulationStats />*/}
             {<SimulationControls onRestart={handleRestart} />}
             <DefenseSide
               map={map}
