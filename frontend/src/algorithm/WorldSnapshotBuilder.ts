@@ -1,5 +1,5 @@
 import type { SimulationState, DroneSimState, LauncherSimState, InterceptorSimState } from '../simulation/SimulationContext';
-import type { Location } from '../../../types/types';
+import type { Location } from '../types/types';
 import type {
   WorldSnapshot,
   ThreatSnapshot,
@@ -55,13 +55,12 @@ export class WorldSnapshotBuilder {
           lng: launcher.location?.longitude ?? 0,
         };
 
-        // launcher.ammunition is an array of [InterceptorType, number] tuples
-        const interceptorInventory = (launcher.ammunition || []).map(
-          ([type, quantity]: [any, number]) => ({
-            type: String(type),
-            quantity: Number(quantity),
-          })
-        );
+        // launcher.ammunition (when present) is an array of LauncherAmmunition
+        // rows: { launcherId, interceptorTypeId, amount } — matching the DB shape.
+        const interceptorInventory = (launcher.ammunition || []).map((row) => ({
+          type: String(row.interceptorTypeId),
+          quantity: Number(row.amount),
+        }));
 
         return {
           id: String(launcher.id),

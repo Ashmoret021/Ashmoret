@@ -4,7 +4,9 @@ import {
   getAllDronesGroups,
   getDronesGroupById,
   createDronesGroup,
+  createDronesGroupWithDrones,
   updateDronesGroup,
+  updateDronesGroupWithDrones,
   deleteDronesGroup,
 } from "../services/DronesGroup.service";
 
@@ -51,6 +53,35 @@ router.post("/", async (req, res, next) => {
   }
 });
 
+router.post('/with-drones', async (req, res, next) => {
+  try {
+    const created = await createDronesGroupWithDrones(req.body ?? {});
+    res.status(StatusCodes.CREATED).json({ status: 'ok', data: created });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.put('/:id/with-drones', async (req, res, next) => {
+  try {
+    const id = Number(req.params.id);
+    if (Number.isNaN(id)) {
+      res.status(StatusCodes.BAD_REQUEST).json('Invalid ID format');
+      return;
+    }
+
+    const updated = await updateDronesGroupWithDrones(id, req.body ?? {});
+    if (!updated) {
+      res.status(StatusCodes.NOT_FOUND).json('Drones group not found');
+      return;
+    }
+
+    res.status(StatusCodes.OK).json({ status: 'ok', data: updated });
+  } catch (err) {
+    next(err);
+  }
+});
+
 router.put("/:id", async (req, res, next) => {
   try {
     const id = Number(req.params.id);
@@ -61,14 +92,18 @@ router.put("/:id", async (req, res, next) => {
       return;
     }
 
-    const updated = await updateDronesGroup(id, req.body);
+    const payload = req.body ?? {};
+    const updated = Array.isArray(payload.drones)
+      ? await updateDronesGroupWithDrones(id, payload)
+      : await updateDronesGroup(id, payload);
+
     if (!updated) {
       res
         .status(StatusCodes.NOT_FOUND)
         .json("Drones group not found");
       return;
     }
-    res.status(StatusCodes.OK).json(updated);
+    res.status(StatusCodes.OK).json({ status: "ok", data: updated });
   } catch (err) {
     next(err);
   }

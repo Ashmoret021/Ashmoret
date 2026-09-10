@@ -1,12 +1,19 @@
 import { Header } from "../components/Header/Header";
 import { EventsPanel } from "../components/EventsPanel/EventsPanel";
 import { InterceptorsPanel } from "../components/InterceptorsPanel/InterceptorsPanel";
-import { SideNavDrawer, NavViewMode } from "../components/Navigation/SideNavDrawer";
+import {
+  SideNavDrawer,
+  NavViewMode,
+} from "../components/Navigation/SideNavDrawer";
 import { SimulationSummaryPanel } from "../components/SimulationSummary/SimulationSummaryPanel";
 import { LaunchersDronesPanel } from "../components/LaunchersDronesPanel/LaunchersDronesPanel";
 import { ScenarioItem } from "../types/simulation";
 import { DroneGroup, LauncherGroup } from "../types/types";
-import { INITIAL_DRONE_GROUPS, INITIAL_LAUNCHER_GROUPS, INITIAL_SCENARIOS } from "../mock/events";
+import {
+  INITIAL_DRONE_GROUPS,
+  INITIAL_LAUNCHER_GROUPS,
+  INITIAL_SCENARIOS,
+} from "../mock/events";
 import "./MainLayout.css";
 import React, { useEffect, useRef, useState } from "react";
 import {
@@ -15,16 +22,22 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
+  getAlertTitleUtilityClass,
 } from "@mui/material";
 import L, { Map } from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { useSimulation } from "../simulation/useSimulation";
-import { AddScenerioModal } from '../components';
+import { AddScenerioModal } from "../components";
 import { MapView } from "../ui/MapView";
-import { clearScenario, loadScenario, stopClock } from "../simulation/SimulationContext";
+import {
+  clearScenario,
+  loadScenario,
+  stopClock,
+} from "../simulation/SimulationContext";
 import { getScenarioById } from "../simulation/sampleScenario";
 import { visualEventQueue } from "../visual/VisualEventQueue";
 import { algorithmClient } from "../algorithm/AlgorithmClient";
+import { useGetAllDronesGroups, useGetAllLaunchersGroups, useGetAllScenarios } from "../api/hooks";
 
 interface MainLayoutProps {
   logoSrc?: string;
@@ -34,8 +47,14 @@ interface MainLayoutProps {
   onStartSimulation?: () => void;
   handleMapReady?: (map: Map) => void;
   setShowMainAdditionalComponents: React.Dispatch<React.SetStateAction<boolean>>;
+  onGoToCoordinates?: (lat: number, lng: number) => void;
+  onRemoveMarker?: () => void;
+  hasMarker?: boolean;
   onAddDroneGroup?: () => void;
   onAddInterceptorGroup?: () => void;
+  layersOpen?: boolean;
+  onLayersToggle?: () => void;
+  layersMenuRef?: React.RefObject<HTMLDivElement>;
 }
 
 export const MainLayout: React.FC<MainLayoutProps> = ({
@@ -46,12 +65,30 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
   onStartSimulation,
   handleMapReady,
   setShowMainAdditionalComponents,
+  onGoToCoordinates,
+  onRemoveMarker,
+  hasMarker = false,
   onAddDroneGroup,
   onAddInterceptorGroup,
+  layersOpen = false,
+  onLayersToggle,
+  layersMenuRef,
 }) => {
-  const [navView, setNavView] = useState<NavViewMode>("drones");
+
+  const [selectedGroup, setSelectedGroup] = useState<
+    DroneGroup | LauncherGroup | null
+  >(null);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [rulerActive, setRulerActive] = useState(false);
+  const [navView, setNavView] = useState<NavViewMode>("home");
   const [selectedScenario, setSelectedScenario] = useState<ScenarioItem | null>(null);
-  const [selectedGroup, setSelectedGroup] = useState<DroneGroup | LauncherGroup | null>(null);
+
+  const {dronesGroups, setDronesGroups} = useGetAllDronesGroups();
+  const {launchersGroups, setLaunchersGroups} = useGetAllLaunchersGroups();
+
+
+  //TODO: data doesnt match to INITIAL_SCENARIOS
+  const {scenarios, setScenarios} = useGetAllScenarios();
 
   const [isStateDialogOpen, setIsStateDialogOpen] = useState(false);
   const [isCreateScenarioOpen, setIsCreateScenarioOpen] = useState(false);
@@ -102,6 +139,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
       if (renderer) {
         renderer.initDefenseSystems();
       }
+      startClock();
     }
   };
 
@@ -119,6 +157,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
       if (renderer) {
         renderer.initDefenseSystems();
       }
+      startClock();
     }
   };
 
@@ -138,6 +177,12 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
   const handleViewSimulation = (simulationId: string) => {
     console.log("Viewing simulation:", simulationId);
     setNavView("drones");
+    setIsSidebarOpen(true);
+  };
+
+  const handleViewChange = (view: NavViewMode) => {
+    setNavView(view);
+    setIsSidebarOpen(true);
   };
 
   // ── Hide simulation HUD when Summary view is active ───────────────────────
@@ -153,18 +198,30 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
     <div className="main-layout-container">
       {/* Top Application Header */}
       <Header
-        scenarioName={selectedScenario?.title || defaultScenarioName}
+        scenarioName={selectedScenario?.name || defaultScenarioName}
         simId={simId}
         isConnected={true}
         isSafeMode={true}
         statusMode={selectedScenario ? "תרחיש פעיל" : "תכנון תרחיש"}
+        rulerActive={rulerActive}
+        onRulerToggle={() => setRulerActive((active) => !active)}
+        layersOpen={layersOpen}
+        onLayersToggle={onLayersToggle}
+        layersMenuRef={layersMenuRef}
         logoSrc={logoSrc}
+        onGoToCoordinates={onGoToCoordinates}
+        onRemoveMarker={onRemoveMarker}
+        hasMarker={hasMarker}
       />
 
       {/* Main Workspace */}
       <main className="main-viewport">
         {/* Right-Edge Navigation Drawer */}
-        <SideNavDrawer activeView={navView} onViewChange={setNavView} />
+        <SideNavDrawer
+          activeView={navView}
+          onViewChange={handleViewChange}
+          sidebarOpen={isSidebarOpen}
+        />
 
         {/* View: Simulation Summary (full-screen, no map / HUD) */}
         {navView === "summary" ? (
@@ -172,8 +229,10 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
         ) : (
           <>
             {/* Tactical Map */}
-            <div style={{ height: "100%", position: "relative", width: "100%" }}>
-              <MapView onMapReady={handleMapReady} />
+            <div
+              style={{ height: "100%", position: "relative", width: "100%" }}
+            >
+              <MapView onMapReady={handleMapReady} rulerActive={rulerActive} />
 
               {/* Debug state dialog */}
               <Dialog
@@ -218,27 +277,36 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
                       </option>
                     ))}
                   </select>
-                  <Button onClick={() => setIsStateDialogOpen(false)}>Close</Button>
+                  <Button onClick={() => setIsStateDialogOpen(false)}>
+                    Close
+                  </Button>
                 </DialogActions>
               </Dialog>
             </div>
 
             {/* Scenario selection panel (home / drones view) */}
-            {(navView === "drones" || navView === "home") && (
+            {(navView === "home") && (
               <EventsPanel
                 scenarios={INITIAL_SCENARIOS}
                 selectedScenarioId={selectedScenario?.id}
+                isOpen={isSidebarOpen}
+                onToggleOpen={() => setIsSidebarOpen((open) => !open)}
                 onScenarioSelect={handleScenarioSelect}
                 onCreateScenario={handleCreateScenario}
               />
             )}
-            <AddScenerioModal open={isCreateScenarioOpen} onClose={() => setIsCreateScenarioOpen(false)} />
+            <AddScenerioModal
+              open={isCreateScenarioOpen}
+              onClose={() => setIsCreateScenarioOpen(false)}
+            />
 
             {/* Scenarios panel (dedicated scenarios view) */}
             {navView === "scenarios" && (
               <EventsPanel
-                scenarios={INITIAL_SCENARIOS}
                 selectedScenarioId={selectedScenario?.id}
+                scenarios={INITIAL_SCENARIOS}
+                isOpen={isSidebarOpen}
+                onToggleOpen={() => setIsSidebarOpen((open) => !open)}
                 onScenarioSelect={handleScenarioSelect}
                 onCreateScenario={handleCreateScenario}
               />
@@ -247,20 +315,24 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
             {/* Interceptors / launcher placement panel */}
             {navView === "interceptors" && (
               <LaunchersDronesPanel
-                groups={INITIAL_LAUNCHER_GROUPS}
+                groups={launchersGroups}
                 selectedGroupId={selectedGroup?.id}
+                isOpen={isSidebarOpen}
+                onToggleOpen={() => setIsSidebarOpen((open) => !open)}
                 onGroupSelect={handleGroupSelect}
                 onCreateGroup={onAddInterceptorGroup ?? handleCreateGroup}
+                type="launcher"
               />
             )}
-
-            {/* Drone groups panel (attack-side placement) */}
-            {navView === "drones" && false /* handled above by EventsPanel */ && (
+            {navView === "drones" && (
               <LaunchersDronesPanel
-                groups={INITIAL_DRONE_GROUPS}
+                groups={dronesGroups}
                 selectedGroupId={selectedGroup?.id}
+                isOpen={isSidebarOpen}
+                onToggleOpen={() => setIsSidebarOpen((open) => !open)}
                 onGroupSelect={handleGroupSelect}
                 onCreateGroup={onAddDroneGroup ?? handleCreateGroup}
+                type="drone"
               />
             )}
           </>

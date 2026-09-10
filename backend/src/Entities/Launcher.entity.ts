@@ -6,6 +6,7 @@ import {
   OneToMany,
   PrimaryGeneratedColumn,
 } from "typeorm";
+import { AttackSide } from "./AttackSide.entity";
 import { LaunchersGroup } from "./LaunchersGroup.entity";
 import { LauncherType } from "./LauncherType.entity";
 import { LauncherAmmunition } from "./LauncherAmmunition.entity";
@@ -58,4 +59,7 @@ export class Launcher {
     (launcherAmmunition: LauncherAmmunition) => launcherAmmunition.launcher,
   )
   ammunition!: LauncherAmmunition[];
+
+  @OneToMany(() => AttackSide, (attackSide: AttackSide) => attackSide.launcher)
+  attackSides!: AttackSide[];
 }

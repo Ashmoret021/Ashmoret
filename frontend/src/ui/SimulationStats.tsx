@@ -1,20 +1,25 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from "react";
 import {
   Box,
   Card,
   CardContent,
   Chip,
+  Collapse,
   Divider,
+  IconButton,
   Stack,
+  Tooltip,
   Typography,
-} from '@mui/material';
-import WarningAmberIcon from '@mui/icons-material/WarningAmber';
-import FlightTakeoffIcon from '@mui/icons-material/FlightTakeoff';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import DangerousIcon from '@mui/icons-material/Dangerous';
-import WifiIcon from '@mui/icons-material/Wifi';
-import { useSimulation } from '../simulation/useSimulation';
-import { algorithmClient } from '../algorithm/AlgorithmClient';
+} from "@mui/material";
+import WarningAmberIcon from "@mui/icons-material/WarningAmber";
+import FlightTakeoffIcon from "@mui/icons-material/FlightTakeoff";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import DangerousIcon from "@mui/icons-material/Dangerous";
+import WifiIcon from "@mui/icons-material/Wifi";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import ExpandLessIcon from "@mui/icons-material/ExpandLess";
+import { useSimulation } from "../simulation/useSimulation";
+import { algorithmClient } from "../algorithm/AlgorithmClient";
 
 export interface SimulationStatsProps {
   isAlgorithmConnected?: boolean;
@@ -23,6 +28,7 @@ export interface SimulationStatsProps {
 export const SimulationStats: React.FC<SimulationStatsProps> = () => {
   const { state } = useSimulation();
   const [isConnected, setIsConnected] = useState(true);
+  const [isExpanded, setIsExpanded] = useState(true);
 
   useEffect(() => {
     const id = setInterval(() => {
@@ -35,53 +41,54 @@ export const SimulationStats: React.FC<SimulationStatsProps> = () => {
   const interceptorsList = Object.values(state.interceptors);
 
   const activeThreatsCount = threatsList.filter(
-    (t) => t.logicalStatus === 'active' || t.logicalStatus === 'interceptPending',
+    (t) =>
+      t.logicalStatus === "active" || t.logicalStatus === "interceptPending",
   ).length;
 
   const airborneInterceptorsCount = interceptorsList.filter(
-    (i) => i.status === 'flying',
+    (i) => i.status === "flying",
   ).length;
 
   const interceptedCount = threatsList.filter(
-    (t) => t.logicalStatus === 'intercepted',
+    (t) => t.logicalStatus === "intercepted",
   ).length;
 
   const impactedCount = threatsList.filter(
-    (t) => t.logicalStatus === 'impacted',
+    (t) => t.logicalStatus === "impacted",
   ).length;
 
   const stats = [
     {
-      id: 'active',
-      label: 'איומים פעילים',
+      id: "active",
+      label: "איומים פעילים",
       value: activeThreatsCount,
-      color: '#f97316',
-      bgColor: 'rgba(249, 115, 22, 0.15)',
-      icon: <WarningAmberIcon sx={{ color: '#f97316' }} />,
+      color: "#f97316",
+      bgColor: "rgba(249, 115, 22, 0.15)",
+      icon: <WarningAmberIcon sx={{ color: "#f97316" }} />,
     },
     {
-      id: 'airborne',
-      label: 'מיירטים באוויר',
+      id: "airborne",
+      label: "מיירטים באוויר",
       value: airborneInterceptorsCount,
-      color: '#38bdf8',
-      bgColor: 'rgba(56, 189, 248, 0.15)',
-      icon: <FlightTakeoffIcon sx={{ color: '#38bdf8' }} />,
+      color: "#38bdf8",
+      bgColor: "rgba(56, 189, 248, 0.15)",
+      icon: <FlightTakeoffIcon sx={{ color: "#38bdf8" }} />,
     },
     {
-      id: 'intercepted',
-      label: 'יורטו בהצלחה',
+      id: "intercepted",
+      label: "יורטו בהצלחה",
       value: interceptedCount,
-      color: '#22c55e',
-      bgColor: 'rgba(34, 197, 94, 0.15)',
-      icon: <CheckCircleIcon sx={{ color: '#22c55e' }} />,
+      color: "#22c55e",
+      bgColor: "rgba(34, 197, 94, 0.15)",
+      icon: <CheckCircleIcon sx={{ color: "#22c55e" }} />,
     },
     {
-      id: 'impacted',
-      label: 'נפלו בשטח',
+      id: "impacted",
+      label: "נפלו בשטח",
       value: impactedCount,
-      color: '#ef4444',
-      bgColor: 'rgba(239, 68, 68, 0.15)',
-      icon: <DangerousIcon sx={{ color: '#ef4444' }} />,
+      color: "#ef4444",
+      bgColor: "rgba(239, 68, 68, 0.15)",
+      icon: <DangerousIcon sx={{ color: "#ef4444" }} />,
     },
   ];
 
@@ -90,83 +97,126 @@ export const SimulationStats: React.FC<SimulationStatsProps> = () => {
       elevation={8}
       dir="rtl"
       sx={{
-        position: 'absolute',
-        top: 150,
-        left: 16,
+        position: "relative",
+        flex: "0 0 auto",
         zIndex: 1100,
         width: 252,
-        backgroundColor: 'rgba(15, 23, 42, 0.88)',
-        backdropFilter: 'blur(12px)',
-        border: '1px solid rgba(255, 255, 255, 0.15)',
+        backgroundColor: "rgba(15, 23, 42, 0.88)",
+        backdropFilter: "blur(12px)",
+        border: "1px solid rgba(255, 255, 255, 0.15)",
         borderRadius: 3.5,
-        color: '#ffffff',
-        boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.3)',
+        color: "#ffffff",
+        boxShadow:
+          "0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.3)",
       }}
     >
-      <CardContent sx={{ p: 1.5, '&:last-child': { pb: 1.5 } }}>
+      <CardContent
+        sx={{ p: 1.5, "&:last-child": { pb: isExpanded ? 1.5 : 1 } }}
+      >
         {/* Header & Connection Indicator */}
         <Box
           sx={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            mb: 1.5,
+            display: "flex",
+            alignItems: "center",
+            gap: 1,
+            cursor: "pointer",
+            userSelect: "none",
           }}
+          onClick={() => setIsExpanded((prev) => !prev)}
         >
-          <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#f8fafc' }}>
+          <Typography
+            variant="subtitle2"
+            sx={{ fontWeight: 700, color: "#f8fafc" }}
+          >
             לוח סטטיסטיקות
           </Typography>
-          <Chip
-            icon={<WifiIcon sx={{ fontSize: 16 }} />}
-            label={isConnected ? 'מחובר' : 'גיבוי'}
-            size="small"
-            color={isConnected ? 'success' : 'warning'}
-            variant="outlined"
+
+          <Box
             sx={{
-              fontWeight: 600,
-              fontSize: '0.7rem',
-              height: 24,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 0.5,
+              minWidth: 68,
+              px: 1,
+              py: 0.25,
+              border: "1px solid",
+              borderColor: isConnected ? "success.main" : "warning.main",
+              borderRadius: 4,
+              color: isConnected ? "success.main" : "warning.main",
+              direction: "rtl",
+              lineHeight: 1,
             }}
-          />
+          >
+            <WifiIcon sx={{ fontSize: 16 }} />
+            <Typography
+              component="span"
+              sx={{ fontWeight: 600, fontSize: "0.7rem" }}
+            >
+              {isConnected ? "מחובר" : "גיבוי"}
+            </Typography>
+          </Box>
+
+          <Tooltip title={isExpanded ? "מזער לוח" : "הרחב לוח"}>
+            <IconButton
+              size="small"
+              sx={{ color: "#94a3b8", p: 0.25, marginRight: "auto" }}
+            >
+              {isExpanded ? (
+                <ExpandLessIcon fontSize="small" />
+              ) : (
+                <ExpandMoreIcon fontSize="small" />
+              )}
+            </IconButton>
+          </Tooltip>
         </Box>
 
-        <Divider sx={{ borderColor: 'rgba(255, 255, 255, 0.1)', mb: 1 }} />
+        <Collapse in={isExpanded}>
+          <Divider sx={{ borderColor: "rgba(255, 255, 255, 0.1)", my: 1 }} />
 
-        {/* Counter Items Grid */}
-        <Stack spacing={0.75}>
-          {stats.map((item) => (
-            <Box
-              key={item.id}
-              sx={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                px: 1.25,
-                py: 0.5,
-                borderRadius: 2,
-                backgroundColor: item.bgColor,
-                border: `1px solid ${item.color}33`,
-              }}
-            >
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                {item.icon}
-                <Typography variant="body2" sx={{ fontWeight: 600, color: '#e2e8f0', fontSize: '0.8rem' }}>
-                  {item.label}
-                </Typography>
-              </Box>
-              <Typography
-                variant="subtitle2"
+          {/* Counter Items Grid */}
+          <Stack spacing={0.75}>
+            {stats.map((item) => (
+              <Box
+                key={item.id}
                 sx={{
-                  fontWeight: 800,
-                  fontFamily: 'monospace',
-                  color: item.color,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  px: 1.25,
+                  py: 0.5,
+                  borderRadius: 2,
+                  backgroundColor: item.bgColor,
+                  border: `1px solid ${item.color}33`,
                 }}
               >
-                {item.value}
-              </Typography>
-            </Box>
-          ))}
-        </Stack>
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                  {item.icon}
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      fontWeight: 600,
+                      color: "#e2e8f0",
+                      fontSize: "0.8rem",
+                    }}
+                  >
+                    {item.label}
+                  </Typography>
+                </Box>
+                <Typography
+                  variant="subtitle2"
+                  sx={{
+                    fontWeight: 800,
+                    fontFamily: "monospace",
+                    color: item.color,
+                  }}
+                >
+                  {item.value}
+                </Typography>
+              </Box>
+            ))}
+          </Stack>
+        </Collapse>
       </CardContent>
     </Card>
   );

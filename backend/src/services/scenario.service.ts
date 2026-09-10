@@ -1,8 +1,9 @@
-import { AppDataSource } from '../config/db';
-import { Scenario } from '../Entities';
-import { logger } from '../middleware/logger';
+import { AppDataSource } from "../config/db";
+import { Scenario, Drone } from "../Entities";
+import { logger } from "../middleware/logger";
 
-export const getScenarioRepository = () => AppDataSource.getRepository(Scenario);
+export const getScenarioRepository = () =>
+  AppDataSource.getRepository(Scenario);
 
 export type ScenarioInput = Partial<Scenario> & {
   drones_group_id?: number;
@@ -11,24 +12,73 @@ export type ScenarioInput = Partial<Scenario> & {
 
 export const getAllScenarios = async (): Promise<Scenario[]> => {
   const repo = getScenarioRepository();
-  return repo.find({
-    relations: { dronesGroup: { drones: true }, launchersGroup: { launchers: true } },
-    order: { id: 'ASC' },
+  const scenarios = await repo.find({
+    relations: {
+      dronesGroup: { drones: true },
+      launchersGroup: { launchers: true },
+    },
+    order: { id: "ASC" },
   });
+
+  for (const s of scenarios) {
+    const drones = s.dronesGroup?.drones ?? [];
+    s.locations = getLocations(drones);
+  }
+
+  return scenarios;
 };
 
 export const getScenarioById = async (id: string): Promise<Scenario | null> => {
   const repo = getScenarioRepository();
-  return repo.findOne({
+  const scenario = await repo.findOne({
     where: { id },
-    relations: { dronesGroup: { drones: true }, launchersGroup: { launchers: true } },
+    relations: {
+      dronesGroup: { drones: { droneType: true } },
+      launchersGroup: { launchers: { launcherType: true } },
+    },
   });
+
+  if (scenario) {
+    const drones = scenario.dronesGroup?.drones ?? [];
+    scenario.locations = getLocations(drones);
+  }
+
+  return scenario;
 };
 
-export const createScenario = async (data: ScenarioInput): Promise<Scenario> => {
+// Compute unique cardinal directions of drones relative to the center of Israel.
+// Returns an array with one or more of: "צפון" | "דרום" | "מזרח" | "מערב"
+export const getLocations = (drones?: Drone[] | null): string[] => {
+  if (!drones || drones.length === 0) return [];
+
+  const CENTER_LAT = 31.5;
+  const CENTER_LON = 34.75;
+
+  const dirs = new Set<string>();
+
+  for (const d of drones) {
+    if (!d) continue;
+    const lat = Number(d.latitude);
+    const lon = Number(d.longitude);
+    if (!Number.isFinite(lat) || !Number.isFinite(lon)) continue;
+
+    if (lat > CENTER_LAT) dirs.add("צפון");
+    if (lat < CENTER_LAT) dirs.add("דרום");
+    if (lon > CENTER_LON) dirs.add("מזרח");
+    if (lon < CENTER_LON) dirs.add("מערב");
+
+    // short-circuit if all four found
+    if (dirs.size === 4) break;
+  }
+
+  return Array.from(dirs);
+};
+
+export const createScenario = async (
+  data: ScenarioInput,
+): Promise<Scenario> => {
   const repo = getScenarioRepository();
   const scenario = repo.create({
-    id: data.id,
     name: data.name,
     dronesGroupId: data.dronesGroupId ?? data.drones_group_id,
     launchersGroupId: data.launchersGroupId ?? data.launchers_group_id,
@@ -41,7 +91,7 @@ export const createScenario = async (data: ScenarioInput): Promise<Scenario> => 
 
 export const updateScenario = async (
   id: string,
-  data: Partial<ScenarioInput>
+  data: Partial<ScenarioInput>,
 ): Promise<Scenario | null> => {
   const repo = getScenarioRepository();
   const existing = await repo.findOneBy({ id });
@@ -55,11 +105,15 @@ export const updateScenario = async (
   if (data.dronesGroupId !== undefined || data.drones_group_id !== undefined) {
     updatePayload.dronesGroupId = data.dronesGroupId ?? data.drones_group_id;
   }
-  if (data.launchersGroupId !== undefined || data.launchers_group_id !== undefined) {
-    updatePayload.launchersGroupId = data.launchersGroupId ?? data.launchers_group_id;
+  if (
+    data.launchersGroupId !== undefined ||
+    data.launchers_group_id !== undefined
+  ) {
+    updatePayload.launchersGroupId =
+      data.launchersGroupId ?? data.launchers_group_id;
   }
 
-  await repo.update(id, updatePayload);
+  await repo.update(id, updatePayload as any);
   const updated = await repo.findOneBy({ id });
   if (updated) {
     logger.info(`Updated scenario with id: ${id}`);
