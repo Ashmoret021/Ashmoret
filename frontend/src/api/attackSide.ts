@@ -14,13 +14,21 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     ...init,
   });
 
-  const payload = await response.json().catch(() => ({}));
+  const payload = await response.json().catch(() => null);
 
   if (!response.ok) {
-    throw new Error(payload?.message || 'Request failed');
+    const message =
+      typeof payload === 'object' && payload !== null && 'message' in payload
+        ? String((payload as { message?: string }).message)
+        : 'Request failed';
+    throw new Error(message || 'Request failed');
   }
 
-  return payload?.data as T;
+  if (payload && typeof payload === 'object' && 'data' in payload) {
+    return (payload as { data: T }).data;
+  }
+
+  return payload as T;
 }
 
 export async function getDroneTypes(): Promise<DroneTypeRecord[]> {
@@ -34,6 +42,13 @@ export async function getDronesGroups() {
 export async function createDronesGroupWithDrones(payload: Record<string, unknown>) {
   return request('/drones-groups/with-drones', {
     method: 'POST',
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function updateDronesGroupWithDrones(id: number, payload: Record<string, unknown>) {
+  return request(`/drones-groups/${id}/with-drones`, {
+    method: 'PUT',
     body: JSON.stringify(payload),
   });
 }

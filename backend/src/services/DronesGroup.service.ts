@@ -121,6 +121,131 @@ export const updateDronesGroup = async (
   return updated;
 };
 
+export const updateDronesGroupWithDrones = async (
+  id: number,
+  data: {
+    name?: string;
+    description?: string;
+    drones?: Array<Partial<Drone> & {
+      id?: number;
+      drones_group_id?: number;
+      longitude?: number;
+      latitude?: number;
+      asl?: number;
+      agl?: number;
+      heading?: number;
+      velocity?: number;
+      type?: number;
+    }>;
+  },
+): Promise<{ group: DronesGroup; drones: Drone[] } | null> => {
+  const repo = getDronesGroupRepository();
+
+  const result = await AppDataSource.transaction(async (manager) => {
+    const groupRepo = manager.getRepository(DronesGroup);
+    const droneRepo = manager.getRepository(Drone);
+
+    const existingGroup = await groupRepo.findOne({
+      where: { id },
+      relations: { drones: true },
+    });
+
+    if (!existingGroup) {
+      return null;
+    }
+
+    if (data.name !== undefined || data.description !== undefined) {
+      const nextName = data.name !== undefined ? String(data.name).trim() : existingGroup.name;
+      const nextDescription =
+        data.description !== undefined
+          ? String(data.description).trim() || undefined
+          : existingGroup.description;
+
+      await groupRepo.update(id, {
+        name: nextName || existingGroup.name,
+        description: nextDescription,
+      });
+    }
+
+    const incomingDrones = Array.isArray(data.drones) ? data.drones : [];
+    const existingDrones = [...(existingGroup.drones ?? [])];
+    const existingById = new Map(existingDrones.map((drone) => [drone.id, drone]));
+    const incomingIds = new Set<number>();
+
+    const upserts: Drone[] = [];
+    const created: Drone[] = [];
+
+    for (const droneData of incomingDrones) {
+      const droneId = droneData.id !== undefined ? Number(droneData.id) : undefined;
+      const normalizedType = Number(droneData.type ?? 1);
+      const normalizedLongitude = Number(droneData.longitude ?? 0);
+      const normalizedLatitude = Number(droneData.latitude ?? 0);
+      const normalizedAsl = Number(droneData.asl ?? droneData.agl ?? 100);
+      const normalizedAgl = Number(droneData.agl ?? droneData.asl ?? 100);
+      const normalizedHeading = Number(droneData.heading ?? 0);
+      const normalizedVelocity = Number(droneData.velocity ?? 60);
+
+      const droneEntity = {
+        dronesGroupId: id,
+        longitude: normalizedLongitude,
+        latitude: normalizedLatitude,
+        asl: normalizedAsl,
+        agl: normalizedAgl,
+        heading: Number.isFinite(normalizedHeading) ? normalizedHeading : 0,
+        velocity: Number.isFinite(normalizedVelocity) ? normalizedVelocity : 60,
+        type: Number.isFinite(normalizedType) ? normalizedType : 1,
+      };
+
+      if (Number.isInteger(droneId) && droneId! > 0 && existingById.has(droneId!)) {
+        incomingIds.add(droneId!);
+        const existingDrone = existingById.get(droneId!);
+        if (existingDrone) {
+          upserts.push(
+            droneRepo.create({
+              ...existingDrone,
+              ...droneEntity,
+              id: existingDrone.id,
+              dronesGroupId: id,
+            }),
+          );
+        }
+      } else {
+        created.push(droneRepo.create(droneEntity));
+      }
+    }
+
+    if (upserts.length) {
+      await Promise.all(
+        upserts.map(async (drone) => {
+          await droneRepo.save(drone);
+        }),
+      );
+    }
+
+    if (created.length) {
+      await droneRepo.save(created);
+    }
+
+    const deleteCandidates = existingDrones.filter((drone) => !incomingIds.has(drone.id) && !incomingDrones.some((item) => Number(item.id) === drone.id));
+    if (deleteCandidates.length) {
+      await droneRepo.remove(deleteCandidates);
+    }
+
+    const refreshedGroup = await groupRepo.findOne({
+      where: { id },
+      relations: { drones: true },
+    });
+
+    if (refreshedGroup) {
+      logger.info(`Updated drones group with id: ${id} and reconciled ${refreshedGroup.drones.length} drone rows`);
+    }
+
+    return { group: refreshedGroup ?? existingGroup, drones: refreshedGroup?.drones ?? existingDrones };
+  });
+
+  return result;
+};
+
 export const deleteDronesGroup = async (id: number): Promise<boolean> => {
   const repo = getDronesGroupRepository();
   const result = await repo.delete(id);

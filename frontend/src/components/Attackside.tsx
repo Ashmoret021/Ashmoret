@@ -112,15 +112,11 @@ export const AttackSide: React.FC<AttackSideProps> = ({
   };
 
   const handleSave = async () => {
-    try {
-      const result = await Promise.resolve(onSaveScenario?.());
-      if (result === false) {
-        return;
-      }
-      onClose();
-    } catch {
+    const result = await Promise.resolve(onSaveScenario?.());
+    if (result === false) {
       return;
     }
+    onClose();
   };
 
   /*

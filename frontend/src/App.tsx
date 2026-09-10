@@ -5,14 +5,18 @@ import axios from "axios";
 import { Drone, DroneType } from "../../types/types";
 import { algorithmClient } from "./algorithm/AlgorithmClient";
 import { WorldSnapshotBuilder } from "./algorithm/WorldSnapshotBuilder";
-import { createDronesGroupWithDrones, getDroneTypes } from "./api/attackSide";
+import {
+  createDronesGroupWithDrones,
+  getDroneTypes,
+  updateDronesGroupWithDrones,
+} from "./api/attackSide";
 import AttackSide from "./components/Attackside";
 import { CoordinatesControl } from "./components/CoordinatesControl";
 import { DefenseSide } from "./components/DefenseSide/defenseSide";
 import { DeleteConfirmModal } from "./components/DeleteConfirmModal";
 import DroneModal from "./components/DroneModal/DroneModal";
 import { PlacementHUD } from "./components/PlacementHUD";
-import { createWave } from "./constants/droneConstants";
+import { createWave, createDroneFormation } from "./constants/droneConstants";
 import { MainLayout } from "./layouts/MainLayout";
 import { LeafletRenderer } from "./map/LeafletRenderer";
 import { storageService } from "./services/storageService";
@@ -120,35 +124,46 @@ export const App = () => {
   } | null>(null);
 
   type DirectionPlacementDraft = {
-    droneId: string;
+    droneIds: string[];
     origin: L.LatLng;
     previewLine: L.Polyline;
     previewArrow: L.Marker;
     moveHandler: (event: L.LeafletMouseEvent) => void;
+    lastHeading: number;
   };
 
   const directionPlacementRef = useRef<DirectionPlacementDraft | null>(null);
 
+  const restoreNormalMapCursor = useCallback(() => {
+    const map = mapInstanceRef.current;
+    if (!map) {
+      return;
+    }
+
+    map.getContainer().style.cursor = "";
+  }, []);
+
   const clearDirectionPlacement = useCallback((removePlacedDrone = false) => {
     const draft = directionPlacementRef.current;
     if (!draft) {
+      restoreNormalMapCursor();
       return;
     }
 
     const map = mapInstanceRef.current;
     if (map) {
       map.off("mousemove", draft.moveHandler);
-      map.getContainer().style.cursor = "";
       map.removeLayer(draft.previewLine);
       map.removeLayer(draft.previewArrow);
+      restoreNormalMapCursor();
     }
 
     if (removePlacedDrone) {
-      setPlacedDrones((prev) => prev.filter((drone) => drone.id !== draft.droneId));
+      setPlacedDrones((prev) => prev.filter((drone) => !draft.droneIds.includes(drone.id)));
     }
 
     directionPlacementRef.current = null;
-  }, []);
+  }, [restoreNormalMapCursor]);
 
   const showToast = useCallback(
     (message: string, type: "success" | "error" | "info" = "info") => {
@@ -159,6 +174,8 @@ export const App = () => {
     },
     [],
   );
+
+  const saveInFlightRef = useRef(false);
 
   // Persist waves on change
   useEffect(() => {
@@ -775,14 +792,15 @@ export const App = () => {
           return;
         }
 
-        const heading = calculateBearing(
+        const rawHeading = calculateBearing(
           { lat: existingDraft.origin.lat, lng: existingDraft.origin.lng },
           { lat: target.lat, lng: target.lng },
         );
+        const heading = Number.isFinite(rawHeading) ? rawHeading : existingDraft.lastHeading ?? 0;
 
         setPlacedDrones((prev) =>
           prev.map((drone) =>
-            drone.id === existingDraft.droneId
+            existingDraft.droneIds.includes(drone.id)
               ? {
                   ...drone,
                   latitude: existingDraft.origin.lat,
@@ -799,19 +817,23 @@ export const App = () => {
 
         const placedForWave = placedDrones.filter((d) => d.waveId === activeWave.id);
         const required = Number(activeWave.quantity) || 0;
-        const isComplete = placedForWave.length >= required;
+        const totalAfterPlacement = placedForWave.length + existingDraft.droneIds.length;
+        const isComplete = totalAfterPlacement >= required;
 
         if (isComplete) {
           showToast(`כל ${required} הרחפנים עבור גל ${activeWave.id} הוצבו בהצלחה!`, "success");
           setPlacingWaveId(null);
         } else {
-          showToast(`כיוון הרחפן נקבע. ניתן להוסיף רחפן נוסף לגל ${activeWave.id}.`, "success");
+          const actionLabel = existingDraft.droneIds.length > 1 ? "המקבץ" : "הרחפן";
+          showToast(`כיוון ${actionLabel} נקבע. ניתן להוסיף עוד רחפנים לגל ${activeWave.id}.`, "success");
         }
         return;
       }
 
       const placedForWave = placedDrones.filter((d) => d.waveId === activeWave.id);
       const required = Number(activeWave.quantity) || 0;
+      const remaining = Math.max(0, required - placedForWave.length);
+      const mode = activeWave.placementMode === "batch" ? "batch" : "single";
 
       if (placedForWave.length >= required) {
         showToast(
@@ -824,6 +846,107 @@ export const App = () => {
 
       const lat = Number(e.latlng.lat.toFixed(6));
       const lng = Number(e.latlng.lng.toFixed(6));
+      const origin = L.latLng(lat, lng);
+
+      if (mode === "batch") {
+        const batchCount = Math.min(Math.max(1, Number(activeWave.batchSize) || 1), 20, remaining);
+        const formationPoints = createDroneFormation({ lat, lng }, batchCount, 220);
+
+        const clusterDrones: PlacedDrone[] = formationPoints.map((point, index) => {
+          const nextIndex = placedForWave.length + index + 1;
+          const uniqueSuffix = Math.random().toString(36).substring(2, 6).toUpperCase();
+          const droneId = `DRN-W${activeWave.id}-${String(nextIndex).padStart(2, "0")}-${uniqueSuffix}`;
+
+          return {
+            id: droneId,
+            name: `רחפן ${nextIndex} (גל ${activeWave.id})`,
+            waveId: activeWave.id,
+            waveIndex: waves.findIndex((w) => w.id === activeWave.id) + 1,
+            droneType: activeWave.droneType,
+            latitude: Number(point.lat.toFixed(6)),
+            longitude: Number(point.lng.toFixed(6)),
+            altitude: activeWave.altitude || 100,
+            heading: activeWave.angle || 45,
+            angle: activeWave.angle || 45,
+            status: "ready",
+            placedAt: new Date().toISOString(),
+          };
+        });
+
+        const updatedDrones = [...placedDrones, ...clusterDrones];
+        setPlacedDrones(updatedDrones);
+        storageService.saveStoredDrones(updatedDrones);
+
+        const previewLine = L.polyline([origin, origin], {
+          color: "#f59e0b",
+          weight: 4,
+          opacity: 0.9,
+          dashArray: "7 5",
+        }).addTo(mapEl);
+
+        const previewArrow = L.marker(origin, {
+          icon: L.divIcon({
+            className: "direction-preview-arrow",
+            html: '<span style="display:inline-block;transform-origin:center;transform:rotate(0deg);font-size:30px;line-height:30px;color:#f59e0b;text-shadow:0 0 8px rgba(245,158,11,0.9);">▲</span>',
+            iconSize: [30, 30],
+            iconAnchor: [15, 15],
+          }),
+          interactive: false,
+        }).addTo(mapEl);
+
+        const moveHandler = (moveEvent: L.LeafletMouseEvent) => {
+          const target = moveEvent.latlng;
+          const rawHeading = calculateBearing(
+            { lat: origin.lat, lng: origin.lng },
+            { lat: target.lat, lng: target.lng },
+          );
+          const heading = Number.isFinite(rawHeading) ? rawHeading : 0;
+
+          previewLine.setLatLngs([origin, target]);
+          const arrowElement = previewArrow.getElement()?.querySelector("span");
+          if (arrowElement instanceof HTMLElement) {
+            arrowElement.style.transform = `rotate(${heading}deg)`;
+          }
+
+          setPlacedDrones((prev) =>
+            prev.map((drone) =>
+              clusterDrones.some((candidate) => candidate.id === drone.id)
+                ? {
+                    ...drone,
+                    latitude: drone.latitude,
+                    longitude: drone.longitude,
+                    heading,
+                    angle: heading,
+                    placedAt: drone.placedAt,
+                  }
+                : drone,
+            ),
+          );
+
+          directionPlacementRef.current = {
+            droneIds: clusterDrones.map((drone) => drone.id),
+            origin,
+            previewLine,
+            previewArrow,
+            moveHandler,
+            lastHeading: heading,
+          };
+        };
+
+        mapEl.on("mousemove", moveHandler);
+        mapEl.getContainer().style.cursor = "crosshair";
+        directionPlacementRef.current = {
+          droneIds: clusterDrones.map((drone) => drone.id),
+          origin,
+          previewLine,
+          previewArrow,
+          moveHandler,
+          lastHeading: Number(activeWave.angle) || 45,
+        };
+
+        showToast(`מקבץ של ${clusterDrones.length} רחפנים נוצר. לחץ שנית כדי לקבוע כיוון.`, "info");
+        return;
+      }
 
       const nextNum = placedForWave.length + 1;
       const uniqueSuffix = Math.random().toString(36).substring(2, 6).toUpperCase();
@@ -848,7 +971,6 @@ export const App = () => {
       setPlacedDrones(updatedDrones);
       storageService.saveStoredDrones(updatedDrones);
 
-      const origin = L.latLng(lat, lng);
       const previewLine = L.polyline([origin, origin], {
         color: "#f59e0b",
         weight: 4,
@@ -868,26 +990,52 @@ export const App = () => {
 
       const moveHandler = (moveEvent: L.LeafletMouseEvent) => {
         const target = moveEvent.latlng;
-        const heading = calculateBearing(
+        const rawHeading = calculateBearing(
           { lat: origin.lat, lng: origin.lng },
           { lat: target.lat, lng: target.lng },
         );
+        const heading = Number.isFinite(rawHeading) ? rawHeading : 0;
 
         previewLine.setLatLngs([origin, target]);
         const arrowElement = previewArrow.getElement()?.querySelector("span");
         if (arrowElement instanceof HTMLElement) {
           arrowElement.style.transform = `rotate(${heading}deg)`;
         }
+
+        setPlacedDrones((prev) =>
+          prev.map((drone) =>
+            drone.id === newDrone.id
+              ? {
+                  ...drone,
+                  latitude: newDrone.latitude,
+                  longitude: newDrone.longitude,
+                  heading,
+                  angle: heading,
+                  placedAt: drone.placedAt,
+                }
+              : drone,
+          ),
+        );
+
+        directionPlacementRef.current = {
+          droneIds: [newDrone.id],
+          origin,
+          previewLine,
+          previewArrow,
+          moveHandler,
+          lastHeading: heading,
+        };
       };
 
       mapEl.on("mousemove", moveHandler);
       mapEl.getContainer().style.cursor = "crosshair";
       directionPlacementRef.current = {
-        droneId: newDrone.id,
+        droneIds: [newDrone.id],
         origin,
         previewLine,
         previewArrow,
         moveHandler,
+        lastHeading: Number(newDrone.heading) || 45,
       };
 
       showToast("לחץ שנית כדי לקבע את כיוון הרחפן", "info");
@@ -925,7 +1073,8 @@ export const App = () => {
     setPlacingWaveId(null);
     setAttackModalOpen(false);
     resetAttackDraft();
-  }, [clearDirectionPlacement, resetAttackDraft]);
+    showToast("יצירת התרחיש בוטלה", "info");
+  }, [clearDirectionPlacement, resetAttackDraft, showToast]);
 
   useEffect(() => {
     if (placingWaveId === null) {
@@ -934,6 +1083,12 @@ export const App = () => {
   }, [placingWaveId, clearDirectionPlacement]);
 
   const handleSaveScenario = useCallback(async () => {
+    if (saveInFlightRef.current) {
+      return false;
+    }
+
+    saveInFlightRef.current = true;
+
     const scenarioName =
       attackName.trim() ||
       `תרחיש ${new Date().toLocaleTimeString("he-IL", { hour: "2-digit", minute: "2-digit" })}`;
@@ -956,7 +1111,7 @@ export const App = () => {
       }
 
       return {
-        drones_group_id: undefined,
+        id: typeof drone.id === "string" && drone.id.startsWith("DRN-") ? undefined : Number(drone.id),
         longitude: Number(drone.longitude),
         latitude: Number(drone.latitude),
         asl: Number(drone.altitude || 100),
@@ -968,9 +1123,9 @@ export const App = () => {
     });
 
     if (normalizedDrones.some((drone) => drone === null)) {
-      throw new Error(
-        `לא נמצא סוג רחפן תקין ב-PostgreSQL: ${missingTypeNames.join(", ")}. יש לטעון את drone_type מהבסיס הנתונים.`,
-      );
+      saveInFlightRef.current = false;
+      showToast("לא ניתן לשמור את התרחיש. נסה שוב.", "error");
+      return false;
     }
 
     const payload = {
@@ -982,7 +1137,22 @@ export const App = () => {
     };
 
     try {
-      await createDronesGroupWithDrones(payload as Record<string, unknown>);
+      const existingGroupId = currentScenarioId ? Number(currentScenarioId) : NaN;
+      const isUpdate = Number.isFinite(existingGroupId) && existingGroupId > 0;
+
+      const result = isUpdate
+        ? await updateDronesGroupWithDrones(
+            existingGroupId,
+            payload as Record<string, unknown>,
+          )
+        : await createDronesGroupWithDrones(payload as Record<string, unknown>);
+
+      const response = result as { group?: { id?: number }; id?: number } | undefined;
+      const createdGroupId = response?.group?.id ?? response?.id ?? existingGroupId;
+      if (createdGroupId) {
+        setCurrentScenarioId(String(createdGroupId));
+        storageService.setActiveScenarioId(String(createdGroupId));
+      }
 
       const scenarioToSave: Scenario = {
         id: `RG-${Date.now().toString().slice(-6)}`,
@@ -999,19 +1169,27 @@ export const App = () => {
       resetAttackDraft();
 
       showToast(
-        `תרחיש "${scenarioName}" נשמר בהצלחה ב-drones_group וב-drone עם ${placedDrones.length} רחפנים.`,
+        isUpdate ? "השינויים נשמרו בהצלחה" : "התרחיש נשמר בהצלחה",
         "success",
       );
 
       return true;
     } catch (error) {
       const message = error instanceof Error ? error.message : "Request failed";
-      showToast(`שמירת צד אדום נכשלה: ${message}`, "error");
+      if (currentScenarioId) {
+        showToast("לא ניתן לשמור את השינויים. נסה שוב.", "error");
+      } else {
+        showToast("לא ניתן לשמור את התרחיש. נסה שוב.", "error");
+      }
+      console.error(message);
       return false;
+    } finally {
+      saveInFlightRef.current = false;
     }
   }, [
     attackName,
     attackDescription,
+    currentScenarioId,
     droneTypeOptions,
     placedDrones,
     resetAttackDraft,
