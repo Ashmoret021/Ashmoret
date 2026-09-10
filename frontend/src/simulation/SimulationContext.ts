@@ -102,6 +102,7 @@ let state = createEmptyState();
 let historyRecords: SimulationSnapshot[] = [];
 let rafHandle: number | null = null;
 let lastTimestamp: number | null = null;
+let currentScenario: Scenario | null = null;
 const tickCallbacks = new Set<TickCallback>();
 const stateListeners = new Set<StateListener>();
 
@@ -195,7 +196,11 @@ function clockLoop(timestamp: number) {
   }
 
   lastTimestamp = timestamp;
-  rafHandle = requestAnimationFrame(clockLoop);
+  if (state.status === 'running') {
+    rafHandle = requestAnimationFrame(clockLoop);
+  } else {
+    rafHandle = null;
+  }
 }
 
 export function getState(): SimulationState {
@@ -251,6 +256,7 @@ export function stopClock() {
 
   rafHandle = null;
   lastTimestamp = null;
+  isReplayCompleted = false;
   state = { ...state, status: 'idle' };
   notifyStateListeners();
 }
@@ -303,6 +309,7 @@ export function onTick(callback: TickCallback): () => void {
 }
 
 export function loadScenario(scenario: Scenario) {
+  currentScenario = scenario;
   const threats: Record<number, DroneSimState> = {};
   for (const drone of scenario.drones) {
     threats[drone.id] = {
@@ -337,6 +344,12 @@ export function loadScenario(scenario: Scenario) {
   recordSnapshot();
   lastTimestamp = null;
   notifyStateListeners();
+}
+
+export function reloadCurrentScenario() {
+  if (currentScenario) {
+    loadScenario(currentScenario);
+  }
 }
 
 export function clearScenario() {

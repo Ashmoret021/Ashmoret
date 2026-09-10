@@ -23,6 +23,7 @@ import {
   finishClock,
   getState,
   onTick,
+  reloadCurrentScenario,
   setState,
   stopClock,
 } from "./simulation/SimulationContext";
@@ -538,6 +539,7 @@ export const App = () => {
       interceptorOutcomesRef.current = {};
     }
     visualEventQueue.clear();
+    reloadCurrentScenario(); // Reset threats, simulationTime, interceptors and all context state
 
     const renderer = rendererRef.current;
     if (renderer) {
