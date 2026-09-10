@@ -47,7 +47,8 @@ import axios from "axios";
 import "leaflet/dist/leaflet.css";
 import { algorithmClient } from "./algorithm/AlgorithmClient";
 import { WorldSnapshotBuilder } from "./algorithm/WorldSnapshotBuilder";
-import AircraftSidebar from "./components/AircraftSidebar/AircraftSidebar";
+import AircraftSidebar, { AircraftData } from "./components/AircraftSidebar/AircraftSidebar";
+
 export const App = () => {
   const mapRef = useRef<HTMLDivElement | null>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
@@ -84,8 +85,54 @@ export const App = () => {
     const saved = storageService.getStoredWaves();
     return saved && saved.length > 0 ? saved : [createWave(1)];
   });
+
+  // TODO: CONNECT TO BACKEND
+  const MOCK_PLACED_DRONES: PlacedDrone[] = [
+    {
+      id: "DRN-W1-01-A1B2",
+      name: "רחפן 1 (גל 1)",
+      waveId: 1,
+      waveIndex: 1,
+      droneType: "FalconLongX4",
+      latitude: 33.0123,
+      longitude: 35.1234,
+      altitude: 120,
+      heading: 45,
+      angle: 45,
+      status: "ready",
+      placedAt: "2026-09-10T12:00:00.000Z",
+    },
+    {
+      id: "DRN-W1-02-C3D4",
+      name: "רחפן 2 (גל 1)",
+      waveId: 1,
+      waveIndex: 1,
+      droneType: "FalconLongX4",
+      latitude: 33.0250,
+      longitude: 35.1350,
+      altitude: 150,
+      heading: 60,
+      angle: 60,
+      status: "ready",
+      placedAt: "2026-09-10T12:05:00.000Z",
+    },
+    {
+      id: "DRN-W2-01-E5F6",
+      name: "רחפן 1 (גל 2)",
+      waveId: 2,
+      waveIndex: 2,
+      droneType: "Hermes450",
+      latitude: 32.8500,
+      longitude: 35.2000,
+      altitude: 200,
+      heading: 90,
+      angle: 90,
+      status: "ready",
+      placedAt: "2026-09-10T12:10:00.000Z",
+    },
+  ];
   const [placedDrones, setPlacedDrones] = useState<PlacedDrone[]>(() => {
-    return storageService.getStoredDrones();
+    return MOCK_PLACED_DRONES; 
   });
   const [placingWaveId, setPlacingWaveId] = useState<number | null>(null);
   const [highlightedDroneId, setHighlightedDroneId] = useState<string | null>(null);
@@ -111,6 +158,22 @@ export const App = () => {
       setToast((curr) => (curr?.message === message ? null : curr));
     }, 4000);
   }, []);
+
+  // Map placedDrones into AircraftData format for the AircraftSidebar
+  const aircraftsData: AircraftData[] = placedDrones.map((d) => ({
+    id: d.id,
+    name: d.name,
+    droneType: d.droneType,
+    estimatedAttackQuantity: 1,
+    unitCost: 15000,
+    totalCost: 15000,
+    simulatedThreatNature: "כטב\"ם נכנס",
+    flightDistance: 200,
+    flightSpeed: 150,
+    estimatedDamage: "קשה",
+    intelligenceAssessmentLebanon: "איום פעיל",
+    intelligenceAssessmentGaza: "נמוך",
+  }));
 
   // Persist waves on change
   useEffect(() => {
@@ -165,7 +228,7 @@ export const App = () => {
           threat.logicalStatus === "active" ||
           threat.logicalStatus === "interceptPending"
         ) {
-          const flightDuration = 40; // 40 seconds — wider corridor in advanced scenario
+          const flightDuration = 40;
           const progress = Math.min(
             1,
             (simTime - threat.startTime) / flightDuration,
@@ -318,7 +381,7 @@ export const App = () => {
         setState({ threats: updatedThreats });
       }
 
-      // C. Algorithm API Step (fired once per 1 second of simulation time)
+      // C. Algorithm API Step
       if (
         !pendingApiCallRef.current &&
         simTime - lastApiTickSimTimeRef.current >= 1.0
@@ -576,8 +639,6 @@ export const App = () => {
     };
   }, []);
 
-  // ── Attack Side (wave placement builder) handlers ─────────────────────────
-
   // Drone focus / centering action
   const handleFocusDrone = useCallback((droneId: string) => {
     const drone = placedDrones.find((d) => d.id === droneId);
@@ -602,7 +663,7 @@ export const App = () => {
     }, 5000);
   }, [placedDrones]);
 
-  // Request Delete Single Drone (with confirmation modal)
+  // Request Delete Single Drone
   const handleDeleteDroneRequestById = useCallback((droneId: string) => {
     const drone = placedDrones.find((d) => d.id === droneId);
     if (!drone) return;
@@ -699,7 +760,6 @@ export const App = () => {
         const droneId = `DRN-W${activeWave.id}-${String(nextNum).padStart(2, "0")}-${uniqueSuffix}`;
         const droneName = `רחפן ${nextNum} (גל ${activeWave.id})`;
 
-        // Slight offset for multi-placement batch items
         const offsetRadius = isBatch && batchCount > 1 ? 0.0003 * Math.sqrt(i) : 0;
         const offsetAngle = isBatch && batchCount > 1 ? (i * 2 * Math.PI) / batchCount : 0;
         const droneLat = Number((lat + offsetRadius * Math.cos(offsetAngle)).toFixed(6));
@@ -749,7 +809,6 @@ export const App = () => {
     };
   }, [placingWaveId, waves, placedDrones, showToast]);
 
-  // Scenario Management Callbacks
   const handleSaveScenario = useCallback(() => {
     const scenarioId = currentScenarioId || `SCN-${Date.now().toString().slice(-6)}`;
     const scenarioName =
@@ -785,7 +844,6 @@ export const App = () => {
     );
   }, [currentScenarioId, attackName, attackDescription, waves, placedDrones, showToast]);
 
-  // Active wave calculation
   const activePlacingWave =
     placingWaveId !== null ? waves.find((w) => w.id === placingWaveId) || null : null;
   const activePlacedCount = activePlacingWave
@@ -793,28 +851,6 @@ export const App = () => {
     : 0;
   const activeRequiredCount = activePlacingWave ? Number(activePlacingWave.quantity) || 0 : 0;
   const activeRemainingCount = Math.max(0, activeRequiredCount - activePlacedCount);
-
-  const stateJson = JSON.stringify(state, null, 2);
-  const isRunning = state.status === "running";
-  const isPaused = state.status === "paused";
-
-  const toggleClock = () => {
-    if (isRunning) {
-      pauseClock();
-    } else if (isPaused) {
-      resumeClock();
-    } else {
-      startClock();
-    }
-  };
-
-  const drone: Drone = {
-    id: 1,
-    location: { agl: 1, asl: 1, latitude: 31, longitude: 34 },
-    type: DroneType.FalconLongX4,
-    velocity: 67,
-    heading: 3,
-  };
 
   const handleStartSimulation = () => {
     console.log("Simulation initiated");
@@ -868,16 +904,17 @@ export const App = () => {
         )}
         {showMainAdditionalComponents && (
           <>
-            <EventLog />
-            <SimulationStats />
-            <SimulationControls onRestart={handleRestart} />
+            {/* Render AircraftSidebar on the left side */}
+            <AircraftSidebar aircrafts={aircraftsData} />
+            {/*<EventLog />*/}
+            {/*<SimulationStats />*/}
+            {<SimulationControls onRestart={handleRestart} />}
             <DefenseSide
               map={map}
               open={defenseModalOpen}
               onClose={() => setDefenseModalOpen(false)}
             />
 
-            {/* Floating Placement HUD for attack-side drone placement */}
             {activePlacingWave && (
               <PlacementHUD
                 activeWave={activePlacingWave}
@@ -894,7 +931,6 @@ export const App = () => {
           </>
         )}
 
-        {/* Attack Waves Configuration Modal */}
         <AttackSide
           open={attackModalOpen}
           onClose={() => setAttackModalOpen(false)}
@@ -938,7 +974,6 @@ export const App = () => {
           onSaveScenario={handleSaveScenario}
         />
 
-        {/* Delete Confirmation Modal */}
         <DeleteConfirmModal
           open={deleteModal.open}
           title={deleteModal.title}
@@ -947,7 +982,6 @@ export const App = () => {
           onCancel={() => setDeleteModal((curr) => ({ ...curr, open: false }))}
         />
 
-        {/* Attack-side toast notifications */}
         {toast && (
           <div
             dir="rtl"

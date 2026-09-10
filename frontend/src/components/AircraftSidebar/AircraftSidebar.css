@@ -1,41 +1,44 @@
 .aircraft-sidebar {
-    width: 640px;
-    min-width: 640px;
-    height: 100vh;
-    overflow-y: auto;
-    overflow-x: hidden;
-    background-color: #070d1b;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 20px 0;
-    gap: 20px;
-    border-right: 2px solid #e0e0e0;
-    z-index: 1000;
-    box-sizing: border-box;
-  }
-  
-  /* Prevents Flexbox from shrinking cards vertically */
-  .aircraft-card-item {
-    flex-shrink: 0;
-    width: 600px;
-    height: 400px;
-  }
-  
-  /* Styled Scrollbar */
-  .aircraft-sidebar::-webkit-scrollbar {
-    width: 8px;
-  }
-  
-  .aircraft-sidebar::-webkit-scrollbar-track {
-    background: #e0e0e0;
-  }
-  
-  .aircraft-sidebar::-webkit-scrollbar-thumb {
-    background: #888;
-    border-radius: 4px;
-  }
-  
-  .aircraft-sidebar::-webkit-scrollbar-thumb:hover {
-    background: #555;
-  }
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 640px;
+  min-width: 640px;
+  height: 100vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+  background-color: #070d1b;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px 0;
+  gap: 20px;
+  border-right: 2px solid #e0e0e0;
+  z-index: 1000;
+  box-sizing: border-box;
+}
+
+/* Prevents Flexbox from shrinking cards vertically */
+.aircraft-card-item {
+  flex-shrink: 0;
+  width: 600px;
+  height: 400px;
+}
+
+/* Styled Scrollbar */
+.aircraft-sidebar::-webkit-scrollbar {
+  width: 8px;
+}
+
+.aircraft-sidebar::-webkit-scrollbar-track {
+  background: #e0e0e0;
+}
+
+.aircraft-sidebar::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 4px;
+}
+
+.aircraft-sidebar::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
