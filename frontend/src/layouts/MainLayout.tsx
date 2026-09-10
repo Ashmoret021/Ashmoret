@@ -16,9 +16,10 @@ import {
   DialogContent,
   DialogTitle,
 } from "@mui/material";
-import L from "leaflet";
+import L, { Map } from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { useSimulation } from "../simulation/useSimulation";
+import { MapView } from "../ui/MapView";
 
 interface MainLayoutProps {
   logoSrc?: string;
@@ -26,6 +27,7 @@ interface MainLayoutProps {
   defaultScenarioName?: string;
   simId?: string;
   onStartSimulation?: () => void;
+  handleMapReady?: (map: Map) => void;
 }
 
 export const MainLayout: React.FC<MainLayoutProps> = ({
@@ -34,6 +36,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
   defaultScenarioName = "רב-זירתי - צפון ומזרח",
   simId = "SIM-01",
   onStartSimulation,
+  handleMapReady,
 }) => {
   const initialScenarioTitle = scenarioName || defaultScenarioName;
   const [navView, setNavView] = useState<NavViewMode>("drones");
@@ -91,6 +94,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
       {/* Main Workspace: Tactical Map with Right Navigation Drawer & Sidebars */}
       <main className="main-viewport">
         <div style={{ height: "100vh", position: "relative", width: "100vw" }}>
+          <MapView onMapReady={handleMapReady} />
           <Dialog
             fullWidth
             maxWidth="md"
