@@ -29,6 +29,7 @@ import "leaflet/dist/leaflet.css";
 import { useSimulation } from "../simulation/useSimulation";
 import { AddScenerioModal } from "../components";
 import { MapView } from "../ui/MapView";
+import { EventSummary } from "../components/EventSummary/EventSummary";
 import {
   clearScenario,
   loadScenario,
@@ -37,7 +38,11 @@ import {
 import { getScenarioById } from "../simulation/sampleScenario";
 import { visualEventQueue } from "../visual/VisualEventQueue";
 import { algorithmClient } from "../algorithm/AlgorithmClient";
-import { useGetAllDronesGroups, useGetAllLaunchersGroups, useGetAllScenarios } from "../api/hooks";
+import {
+  useGetAllDronesGroups,
+  useGetAllLaunchersGroups,
+  useGetAllScenarios,
+} from "../api/hooks";
 
 interface MainLayoutProps {
   logoSrc?: string;
@@ -46,7 +51,9 @@ interface MainLayoutProps {
   simId?: string;
   onStartSimulation?: () => void;
   handleMapReady?: (map: Map) => void;
-  setShowMainAdditionalComponents: React.Dispatch<React.SetStateAction<boolean>>;
+  setShowMainAdditionalComponents: React.Dispatch<
+    React.SetStateAction<boolean>
+  >;
   onGoToCoordinates?: (lat: number, lng: number) => void;
   onRemoveMarker?: () => void;
   hasMarker?: boolean;
@@ -74,21 +81,21 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
   onLayersToggle,
   layersMenuRef,
 }) => {
-
   const [selectedGroup, setSelectedGroup] = useState<
     DroneGroup | LauncherGroup | null
   >(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [rulerActive, setRulerActive] = useState(false);
   const [navView, setNavView] = useState<NavViewMode>("home");
-  const [selectedScenario, setSelectedScenario] = useState<ScenarioItem | null>(null);
+  const [selectedScenario, setSelectedScenario] = useState<ScenarioItem | null>(
+    null,
+  );
 
-  const {dronesGroups, setDronesGroups} = useGetAllDronesGroups();
-  const {launchersGroups, setLaunchersGroups} = useGetAllLaunchersGroups();
-
+  const { dronesGroups, setDronesGroups } = useGetAllDronesGroups();
+  const { launchersGroups, setLaunchersGroups } = useGetAllLaunchersGroups();
 
   //TODO: data doesnt match to INITIAL_SCENARIOS
-  const {scenarios, setScenarios} = useGetAllScenarios();
+  const { scenarios, setScenarios } = useGetAllScenarios();
 
   const [isStateDialogOpen, setIsStateDialogOpen] = useState(false);
   const [isCreateScenarioOpen, setIsCreateScenarioOpen] = useState(false);
@@ -143,6 +150,14 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
     }
   };
 
+  const handleScenarioSelectFromSummary = (scenarioId: string) => {
+    const foundScenario = INITIAL_SCENARIOS.find((s) => s.id === scenarioId);
+    if (foundScenario) {
+      setSelectedScenario(foundScenario);
+    }
+    setNavView("scenarios");
+  };
+
   const handleRestart = () => {
     const renderer = (window as any).__leafletRenderer;
     stopClock();
@@ -187,12 +202,12 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
 
   // ── Hide simulation HUD when Summary view is active ───────────────────────
   useEffect(() => {
-    if (navView === "summary") {
+    if (navView === "summary" || navView === "summary_scenarios") {
       setShowMainAdditionalComponents(false);
     } else {
       setShowMainAdditionalComponents(true);
     }
-  }, [navView]);
+  }, [navView, setShowMainAdditionalComponents]);
 
   return (
     <div className="main-layout-container">
@@ -226,6 +241,12 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
         {/* View: Simulation Summary (full-screen, no map / HUD) */}
         {navView === "summary" ? (
           <SimulationSummaryPanel onViewSimulation={handleViewSimulation} />
+        ) : navView === "summary_scenarios" ? (
+          /* View 2: Scenarios Repository Panel (מאגר תרחישים) */
+          <EventSummary
+            scenarios={INITIAL_SCENARIOS}
+            onSelectScenario={handleScenarioSelectFromSummary}
+          />
         ) : (
           <>
             {/* Tactical Map */}
@@ -285,9 +306,9 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
             </div>
 
             {/* Scenario selection panel (home / drones view) */}
-            {(navView === "home") && (
+            {navView === "home" && (
               <EventsPanel
-                scenarios={INITIAL_SCENARIOS}
+                scenarios={scenarios}
                 selectedScenarioId={selectedScenario?.id}
                 isOpen={isSidebarOpen}
                 onToggleOpen={() => setIsSidebarOpen((open) => !open)}
@@ -300,11 +321,11 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
               onClose={() => setIsCreateScenarioOpen(false)}
             />
 
-            {/* Scenarios panel (dedicated scenarios view) */}
+            {/* Events Panel */}
             {navView === "scenarios" && (
               <EventsPanel
                 selectedScenarioId={selectedScenario?.id}
-                scenarios={INITIAL_SCENARIOS}
+                scenarios={scenarios}
                 isOpen={isSidebarOpen}
                 onToggleOpen={() => setIsSidebarOpen((open) => !open)}
                 onScenarioSelect={handleScenarioSelect}
