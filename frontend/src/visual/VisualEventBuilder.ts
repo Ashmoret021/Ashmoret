@@ -26,31 +26,7 @@ import {
   VISUAL_INTERCEPT_DURATION_S,
 } from './types';
 
-// ---------------------------------------------------------------------------
-// EngagementDecision
-//
-// NOTE: When Dev 2 ships `src/algorithm/types.ts`, replace this local
-// definition with:
-//   import type { EngagementDecision } from '../algorithm/types';
-//
-// The shape below matches the spec §11 contract exactly.
-// ---------------------------------------------------------------------------
-export interface EngagementDecision {
-  /** ID of the launcher / defense system that fires the interceptor */
-  defenseSystemId: string;
-
-  /** Name of the interceptor type, e.g. "DartFox-S" */
-  interceptorType: string;
-
-  /** ID of the threat drone this interceptor targets */
-  targetId: string;
-
-  /**
-   * Optional pre-determined outcome from the algorithm.
-   * If omitted the engagement outcome will be assumed 'success'.
-   */
-  result?: 'success' | 'failure';
-}
+import type { EngagementDecision } from '../algorithm/types';
 
 // ---------------------------------------------------------------------------
 // Output bundle returned by processEngagementDecision

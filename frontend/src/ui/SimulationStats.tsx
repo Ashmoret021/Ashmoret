@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Box,
   Card,
@@ -14,15 +14,22 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import DangerousIcon from '@mui/icons-material/Dangerous';
 import WifiIcon from '@mui/icons-material/Wifi';
 import { useSimulation } from '../simulation/useSimulation';
+import { algorithmClient } from '../algorithm/AlgorithmClient';
 
 export interface SimulationStatsProps {
   isAlgorithmConnected?: boolean;
 }
 
-export const SimulationStats: React.FC<SimulationStatsProps> = ({
-  isAlgorithmConnected = true,
-}) => {
+export const SimulationStats: React.FC<SimulationStatsProps> = () => {
   const { state } = useSimulation();
+  const [isConnected, setIsConnected] = useState(true);
+
+  useEffect(() => {
+    const id = setInterval(() => {
+      setIsConnected(algorithmClient.getIsAvailable());
+    }, 1000);
+    return () => clearInterval(id);
+  }, []);
 
   const threatsList = Object.values(state.threats);
   const interceptorsList = Object.values(state.interceptors);
@@ -111,9 +118,9 @@ export const SimulationStats: React.FC<SimulationStatsProps> = ({
           </Typography>
           <Chip
             icon={<WifiIcon sx={{ fontSize: 16 }} />}
-            label={isAlgorithmConnected ? 'מחובר' : 'גיבוי'}
+            label={isConnected ? 'מחובר' : 'גיבוי'}
             size="small"
-            color={isAlgorithmConnected ? 'success' : 'warning'}
+            color={isConnected ? 'success' : 'warning'}
             variant="outlined"
             sx={{
               fontWeight: 600,
