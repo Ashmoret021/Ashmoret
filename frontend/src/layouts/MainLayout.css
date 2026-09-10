@@ -1,0 +1,17 @@
+.main-layout-container {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background-color: var(--bg-deep, #060911);
+  direction: rtl;
+}
+
+.main-viewport {
+  position: relative;
+  flex: 1;
+  width: 100%;
+  height: calc(100vh - 58px);
+  overflow: hidden;
+}

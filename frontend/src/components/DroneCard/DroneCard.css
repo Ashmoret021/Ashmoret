@@ -1,0 +1,361 @@
+@import url("https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700&display=swap");
+
+* {
+  box-sizing: border-box;
+}
+
+.drone-card {
+  position: relative;
+
+  width: 600px;
+  height: 400px;
+
+  overflow: hidden;
+
+  border: 2px solid #62666d;
+  border-radius: 20px;
+
+  background:
+    radial-gradient(
+      ellipse at 50% 78%,
+      rgba(50, 72, 138, 0.3) 0%,
+      rgba(24, 30, 47, 0.12) 35%,
+      transparent 60%
+    ),
+    radial-gradient(
+      ellipse at 100% 50%,
+      rgba(104, 39, 83, 0.12) 0%,
+      transparent 35%
+    ),
+    #10141b;
+
+  color: white;
+
+  font-family: "Heebo", Arial, sans-serif;
+}
+
+
+/* =====================================================
+   RIBBON
+   ===================================================== */
+
+.status-ribbon {
+  position: absolute;
+
+  top: 0;
+  left: 0;
+
+  width: 150px;
+  height: 135px;
+
+  background: #285791;
+
+  clip-path: polygon(
+    0 0,
+    100% 0,
+    0 100%
+  );
+
+  z-index: 2;
+}
+
+.status-ribbon span {
+  position: absolute;
+
+  top: 40px;
+  left: 23px;
+
+  transform: rotate(-45deg);
+
+  font-size: 24px;
+  font-weight: 700;
+
+  white-space: nowrap;
+}
+
+
+/* =====================================================
+   HEADER
+   ===================================================== */
+
+.drone-header {
+  position: absolute;
+
+  top: 16px;
+  right: 20px;
+  left: 18px;
+
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+
+/* =====================================================
+   NAME + DRONE
+   ===================================================== */
+
+.drone-main-info {
+  display: flex;
+
+  align-items: flex-start;
+
+  gap: 9px;
+}
+
+.drone-main-info .drone-svg {
+  width: 49px;
+  height: 49px;
+
+  flex-shrink: 0;
+}
+
+.drone-name-wrapper {
+  padding-top: 5px;
+}
+
+.drone-name {
+  font-size: 29px;
+  line-height: 0.95;
+
+  font-weight: 700;
+
+  white-space: nowrap;
+}
+
+.drone-id {
+  margin-top: 3px;
+
+  font-size: 27px;
+  line-height: 1;
+
+  font-weight: 700;
+
+  direction: ltr;
+  text-align: right;
+}
+
+
+/* =====================================================
+   USAGE ROW
+   ===================================================== */
+
+   .usage-row {
+    position: absolute;
+  
+    top: 120px;
+    left: 50px;
+    right: 50px;
+  
+    display: flex;
+  
+    align-items: center;
+    justify-content: center;
+  
+    direction: rtl;
+  }
+  
+  
+  /* זמן שימוש - בצד שמאל */
+  .accumulated-time {
+    font-size: 21px;
+    line-height: 1.2;
+  
+    white-space: nowrap;
+  
+    text-align: center;
+  }
+  
+  
+  /* סוללה - בצד ימין */
+  .battery {
+    margin-left: 100px;
+  
+    display: flex;
+  
+    align-items: baseline;
+  
+    gap: 4px;
+  
+    font-size: 21px;
+    line-height: 1;
+  
+    white-space: nowrap;
+  }
+  
+  .battery strong {
+    font-size: 22px;
+    font-weight: 500;
+  }
+  
+  /* =====================================================
+   FAULTS
+   ===================================================== */
+
+.faults {
+    position: absolute;
+  
+    top: 178px;
+    left: 0;
+    right: 0;
+  
+    width: 100%;
+    height: 100px;
+  
+    font-family: "Heebo", Arial, sans-serif;
+  
+    direction: rtl;
+  }
+  
+  
+  /* כל צד ממוקם בנפרד */
+  .fault-block {
+    position: absolute;
+  
+    width: 235px;
+  
+    text-align: center;
+  
+    direction: rtl;
+  }
+  
+  
+  /* שמאל בתמונה */
+  .fault-left {
+    left: 62px;
+  }
+  
+  
+  /* ימין בתמונה */
+  .fault-right {
+    right: 62px;
+  }
+  
+  
+  /* שורות הטקסט */
+  .fault-line {
+    display: flex;
+  
+    justify-content: center;
+    align-items: baseline;
+  
+    gap: 5px;
+  
+    width: 100%;
+  
+    font-size: 20px;
+    line-height: 1.3;
+  
+    direction: rtl;
+  
+    white-space: nowrap;
+  }
+  
+  
+  /* המילים עצמן */
+  .fault-line span {
+    display: inline-block;
+  
+    direction: rtl;
+    unicode-bidi: isolate;
+  }
+  
+  
+  /* תאריך */
+  .fault-date {
+    margin-top: 5px;
+  
+    width: 100%;
+  
+    font-size: 18px;
+    line-height: 1.2;
+  
+    text-align: center;
+  
+    direction: rtl;
+    unicode-bidi: plaintext;
+    white-space: nowrap;
+  }
+
+
+/* =====================================================
+   BOTTOM PATH
+   ===================================================== */
+
+.drone-path {
+  position: absolute;
+
+  right: 32px;
+  bottom: 15px;
+  left: 32px;
+
+  height: 48px;
+
+  display: flex;
+
+  align-items: center;
+}
+
+
+/* left circle */
+.path-start {
+  width: 27px;
+  height: 27px;
+
+  border: 2px solid white;
+  border-radius: 50%;
+
+  flex-shrink: 0;
+}
+
+
+/* dotted line */
+.path-line {
+  flex: 1;
+
+  height: 0;
+
+  border-top: 3px dotted white;
+}
+
+
+/* center drone */
+.path-drone {
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  width: 45px;
+  height: 45px;
+
+  flex-shrink: 0;
+
+  margin: 0 12px;
+}
+
+.path-drone .drone-svg {
+  width: 44px;
+  height: 44px;
+}
+
+
+/* location */
+.path-location {
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  width: 48px;
+  height: 48px;
+
+  flex-shrink: 0;
+
+  margin-right: -4px;
+}
+
+.location-svg {
+  width: 46px;
+  height: 46px;
+}

@@ -1,0 +1,133 @@
+/* Side Navigation Container */
+.side-nav-container {
+  position: absolute;
+  top: 0;
+  /* Positioned to the left of the 385px side panels (EventsPanel / LaunchersDronesPanel),
+     plus their 28px collapse tab, so the dropdown never overlaps them. */
+  right: 430px;
+  z-index: 1200;
+  direction: rtl;
+  user-select: none;
+}
+
+/* Closed State Tab - Top Right dropdown tab matching media_1789025422331.png */
+.side-nav-closed-tab {
+  width: 58px;
+  height: 28px;
+  background: linear-gradient(180deg, #1e40af 0%, #173575 100%);
+  border: 1.5px solid #3b82f6;
+  border-top: none;
+  border-radius: 0 0 12px 12px;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5), 0 0 10px rgba(37, 99, 235, 0.35);
+  transition: all 0.2s ease;
+  padding: 0;
+}
+
+.side-nav-closed-tab:hover {
+  background: #2563eb;
+  height: 32px;
+  box-shadow: 0 6px 18px rgba(37, 99, 235, 0.5);
+}
+
+.trigger-chevron {
+  color: #f1f5f9;
+}
+
+/* Open State Card - Dropdown matching media_1789025444378.png */
+.side-nav-open-card {
+  width: 175px;
+  background: linear-gradient(180deg, #17336b 0%, #142a57 100%);
+  border: 1.5px solid #3b82f6;
+  border-top: none;
+  border-radius: 0 0 16px 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7), 0 0 20px rgba(37, 99, 235, 0.4);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: slideDown 0.2s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.side-nav-options-list {
+  list-style: none;
+  margin: 0;
+  padding: 8px 0 4px 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.side-nav-item {
+  width: 100%;
+}
+
+.side-nav-item-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 8px 18px;
+  background: transparent;
+  border: none;
+  color: #f1f5f9;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-align: right;
+  direction: rtl;
+}
+
+.nav-item-text {
+  letter-spacing: 0.2px;
+}
+
+.side-nav-item-btn:hover {
+  background: rgba(59, 130, 246, 0.25);
+  color: #ffffff;
+}
+
+.side-nav-item-btn.active {
+  background: rgba(37, 99, 235, 0.45);
+  color: #ffffff;
+  font-weight: 700;
+}
+
+/* Close Chevron at bottom of menu */
+.side-nav-close-bottom-btn {
+  width: 100%;
+  background: transparent;
+  border: none;
+  border-top: 1px solid rgba(59, 130, 246, 0.25);
+  color: #f1f5f9;
+  padding: 6px 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.side-nav-close-bottom-btn:hover {
+  background: rgba(59, 130, 246, 0.3);
+  color: #38bdf8;
+}
+
+.close-chevron-icon {
+  color: #93c5fd;
+}

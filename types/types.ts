@@ -14,10 +14,10 @@ export type Drone = {
 };
 
 export enum DroneType {
-  SkyMiteC7,
-  LoadBeeM2,
-  FalconLongX4,
-  NanoSwarmQ9,
+  SkyMiteC7 = 'SkyMiteC7',
+  LoadBeeM2 = 'LoadBeeM2',
+  FalconLongX4 = 'FalconLongX4',
+  NanoSwarmQ9 = 'NanoSwarmQ9',
 }
 
 export type Launcher = {
@@ -52,7 +52,7 @@ export enum InterceptorType {
   FalconClipH,
   SwarmMist5,
   MicroNetR,
-}
+}  
 
 export const InterceptorRange: Record<InterceptorType, number> = {
   [InterceptorType.BuzzStop15]: 10000,
@@ -63,4 +63,18 @@ export const InterceptorRange: Record<InterceptorType, number> = {
   [InterceptorType.FalconClipH]: 70000,
   [InterceptorType.SwarmMist5]: 5000,
   [InterceptorType.MicroNetR]: 7000,
+};
+
+export type LauncherGroup = {
+  id: number;
+  name: string;
+  description?: string;
+  launchers: Launcher[];
+};
+
+export type DroneGroup = {
+  id: number;
+  name: string;
+  description?: string;
+  drones: Drone[];
 };

@@ -29,15 +29,15 @@ export const CoordinatesControl: React.FC<CoordinatesControlProps> = ({
           pointerEvents: "auto",
           margin: "0 0 10px 10px",
           padding: "4px 8px",
-          backgroundColor: "rgba(255, 255, 255, 0.85)",
+          backgroundColor: "rgba(16, 28, 49, 0.95)",
           backdropFilter: "blur(4px)",
           borderRadius: "4px",
-          boxShadow: "0 1px 5px rgba(0, 0, 0, 0.3)",
+          boxShadow: "0 4px 12px rgba(0, 0, 0, 0.45)",
           fontFamily: "monospace",
           fontSize: "12px",
-          color: "#333",
+          color: "#f1f5f9",
           userSelect: "none",
-          border: "1px solid rgba(0, 0, 0, 0.1)",
+          border: "1px solid #1c2e4f",
         }}
       >
         {coords ? (
@@ -45,7 +45,7 @@ export const CoordinatesControl: React.FC<CoordinatesControlProps> = ({
             x: {coords.lat.toFixed(5)}, y: {coords.lng.toFixed(5)}
           </span>
         ) : (
-          <span style={{ color: "#888" }}>x: ---, y: ---</span>
+          <span style={{ color: "#fcfcfc" }}>x: ---, y: ---</span>
         )}
       </div>
     </div>
