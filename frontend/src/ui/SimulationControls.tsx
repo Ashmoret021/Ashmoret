@@ -47,7 +47,9 @@ export const SimulationControls: React.FC<{ onRestart?: () => void }> = ({ onRes
   const handlePlayPause = () => {
     if (isRunning) {
       pauseClock();
-    } else if (isPaused || isFinished) {
+    } else if (isFinished) {
+      handleRestart();
+    } else if (isPaused) {
       resumeClock();
     } else {
       startClock();
@@ -57,9 +59,11 @@ export const SimulationControls: React.FC<{ onRestart?: () => void }> = ({ onRes
   const handleRestart = () => {
     if (onRestart) {
       onRestart();
+      startClock();
     } else {
       stopClock();
       setState({ simulationTime: 0 });
+      startClock();
     }
   };
 
@@ -83,7 +87,7 @@ export const SimulationControls: React.FC<{ onRestart?: () => void }> = ({ onRes
       dir="rtl"
       sx={{
         position: 'absolute',
-        bottom: 24,
+        bottom: 36,
         left: '50%',
         transform: 'translateX(-50%)',
         zIndex: 1100,

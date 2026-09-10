@@ -4,39 +4,16 @@
 --   מידול מערכות כחולות: B2:I10
 --
 -- Run AFTER the supplied init.sql, against the same PostgreSQL database:
---   psql -d ashmoret -v ON_ERROR_STOP=1 -f seed_base_data.sql
+--    psql -d ashmoret -v ON_ERROR_STOP=1 -f seed_base_data.sql
 -- This file uses the scenario_management schema (matching init.sql / the app's
 -- DataSource config). Change the search_path below if needed.
 --
 -- SCHEMA CHANGES INCLUDED:
---   Adds workbook attributes to the three type tables and creates two
---   type-level relationship tables. Update the corresponding TypeORM entities.
---   In particular, launcher_type.reload_time becomes nullable because the
---   workbook provides no reload times. Existing reload times are preserved.
---   Do not use TypeORM synchronize to revert these additions or nullability.
---
--- IMPORT RULES:
---   4 drone types, 4 launcher types, 8 interceptor types, 8 ammunition mappings,
---   and 14 supplied success-rate entries. All names come from the workbook.
---   Names resolve database-generated IDs; no hard-coded foreign-key IDs.
---   Re-runs update the supplied catalog values without duplicating records.
---   Unrelated records and existing scenario/instance data are preserved.
---   No DROP or TRUNCATE. Re-running init.sql itself WILL delete existing data.
---
---   Repeated system quantities belong to the same launcher model: 28 systems
---   in the workbook, not 56. Inventory figures are saved as source estimates.
---   No drone, launcher, group, scenario, or launcher_ammunition rows are created:
---   positions, ASL/AGL, headings, group assignments, active states, and the
---   intended meaning of launcher.amount are not supplied in the workbook.
---   drone_type.flight_speed_kmh is a model value, not drone.velocity.
---
--- UNITS:
---   Costs are ILS, as shown by the workbook's shekel number formats.
---   The estimated-damage column has no stated unit; no currency is assumed.
---   Distances remain km; model speeds remain km/h; rates remain percentages
---   (72.00 means 72%, not 0.72). Unlisted pairings remain absent, not 0%.
---   Operating range and rates stay attached to each launcher/interceptor pair,
---   matching the source rows rather than inferring model-wide values.
+--    Adds workbook attributes to the three type tables and creates two
+--    type-level relationship tables. Update the corresponding TypeORM entities.
+--    In particular, launcher_type.reload_time becomes nullable because the
+--    workbook provides no reload times. Existing reload times are preserved.
+--    Do not use TypeORM synchronize to revert these additions or nullability.
 
 BEGIN;
 SET LOCAL search_path = scenario_management, pg_catalog;
@@ -46,8 +23,14 @@ DO $preflight$
 BEGIN
     IF to_regclass('drone_type') IS NULL
        OR to_regclass('launcher_type') IS NULL
-       OR to_regclass('interceptor_type') IS NULL THEN
-        RAISE EXCEPTION 'Required type tables are missing. Run init.sql first.';
+       OR to_regclass('interceptor_type') IS NULL
+       OR to_regclass('drones_group') IS NULL
+       OR to_regclass('launchers_group') IS NULL
+       OR to_regclass('scenario') IS NULL
+       OR to_regclass('drone') IS NULL
+       OR to_regclass('launcher') IS NULL
+       OR to_regclass('launcher_ammunition') IS NULL THEN
+         RAISE EXCEPTION 'Required schema tables are missing. Run init.sql first.';
     END IF;
 END;
 $preflight$;
@@ -97,15 +80,8 @@ COMMENT ON TABLE launcher_type_ammunition IS
     'Workbook model-level ammunition load and operating range. Actual launcher inventory remains in launcher_ammunition.';
 COMMENT ON TABLE launcher_type_interception_rate IS
     'Only workbook-supplied percentages for each launcher/interceptor/drone combination. Missing entries mean unspecified.';
-COMMENT ON COLUMN launcher_type.source_system_quantity IS
-    'System quantity in the source workbook, counted once per launcher model. Not a count of launcher table rows.';
-COMMENT ON COLUMN drone_type.estimated_damage IS
-    'Source workbook value. Its unit is not specified.';
-COMMENT ON COLUMN drone_type.flight_speed_kmh IS
-    'Model flight speed in km/h. The unit of drone.velocity is not defined by init.sql.';
 
--- 2. Stage the exact source records for this transaction.
---    Temporary tables are removed automatically at COMMIT or ROLLBACK.
+-- 2. Stage the exact source records for catalog types.
 
 CREATE TEMP TABLE _ashmoret_seed_drone (
     name VARCHAR(255) NOT NULL,
@@ -123,66 +99,309 @@ CREATE TEMP TABLE _ashmoret_seed_drone (
 
 INSERT INTO _ashmoret_seed_drone (name, category, source_estimated_attack_quantity, unit_cost_ils, source_total_cost_ils, threat_description, flight_range_km, estimated_damage, flight_speed_kmh, source_estimate_lebanon, source_estimate_gaza)
 VALUES
-    ('SkyMite-C7', 'רחפן מסחרי קל', 1200, 2500, 3000000, 'הצפה כמותית, חתימה נמוכה, מתאים לשחיקת קשב וגלאים.', 15.0, 350000, 60.0, 800, 400),
-    ('LoadBee-M2', 'רחפן נשיאת מטען קל', 650, 8000, 5200000, 'נשיאת מטען מוגבל, איום נקודתי על אתרים רגישים.', 15.0, 1000000, 60.0, 500, 150),
-    ('Falcon-Long X4', 'רחפן ארוך־טווח מאולתר', 320, 18000, 5760000, 'חדירה מעומק, דורש גילוי מוקדם ותעדוף מיירטים יקרים.', 50.0, 2000000, 60.0, 200, 120),
-    ('NanoSwarm-Q9', 'נחיל רחפנים זעירים', 2400, 900, 2160000, 'איום רווי וזול, מיועד לשחיקת מלאי וליצירת ריבוי מטרות.', 25.0, 150000, 60.0, 1000, 1400);
+    (
+        'משגרי הצפון',
+        'קבוצת משגרים הממוקמת באזור הצפוני'
+    ),
+    (
+        'משגרי הדרום',
+        'קבוצת משגרים הממוקמת באזור הדרומי'
+    ),
+    (
+        'משגרי המרכז',
+        'קבוצת משגרים הממוקמת באזור המרכזי'
+    ),
+    (
+        'משגרי אימון',
+        'משגרים המשמשים לתרחישי אימון ובדיקות'
+    );
 
-CREATE TEMP TABLE _ashmoret_seed_launcher (
-    name VARCHAR(255) NOT NULL,
-    source_system_quantity INTEGER NOT NULL
-) ON COMMIT DROP;
 
-INSERT INTO _ashmoret_seed_launcher (name, source_system_quantity)
+-- ============================================================
+-- 4. SCENARIOS
+-- תרחישים
+-- ============================================================
+
+INSERT INTO scenario.scenario (
+    id,
+    name,
+    drones_group_id,
+    launchers_group_id,
+    type
+)
 VALUES
-    ('ShieldNest-Lite', 8),
-    ('IronHook-SR', 6),
-    ('HorizonEye-MX', 4),
-    ('CloudFence-Area', 10);
+    (
+        'SCENARIO-001',
+        'הגנה צפונית',
+        (SELECT id
+         FROM scenario.drones_group
+         WHERE name = 'רחפני אלפא'),
+        (SELECT id
+         FROM scenario.launchers_group
+         WHERE name = 'משגרי הצפון'),
+        'יחיד'
+    ),
+    (
+        'SCENARIO-002',
+        'הגנה דרומית',
+        (SELECT id
+         FROM scenario.drones_group
+         WHERE name = 'רחפני בראבו'),
+        (SELECT id
+         FROM scenario.launchers_group
+         WHERE name = 'משגרי הדרום'),
+        'רב-מערכתי'
+    ),
+    (
+        'SCENARIO-003',
+        'תצפית מרכזית',
+        (SELECT id
+         FROM scenario.drones_group
+         WHERE name = 'רחפני צ׳רלי'),
+        (SELECT id
+         FROM scenario.launchers_group
+         WHERE name = 'משגרי המרכז'),
+        'יחיד'
+    ),
+    (
+        'SCENARIO-004',
+        'תרגיל אימון',
+        (SELECT id
+         FROM scenario.drones_group
+         WHERE name = 'רחפני אימון'),
+        (SELECT id
+         FROM scenario.launchers_group
+         WHERE name = 'משגרי אימון'),
+        'רב-מערכתי'
+    );
 
-CREATE TEMP TABLE _ashmoret_seed_interceptor (
-    name VARCHAR(255) NOT NULL,
-    unit_cost_ils NUMERIC(18,2) NOT NULL
-) ON COMMIT DROP;
 
-INSERT INTO _ashmoret_seed_interceptor (name, unit_cost_ils)
+-- ============================================================
+-- 5. DRONES
+-- רחפנים
+-- ============================================================
+
+INSERT INTO scenario.drone (
+    drones_group_id,
+    longitude,
+    latitude,
+    asl,
+    agl,
+    heading,
+    velocity,
+    type
+)
 VALUES
-    ('BuzzStop-15', 15000),
-    ('NetWing-30', 22000),
-    ('DartFox-S', 45000),
-    ('SpearMini-70', 68000),
-    ('SkyLance-M', 120000),
-    ('FalconClip-H', 180000),
-    ('SwarmMist-5', 7500),
-    ('MicroNet-R', 18000);
+    (
+        (SELECT id FROM scenario.drones_group
+         WHERE name = 'רחפני אלפא'),
+        34.781800,
+        32.085300,
+        120,
+        80,
+        45,
+        25,
+        (SELECT id FROM scenario.drone_type
+         WHERE name = 'רחפן מרובע')
+    ),
+    (
+        (SELECT id FROM scenario.drones_group
+         WHERE name = 'רחפני אלפא'),
+        34.790200,
+        32.090100,
+        150,
+        100,
+        90,
+        30,
+        (SELECT id FROM scenario.drone_type
+         WHERE name = 'רחפן מרובע')
+    ),
+    (
+        (SELECT id FROM scenario.drones_group
+         WHERE name = 'רחפני אלפא'),
+        34.800500,
+        32.095500,
+        200,
+        150,
+        180,
+        35,
+        (SELECT id FROM scenario.drone_type
+         WHERE name = 'רחפן כנף קבועה')
+    ),
+    (
+        (SELECT id FROM scenario.drones_group
+         WHERE name = 'רחפני בראבו'),
+        34.810000,
+        31.950000,
+        100,
+        70,
+        270,
+        20,
+        (SELECT id FROM scenario.drone_type
+         WHERE name = 'רחפן המראה ונחיתה אנכית')
+    ),
+    (
+        (SELECT id FROM scenario.drones_group
+         WHERE name = 'רחפני בראבו'),
+        34.820000,
+        31.960000,
+        130,
+        90,
+        315,
+        28,
+        (SELECT id FROM scenario.drone_type
+         WHERE name = 'רחפן מרובע')
+    ),
+    (
+        (SELECT id FROM scenario.drones_group
+         WHERE name = 'רחפני צ׳רלי'),
+        34.750000,
+        32.000000,
+        250,
+        200,
+        135,
+        40,
+        (SELECT id FROM scenario.drone_type
+         WHERE name = 'רחפן תצפית')
+    ),
+    (
+        (SELECT id FROM scenario.drones_group
+         WHERE name = 'רחפני צ׳רלי'),
+        34.760000,
+        32.010000,
+        300,
+        250,
+        225,
+        45,
+        (SELECT id FROM scenario.drone_type
+         WHERE name = 'רחפן כנף קבועה')
+    ),
+    (
+        (SELECT id FROM scenario.drones_group
+         WHERE name = 'רחפני אימון'),
+        34.770000,
+        32.020000,
+        80,
+        50,
+        0,
+        15,
+        (SELECT id FROM scenario.drone_type
+         WHERE name = 'רחפן מרובע')
+    );
 
-CREATE TEMP TABLE _ashmoret_seed_ammunition (
-    launcher_name VARCHAR(255) NOT NULL,
-    interceptor_name VARCHAR(255) NOT NULL,
-    ammunition_per_system INTEGER NOT NULL,
-    source_total_ammunition INTEGER NOT NULL,
-    operating_range_km DOUBLE PRECISION NOT NULL
-) ON COMMIT DROP;
 
-INSERT INTO _ashmoret_seed_ammunition (launcher_name, interceptor_name, ammunition_per_system, source_total_ammunition, operating_range_km)
+-- ============================================================
+-- 6. LAUNCHERS
+-- משגרים
+-- ============================================================
+
+INSERT INTO scenario.launcher (
+    launchers_group_id,
+    longitude,
+    latitude,
+    asl,
+    agl,
+    type,
+    amount,
+    active
+)
 VALUES
-    ('ShieldNest-Lite', 'BuzzStop-15', 24, 192, 10.0),
-    ('ShieldNest-Lite', 'NetWing-30', 16, 128, 10.0),
-    ('IronHook-SR', 'DartFox-S', 15, 90, 30.0),
-    ('IronHook-SR', 'SpearMini-70', 10, 60, 30.0),
-    ('HorizonEye-MX', 'SkyLance-M', 12, 48, 50.0),
-    ('HorizonEye-MX', 'FalconClip-H', 6, 24, 70.0),
-    ('CloudFence-Area', 'SwarmMist-5', 45, 450, 5.0),
-    ('CloudFence-Area', 'MicroNet-R', 15, 150, 7.0);
+    (
+        (SELECT id FROM scenario.launchers_group
+         WHERE name = 'משגרי הצפון'),
+        34.770000,
+        32.070000,
+        50,
+        10,
+        (SELECT id FROM scenario.launcher_type
+         WHERE name = 'משגר קרקעי'),
+        4,
+        TRUE
+    ),
+    (
+        (SELECT id FROM scenario.launchers_group
+         WHERE name = 'משגרי הצפון'),
+        34.775000,
+        32.075000,
+        55,
+        12,
+        (SELECT id FROM scenario.launcher_type
+         WHERE name = 'משגר נייד'),
+        3,
+        TRUE
+    ),
+    (
+        (SELECT id FROM scenario.launchers_group
+         WHERE name = 'משגרי הדרום'),
+        34.830000,
+        31.940000,
+        45,
+        8,
+        (SELECT id FROM scenario.launcher_type
+         WHERE name = 'משגר קרקעי'),
+        5,
+        TRUE
+    ),
+    (
+        (SELECT id FROM scenario.launchers_group
+         WHERE name = 'משגרי הדרום'),
+        34.835000,
+        31.945000,
+        60,
+        15,
+        (SELECT id FROM scenario.launcher_type
+         WHERE name = 'משגר כבד'),
+        2,
+        FALSE
+    ),
+    (
+        (SELECT id FROM scenario.launchers_group
+         WHERE name = 'משגרי המרכז'),
+        34.760000,
+        32.030000,
+        70,
+        20,
+        (SELECT id FROM scenario.launcher_type
+         WHERE name = 'משגר נייד'),
+        4,
+        TRUE
+    ),
+    (
+        (SELECT id FROM scenario.launchers_group
+         WHERE name = 'משגרי המרכז'),
+        34.765000,
+        32.035000,
+        75,
+        25,
+        (SELECT id FROM scenario.launcher_type
+         WHERE name = 'משגר קרקעי'),
+        6,
+        TRUE
+    ),
+    (
+        (SELECT id FROM scenario.launchers_group
+         WHERE name = 'משגרי אימון'),
+        34.750000,
+        32.010000,
+        30,
+        5,
+        (SELECT id FROM scenario.launcher_type
+         WHERE name = 'משגר נייד'),
+        2,
+        TRUE
+    );
 
-CREATE TEMP TABLE _ashmoret_seed_rate (
-    launcher_name VARCHAR(255) NOT NULL,
-    interceptor_name VARCHAR(255) NOT NULL,
-    drone_name VARCHAR(255) NOT NULL,
-    success_rate_percent NUMERIC(5,2) NOT NULL
-) ON COMMIT DROP;
 
-INSERT INTO _ashmoret_seed_rate (launcher_name, interceptor_name, drone_name, success_rate_percent)
+-- ============================================================
+-- 7. LAUNCHER AMMUNITION
+-- תחמושת משגרים
+-- ============================================================
+
+INSERT INTO scenario.launcher_ammunition (
+    launcher_id,
+    interceptor_type_id,
+    amount
+)
 VALUES
     ('ShieldNest-Lite', 'BuzzStop-15', 'SkyMite-C7', 72.0),
     ('ShieldNest-Lite', 'BuzzStop-15', 'NanoSwarm-Q9', 38.0),
@@ -199,7 +418,7 @@ VALUES
     ('CloudFence-Area', 'MicroNet-R', 'NanoSwarm-Q9', 68.0),
     ('CloudFence-Area', 'MicroNet-R', 'SkyMite-C7', 73.0);
 
--- 3. Check source quantities, then upsert the type records.
+-- 3. Check source quantities, then upsert catalog records.
 
 DO $source_checks$
 BEGIN
@@ -226,7 +445,6 @@ $source_checks$;
 INSERT INTO drone_type (name, category, source_estimated_attack_quantity, unit_cost_ils, source_total_cost_ils, threat_description, flight_range_km, estimated_damage, flight_speed_kmh, source_estimate_lebanon, source_estimate_gaza)
 SELECT name, category, source_estimated_attack_quantity, unit_cost_ils, source_total_cost_ils, threat_description, flight_range_km, estimated_damage, flight_speed_kmh, source_estimate_lebanon, source_estimate_gaza
 FROM _ashmoret_seed_drone
-WHERE true
 ON CONFLICT (name) DO UPDATE SET
     category = EXCLUDED.category,
     source_estimated_attack_quantity = EXCLUDED.source_estimated_attack_quantity,
@@ -242,20 +460,16 @@ ON CONFLICT (name) DO UPDATE SET
 INSERT INTO interceptor_type (name, unit_cost_ils)
 SELECT name, unit_cost_ils
 FROM _ashmoret_seed_interceptor
-WHERE true
 ON CONFLICT (name) DO UPDATE SET
     unit_cost_ils = EXCLUDED.unit_cost_ils;
 
--- NULL means "not supplied", not zero. Keep any existing reload_time value.
 INSERT INTO launcher_type (name, reload_time, source_system_quantity)
 SELECT name, NULL::DOUBLE PRECISION, source_system_quantity
 FROM _ashmoret_seed_launcher
-WHERE true
 ON CONFLICT (name) DO UPDATE SET
     source_system_quantity = EXCLUDED.source_system_quantity;
 
--- 4. Resolve IDs by name and create the model-level relationships.
---    Check affected counts so a failed lookup cannot silently drop a source row.
+-- 4. Create model-level type relationships.
 
 DO $relationships$
 DECLARE
@@ -270,7 +484,6 @@ BEGIN
     FROM _ashmoret_seed_ammunition AS s
     JOIN launcher_type AS l ON l.name = s.launcher_name
     JOIN interceptor_type AS i ON i.name = s.interceptor_name
-    WHERE true
     ON CONFLICT (launcher_type_id, interceptor_type_id) DO UPDATE SET
         ammunition_per_system = EXCLUDED.ammunition_per_system,
         source_total_ammunition = EXCLUDED.source_total_ammunition,
@@ -289,7 +502,6 @@ BEGIN
     JOIN launcher_type AS l ON l.name = s.launcher_name
     JOIN interceptor_type AS i ON i.name = s.interceptor_name
     JOIN drone_type AS d ON d.name = s.drone_name
-    WHERE true
     ON CONFLICT (launcher_type_id, interceptor_type_id, drone_type_id) DO UPDATE SET
         success_rate_percent = EXCLUDED.success_rate_percent;
 
@@ -300,28 +512,105 @@ BEGIN
 END;
 $relationships$;
 
--- 5. Import summary. These counts describe catalog records, not instances.
+-- ==========================================================================
+-- 5. Seed Instance Data (Groups, Scenarios, Drones, Launchers, Ammunition)
+-- ==========================================================================
+
+-- Seed Drone Groups
+INSERT INTO drones_group (id, name, description) VALUES
+    (1, 'Northern Sector Incursion Vector', 'Commercial and long-range threat profile in Northern sector'),
+    (2, 'Southern Swarms Attack Force', 'High-density micro-drone swarm vectors in Southern sector')
+ON CONFLICT (id) DO UPDATE SET 
+    name = EXCLUDED.name, 
+    description = EXCLUDED.description;
+
+-- Seed Launcher Groups
+INSERT INTO launchers_group (id, name, description) VALUES
+    (1, 'Galilee Tiered Air Defense Grid', 'Integrated forward and mid-range interception network'),
+    (2, 'Negev Area Defense Battery', 'Point and area defense deployment for high-value assets')
+ON CONFLICT (id) DO UPDATE SET 
+    name = EXCLUDED.name, 
+    description = EXCLUDED.description;
+
+-- Reset sequence counters for auto-increment PKs
+SELECT setval('drones_group_id_seq', (SELECT MAX(id) FROM drones_group));
+SELECT setval('launchers_group_id_seq', (SELECT MAX(id) FROM launchers_group));
+
+-- Seed Scenarios
+INSERT INTO scenario (id, name, drones_group_id, launchers_group_id, type) VALUES
+    ('SCN-NORTH-001', 'Northern Incursion & Multi-Tier Interception', 1, 1, 'AIR_DEFENSE_SIMULATION'),
+    ('SCN-SOUTH-002', 'Southern High-Density Swarm Saturation', 2, 2, 'SWARM_MITIGATION')
+ON CONFLICT (id) DO UPDATE SET
+    name = EXCLUDED.name,
+    drones_group_id = EXCLUDED.drones_group_id,
+    launchers_group_id = EXCLUDED.launchers_group_id,
+    type = EXCLUDED.type;
+
+-- Seed Drone Instances
+INSERT INTO drone (drones_group_id, longitude, latitude, asl, agl, heading, velocity, type)
+SELECT 1, 35.5123, 33.1200, 450.0, 150.0, 180.0, dt.flight_speed_kmh, dt.id FROM drone_type dt WHERE dt.name = 'SkyMite-C7'
+UNION ALL
+SELECT 1, 35.5150, 33.1220, 460.0, 160.0, 180.0, dt.flight_speed_kmh, dt.id FROM drone_type dt WHERE dt.name = 'SkyMite-C7'
+UNION ALL
+SELECT 1, 35.5200, 33.1300, 600.0, 300.0, 175.0, dt.flight_speed_kmh, dt.id FROM drone_type dt WHERE dt.name = 'LoadBee-M2'
+UNION ALL
+SELECT 1, 35.4950, 33.1500, 850.0, 550.0, 185.0, dt.flight_speed_kmh, dt.id FROM drone_type dt WHERE dt.name = 'Falcon-Long X4'
+UNION ALL
+SELECT 2, 34.7800, 31.2500, 250.0, 50.0, 45.0, dt.flight_speed_kmh, dt.id FROM drone_type dt WHERE dt.name = 'NanoSwarm-Q9'
+UNION ALL
+SELECT 2, 34.7820, 31.2510, 255.0, 55.0, 45.0, dt.flight_speed_kmh, dt.id FROM drone_type dt WHERE dt.name = 'NanoSwarm-Q9';
+
+-- Seed Launcher Instances
+INSERT INTO launcher (id, launchers_group_id, longitude, latitude, asl, agl, type, amount, active)
+SELECT 1, 1, 35.5000, 33.0500, 300.0, 10.0, lt.id, 1, TRUE FROM launcher_type lt WHERE lt.name = 'ShieldNest-Lite'
+UNION ALL
+SELECT 2, 1, 35.5300, 33.0200, 320.0, 12.0, lt.id, 1, TRUE FROM launcher_type lt WHERE lt.name = 'IronHook-SR'
+UNION ALL
+SELECT 3, 1, 35.4800, 32.9800, 410.0, 15.0, lt.id, 1, TRUE FROM launcher_type lt WHERE lt.name = 'HorizonEye-MX'
+UNION ALL
+SELECT 4, 2, 34.8000, 31.2000, 180.0, 5.0, lt.id, 1, TRUE FROM launcher_type lt WHERE lt.name = 'CloudFence-Area'
+ON CONFLICT (id) DO UPDATE SET
+    launchers_group_id = EXCLUDED.launchers_group_id,
+    longitude = EXCLUDED.longitude,
+    latitude = EXCLUDED.latitude,
+    asl = EXCLUDED.asl,
+    agl = EXCLUDED.agl,
+    type = EXCLUDED.type,
+    amount = EXCLUDED.amount,
+    active = EXCLUDED.active;
+
+SELECT setval('launcher_id_seq', (SELECT MAX(id) FROM launcher));
+
+-- Seed Active Launcher Ammunition Allocations
+INSERT INTO launcher_ammunition (launcher_id, interceptor_type_id, amount)
+SELECT 1, it.id, 24 FROM interceptor_type it WHERE it.name = 'BuzzStop-15'
+UNION ALL
+SELECT 1, it.id, 16 FROM interceptor_type it WHERE it.name = 'NetWing-30'
+UNION ALL
+SELECT 2, it.id, 15 FROM interceptor_type it WHERE it.name = 'DartFox-S'
+UNION ALL
+SELECT 2, it.id, 10 FROM interceptor_type it WHERE it.name = 'SpearMini-70'
+UNION ALL
+SELECT 3, it.id, 12 FROM interceptor_type it WHERE it.name = 'SkyLance-M'
+UNION ALL
+SELECT 3, it.id, 6  FROM interceptor_type it WHERE it.name = 'FalconClip-H'
+UNION ALL
+SELECT 4, it.id, 45 FROM interceptor_type it WHERE it.name = 'SwarmMist-5'
+UNION ALL
+SELECT 4, it.id, 15 FROM interceptor_type it WHERE it.name = 'MicroNet-R'
+ON CONFLICT (launcher_id, interceptor_type_id) DO UPDATE SET
+    amount = EXCLUDED.amount;
+
+-- 6. Import summary including active entity records.
 SELECT
-    (SELECT COUNT(*) FROM drone_type d JOIN _ashmoret_seed_drone s USING (name)) AS drone_types,
-    (SELECT COUNT(*) FROM launcher_type l JOIN _ashmoret_seed_launcher s USING (name)) AS launcher_types,
-    (SELECT COUNT(*) FROM interceptor_type i JOIN _ashmoret_seed_interceptor s USING (name)) AS interceptor_types,
-    (SELECT COUNT(*) FROM _ashmoret_seed_ammunition) AS ammunition_mappings,
-    (SELECT COUNT(*) FROM _ashmoret_seed_rate) AS supplied_success_rates,
-    (SELECT SUM(source_estimated_attack_quantity) FROM _ashmoret_seed_drone) AS source_estimated_drones,
-    (SELECT SUM(source_system_quantity) FROM _ashmoret_seed_launcher) AS source_systems,
-    (SELECT SUM(source_total_ammunition) FROM _ashmoret_seed_ammunition) AS source_interceptors;
--- Expected: 4, 4, 8, 8, 14, 4570, 28, 1142.
+    (SELECT COUNT(*) FROM drone_type) AS drone_types,
+    (SELECT COUNT(*) FROM launcher_type) AS launcher_types,
+    (SELECT COUNT(*) FROM interceptor_type) AS interceptor_types,
+    (SELECT COUNT(*) FROM drones_group) AS drones_groups,
+    (SELECT COUNT(*) FROM launchers_group) AS launchers_groups,
+    (SELECT COUNT(*) FROM scenario) AS scenarios,
+    (SELECT COUNT(*) FROM drone) AS active_drones,
+    (SELECT COUNT(*) FROM launcher) AS active_launchers,
+    (SELECT COUNT(*) FROM launcher_ammunition) AS active_ammunition_records;
 
 COMMIT;
-
--- Instance relationships are already defined by init.sql:
---   drone.type -> drone_type.id
---   drone.drones_group_id -> drones_group.id
---   launcher.type -> launcher_type.id
---   launcher.launchers_group_id -> launchers_group.id
---   launcher_ammunition.launcher_id -> launcher.id
---   launcher_ammunition.interceptor_type_id -> interceptor_type.id
---   scenario.drones_group_id / launchers_group_id -> the respective groups.
--- A launcher_type ID must never be used as launcher_ammunition.launcher_id.
--- Populate actual launcher ammunition only once the corresponding launcher
--- instances and their intended quantities are defined.

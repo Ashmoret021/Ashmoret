@@ -12,7 +12,7 @@ export type ScenarioInput = Partial<Scenario> & {
 export const getAllScenarios = async (): Promise<Scenario[]> => {
   const repo = getScenarioRepository();
   return repo.find({
-    relations: { dronesGroup: true, launchersGroup: true },
+    relations: { dronesGroup: { drones: true }, launchersGroup: { launchers: true } },
     order: { id: 'ASC' },
   });
 };
@@ -21,7 +21,7 @@ export const getScenarioById = async (id: string): Promise<Scenario | null> => {
   const repo = getScenarioRepository();
   return repo.findOne({
     where: { id },
-    relations: { dronesGroup: true, launchersGroup: true },
+    relations: { dronesGroup: { drones: true }, launchersGroup: { launchers: true } },
   });
 };
 

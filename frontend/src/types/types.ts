@@ -1,3 +1,5 @@
+import type { Scenario } from '../simulation/SimulationContext';
+
 export type Location = {
   longitude: number;
   latitude: number;
@@ -65,6 +67,12 @@ export const InterceptorRange: Record<InterceptorType, number> = {
   [InterceptorType.MicroNetR]: 7000,
 };
 
+export type ScenerioCreationType = {
+  name: string;
+  type: string;
+  dronesGroupId: number;
+  launchersGroupId: number;
+}
 export type LauncherGroup = {
   id: number;
   name: string;
