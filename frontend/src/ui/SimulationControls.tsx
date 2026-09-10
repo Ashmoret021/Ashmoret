@@ -56,8 +56,8 @@ export const SimulationControls: React.FC<{ onRestart?: () => void }> = ({ onRes
     if (isRunning) {
       pauseClock();
     } else if (isFinished) {
-      onRestart?.();
-      startClock();
+      seekToTime(0, true);
+      resumeClock();
     } else if (isPaused) {
       resumeClock();
     } else {

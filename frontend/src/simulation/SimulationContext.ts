@@ -156,6 +156,49 @@ function notifyStateListeners() {
   stateListeners.forEach((listener) => listener());
 }
 
+export function computeScenarioDuration(scenario: Scenario): number {
+  if (!scenario.drones || scenario.drones.length === 0) {
+    return 30;
+  }
+  const VISUAL_SPEED_SCALE = 25;
+  let maxEndTime = 0;
+
+  for (const drone of scenario.drones) {
+    const route =
+      drone.route && drone.route.length > 0
+        ? drone.route
+        : drone.location
+        ? [drone.location]
+        : [];
+    let totalDist = 0;
+    for (let i = 1; i < route.length; i++) {
+      const a = route[i - 1];
+      const b = route[i];
+      if (!a || !b) continue;
+      const dLat = ((b.latitude - a.latitude) * Math.PI) / 180;
+      const dLng = ((b.longitude - a.longitude) * Math.PI) / 180;
+      const sinLat = Math.sin(dLat / 2);
+      const sinLng = Math.sin(dLng / 2);
+      const chord =
+        sinLat * sinLat +
+        Math.cos((a.latitude * Math.PI) / 180) *
+          Math.cos((b.latitude * Math.PI) / 180) *
+          sinLng *
+          sinLng;
+      totalDist += 2 * 6371000 * Math.asin(Math.sqrt(chord));
+    }
+    const velocity = drone.velocity || 100;
+    const flightTime =
+      velocity > 0 ? totalDist / (velocity * VISUAL_SPEED_SCALE) : 0;
+    const droneEndTime = (drone.startTime ?? 0) + flightTime;
+    if (droneEndTime > maxEndTime) {
+      maxEndTime = droneEndTime;
+    }
+  }
+
+  return Math.max(Math.ceil(maxEndTime), 10);
+}
+
 let isReplayCompleted = false;
 
 function clockLoop(timestamp: number) {
@@ -166,8 +209,12 @@ function clockLoop(timestamp: number) {
 
     const newTime = state.simulationTime + delta * state.speedMultiplier;
 
-    if (isReplayCompleted && historyRecords.length > 0) {
-      // Replay mode — scrubbing or playing back recorded history
+    const maxRecorded = historyRecords.length > 0
+      ? historyRecords[historyRecords.length - 1].simulationTime
+      : 0;
+
+    if (isReplayCompleted) {
+      // Replay mode — whole simulation has already finished once.
       if (newTime >= state.maxSimulationTime) {
         seekToTime(state.maxSimulationTime, true);
         state = { ...state, status: 'finished' };
@@ -178,10 +225,13 @@ function clockLoop(timestamp: number) {
         notifyStateListeners();
       } else {
         seekToTime(newTime, true);
-        tickCallbacks.forEach((callback) => callback(delta, state.simulationTime));
       }
+    } else if (newTime < maxRecorded) {
+      // Scrubbed backward during a live simulation:
+      // Replay recorded snapshots — do NOT run live tickCallbacks or record snapshots.
+      seekToTime(newTime, true);
     } else {
-      // Live simulation mode
+      // Live simulation mode (at or beyond the recorded frontier)
       const newMaxTime = Math.max(state.maxSimulationTime, newTime);
       state = {
         ...state,
@@ -257,7 +307,11 @@ export function stopClock() {
 
 export function finishClock() {
   isReplayCompleted = true;
-  state = { ...state, status: 'finished' };
+  state = {
+    ...state,
+    status: 'finished',
+    maxSimulationTime: state.simulationTime,
+  };
   notifyStateListeners();
 }
 
@@ -269,30 +323,42 @@ export function setSpeed(multiplier: SpeedMultiplier) {
 export function seekToTime(targetTime: number, preserveStatus: boolean = false) {
   if (historyRecords.length === 0) return;
 
+  const maxRecorded = historyRecords[historyRecords.length - 1].simulationTime;
+  // If simulation is not yet completed, clamp targetTime so user cannot seek past recorded history
+  const clampedTime = isReplayCompleted
+    ? Math.min(Math.max(0, targetTime), state.maxSimulationTime)
+    : Math.min(Math.max(0, targetTime), maxRecorded);
+
   if (state.status === 'running' && !preserveStatus) {
     pauseClock();
   }
 
   let closest = historyRecords[0];
-  let minDiff = Math.abs(closest.simulationTime - targetTime);
+  let minDiff = Math.abs(closest.simulationTime - clampedTime);
 
   for (let i = 1; i < historyRecords.length; i++) {
-    const diff = Math.abs(historyRecords[i].simulationTime - targetTime);
+    const diff = Math.abs(historyRecords[i].simulationTime - clampedTime);
     if (diff < minDiff) {
       minDiff = diff;
       closest = historyRecords[i];
     }
   }
 
+  // If user seeks away from 'finished', change status to 'paused' so play button resumes replay
+  const newStatus =
+    !preserveStatus && state.status === 'finished' && clampedTime < state.maxSimulationTime
+      ? 'paused'
+      : state.status;
+
   state = {
     ...state,
-    simulationTime: targetTime,
+    simulationTime: clampedTime,
     threats: JSON.parse(JSON.stringify(closest.threats)),
     launchers: JSON.parse(JSON.stringify(closest.launchers)),
     interceptors: JSON.parse(JSON.stringify(closest.interceptors)),
     visualEvents: JSON.parse(JSON.stringify(closest.visualEvents)),
     logHistory: JSON.parse(JSON.stringify(closest.logHistory || [])),
-    status: preserveStatus ? state.status : state.status,
+    status: newStatus,
   };
   notifyStateListeners();
 }
@@ -323,9 +389,11 @@ export function loadScenario(scenario: Scenario) {
   isReplayCompleted = false;
   _logIdCounter = 0;
 
+  const expectedDuration = computeScenarioDuration(scenario);
+
   state = {
     simulationTime: scenario.startTime,
-    maxSimulationTime: scenario.startTime,
+    maxSimulationTime: expectedDuration,
     status: 'idle',
     speedMultiplier: 1,
     threats,
