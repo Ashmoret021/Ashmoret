@@ -1,5 +1,6 @@
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { Launcher } from "./Launcher.entity";
+import { LauncherTypeAmmunition } from "./LauncherTypeAmmunition.entity";
 
 @Entity("launcher_type")
 export class LauncherType {
@@ -14,4 +15,10 @@ export class LauncherType {
 
   @OneToMany(() => Launcher, (launcher) => launcher.launcherType)
   launchers!: Launcher[];
+
+  @OneToMany(
+    () => LauncherTypeAmmunition,
+    (typeAmmunition: LauncherTypeAmmunition) => typeAmmunition.launcherType,
+  )
+  typeAmmunition!: LauncherTypeAmmunition[];
 }
