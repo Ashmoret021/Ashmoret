@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { CoordinatesControl } from "./components/CoordinatesControl";
 import React from "react";
 import { MainLayout } from "./layouts/MainLayout";
@@ -31,6 +31,7 @@ import { MapView } from "./ui/MapView";
 import { EventLog } from "./ui/EventLog";
 import {
   appendLog,
+  DroneSimState,
   finishClock,
   getState,
   loadScenario,
@@ -61,8 +62,9 @@ export const App = () => {
   const rendererRef = useRef<LeafletRenderer | null>(null);
   const engagedDronesRef = useRef<Set<number>>(new Set());
   const [layers, setLayers] = useState<string[]>(["🗺️ מפה רגילה"]);
-  const [selectedDrone, setSelectedDrone] = useState<Drone | null>(null);
+  const [selectedThreatId, setSelectedThreatId] = useState<number | null>(null);
   const [map, setMap] = useState<L.Map | null>(null);
+  const [mapMoveTick, setMapMoveTick] = useState(0);
   const [showMainAdditionalComponents, setShowMainAdditionalComponents] =
     useState<boolean>(true);
 
@@ -218,6 +220,18 @@ export const App = () => {
       // --- End movement ---
 
       if (changed) {
+        // Re-read fresh state to avoid overwriting logicalStatus changes
+        // made by checkRemoval callbacks that may have run in this same tick
+        const freshThreats = getState().threats;
+        for (const [idStr, threat] of Object.entries(updatedThreats)) {
+          const freshThreat = freshThreats[Number(idStr)];
+          if (freshThreat && freshThreat.logicalStatus === "intercepted") {
+            updatedThreats[Number(idStr)] = {
+              ...threat,
+              logicalStatus: "intercepted",
+            };
+          }
+        }
         setState({ threats: updatedThreats });
       }
 
@@ -305,6 +319,17 @@ export const App = () => {
           }
 
           if (threatsStateUpdated) {
+            // Merge with fresh state to avoid overwriting intercepted status
+            const freshThreats = getState().threats;
+            for (const [idStr, t] of Object.entries(nextThreats)) {
+              const freshT = freshThreats[Number(idStr)];
+              if (freshT && freshT.logicalStatus === "intercepted") {
+                nextThreats[Number(idStr)] = {
+                  ...t,
+                  logicalStatus: "intercepted",
+                };
+              }
+            }
             setState({ threats: nextThreats });
           }
         });
@@ -325,10 +350,10 @@ export const App = () => {
     return () => unsubscribe();
   }, []);
 
-  const handleMapReady = useCallback((map: L.Map) => {
-    setMap(map);
-    mapInstanceRef.current = map;
-    const renderer = new LeafletRenderer(map);
+  const handleMapReady = useCallback((mapArg: L.Map) => {
+    setMap(mapArg);
+    mapInstanceRef.current = mapArg;
+    const renderer = new LeafletRenderer(mapArg);
     rendererRef.current = renderer;
 
     renderer.initDefenseSystems();
@@ -344,7 +369,7 @@ export const App = () => {
       engagedDronesRef.current.clear();
     };
 
-    const markersLayer = L.layerGroup().addTo(map);
+    const markersLayer = L.layerGroup().addTo(mapArg);
     markersLayerRef.current = markersLayer;
 
     // Map layer controls and GeoJSON overlays from dev
@@ -366,7 +391,7 @@ export const App = () => {
       },
     );
 
-    darkLayer.addTo(map);
+    darkLayer.addTo(mapArg);
 
     const baseMaps = {
       "🌙 מפה כהה": darkLayer,
@@ -376,13 +401,13 @@ export const App = () => {
 
     const layerControl = L.control
       .layers(baseMaps, undefined, { position: "topright" })
-      .addTo(map);
+      .addTo(mapArg);
 
-    map.on("mousemove", (e: L.LeafletMouseEvent) => {
+    mapArg.on("mousemove", (e: L.LeafletMouseEvent) => {
       setCoords({ lat: e.latlng.lat, lng: e.latlng.lng });
     });
 
-    map.on("mouseout", () => {
+    mapArg.on("mouseout", () => {
       setCoords(null);
     });
 
@@ -391,7 +416,7 @@ export const App = () => {
     const container = layerControl.getContainer();
 
     if (container) {
-      map.getContainer().appendChild(container);
+      mapArg.getContainer().appendChild(container);
 
       Object.assign(container.style, {
         position: "absolute",
@@ -403,18 +428,18 @@ export const App = () => {
       });
     }
 
-    map.on("baselayerchange", (e: L.LayersControlEvent) => {
+    mapArg.on("baselayerchange", (e: L.LayersControlEvent) => {
       setLayers((prev) => [
         ...prev.filter((name) => !baseLayerNames.includes(name)),
         e.name,
       ]);
     });
 
-    map.on("overlayadd", (e: L.LayersControlEvent) => {
+    mapArg.on("overlayadd", (e: L.LayersControlEvent) => {
       setLayers((prev) => [...prev.filter((name) => name !== e.name), e.name]);
     });
 
-    map.on("overlayremove", (e: L.LayersControlEvent) => {
+    mapArg.on("overlayremove", (e: L.LayersControlEvent) => {
       setLayers((prev) => prev.filter((name) => name !== e.name));
     });
 
@@ -458,7 +483,7 @@ export const App = () => {
           },
         });
 
-        map.on("overlayadd", (e: L.LayersControlEvent) => {
+        mapArg.on("overlayadd", (e: L.LayersControlEvent) => {
           if (e.name === "🛡️ מיקומים רגישים") {
             sensitivesLayer.bringToFront();
           }
@@ -472,6 +497,7 @@ export const App = () => {
   }, []);
 
   const handleRestart = useCallback(() => {
+    setSelectedThreatId(null);
     stopClock();
     algorithmClient.reset();
     simulationGenerationRef.current += 1; // invalidate any in-flight async callbacks
@@ -508,6 +534,18 @@ export const App = () => {
   }, []);
 
   // ── Attack Side (wave placement builder) handlers ─────────────────────────
+
+  // Update modal position on map pan/zoom
+  useEffect(() => {
+    if (!map) return;
+    const onMove = () => setMapMoveTick((v) => (v + 1) % 10000);
+    map.on("move", onMove);
+    map.on("zoom", onMove);
+    return () => {
+      map.off("move", onMove);
+      map.off("zoom", onMove);
+    };
+  }, [map]);
 
   // Drone focus / centering action
   const handleFocusDrone = useCallback(
@@ -603,8 +641,8 @@ export const App = () => {
 
   // Handle Map Click when in Placement Mode
   useEffect(() => {
-    const map = mapInstanceRef.current;
-    if (!map || placingWaveId === null) return;
+    const mapEl = mapInstanceRef.current;
+    if (!mapEl || placingWaveId === null) return;
 
     const activeWave = waves.find((w) => w.id === placingWaveId);
     if (!activeWave) {
@@ -696,10 +734,10 @@ export const App = () => {
       }
     };
 
-    map.on("click", onMapClick);
+    mapEl.on("click", onMapClick);
 
     return () => {
-      map.off("click", onMapClick);
+      mapEl.off("click", onMapClick);
     };
   }, [placingWaveId, waves, placedDrones, showToast]);
 
@@ -770,22 +808,157 @@ export const App = () => {
   const isRunning = state.status === "running";
   const isPaused = state.status === "paused";
 
-  const toggleClock = () => {
-    if (isRunning) {
-      pauseClock();
-    } else if (isPaused) {
-      resumeClock();
-    } else {
-      startClock();
+  // Click on threat detection
+  useEffect(() => {
+    if (!map) return;
+    const container = map.getContainer();
+
+    let startX = 0;
+    let startY = 0;
+
+    const handleMouseDown = (e: MouseEvent) => {
+      startX = e.clientX;
+      startY = e.clientY;
+    };
+
+    const handleContainerClick = (e: MouseEvent) => {
+      // Ignore if user was dragging/panning the map
+      const dragDist = Math.hypot(e.clientX - startX, e.clientY - startY);
+      if (dragDist > 6) return;
+
+      // Ignore if clicking inside the DroneModal card
+      const target = e.target as HTMLElement;
+      if (target.closest(".drone-dialog-glass")) return;
+
+      const currentState = getState();
+      const activeThreats = Object.values(currentState.threats).filter(
+        (t) =>
+          t.logicalStatus === "active" || t.logicalStatus === "interceptPending",
+      );
+
+      if (activeThreats.length === 0) return;
+
+      // 1. Clicked directly on a threat marker in DOM
+      const markerEl = target.closest(".ashmoret-marker-threat");
+      if (markerEl) {
+        const match = markerEl.textContent?.match(/איום\s*(\d+)/);
+        if (match) {
+          const id = Number(match[1]);
+          if (currentState.threats[id]) {
+            setSelectedThreatId(id);
+            return;
+          }
+        }
+      }
+
+      // 2. Click near a threat marker on screen (within 35px)
+      const clickPoint = map.mouseEventToContainerPoint(e);
+      let closestThreat: DroneSimState | null = null;
+      let minDistance = Infinity;
+
+      for (const threat of activeThreats) {
+        const threatPoint = map.latLngToContainerPoint([
+          threat.location.latitude,
+          threat.location.longitude,
+        ]);
+        const dist = Math.hypot(
+          threatPoint.x - clickPoint.x,
+          threatPoint.y - clickPoint.y,
+        );
+        if (dist < minDistance) {
+          minDistance = dist;
+          closestThreat = threat;
+        }
+      }
+
+      if (closestThreat && minDistance <= 35) {
+        setSelectedThreatId(closestThreat.id);
+      } else if (minDistance > 50) {
+        // Clicked empty map away from threats
+        setSelectedThreatId(null);
+      }
+    };
+
+    container.addEventListener("mousedown", handleMouseDown, true);
+    container.addEventListener("click", handleContainerClick, true);
+
+    return () => {
+      container.removeEventListener("mousedown", handleMouseDown, true);
+      container.removeEventListener("click", handleContainerClick, true);
+    };
+  }, [map]);
+
+  const currentThreat =
+    selectedThreatId !== null ? state.threats[selectedThreatId] : null;
+
+  const isThreatNeutralized =
+    !currentThreat ||
+    currentThreat.logicalStatus === "intercepted" ||
+    currentThreat.logicalStatus === "impacted";
+
+  // Auto-close modal when threat is neutralized
+  useEffect(() => {
+    if (selectedThreatId !== null && isThreatNeutralized) {
+      setSelectedThreatId(null);
+    }
+  }, [selectedThreatId, isThreatNeutralized]);
+
+  const modalPosition = useMemo(() => {
+    if (!currentThreat || !map || isThreatNeutralized) return null;
+    const pt = map.latLngToContainerPoint([
+      currentThreat.location.latitude,
+      currentThreat.location.longitude,
+    ]);
+    return { x: pt.x, y: pt.y };
+  }, [currentThreat, map, isThreatNeutralized, mapMoveTick]);
+
+  const getDroneHebrewName = (type: DroneType): string => {
+    switch (type) {
+      case DroneType.FalconLongX4:
+        return "בז ארוך טווח";
+      case DroneType.LoadBeeM2:
+        return "דבורת מטען M2";
+      case DroneType.NanoSwarmQ9:
+        return "נחיל ננו Q9";
+      case DroneType.SkyMiteC7:
+        return "קרדית שמיים C7";
+      default:
+        return "רחפן תקיפה";
     }
   };
 
-  const drone: Drone = {
-    id: 1,
-    location: { agl: 1, asl: 1, latitude: 31, longitude: 34 },
-    type: DroneType.FalconLongX4,
-    velocity: 67,
-    heading: 3,
+  const getEstimatedDamage = (type: DroneType): string => {
+    switch (type) {
+      case DroneType.FalconLongX4:
+        return 'קריטי — ראש קרב כבד (150 ק"ג)';
+      case DroneType.LoadBeeM2:
+        return "גבוה — מטען רסס כפול";
+      case DroneType.NanoSwarmQ9:
+        return "בינוני — פגיעה מערכתית בריכוז";
+      case DroneType.SkyMiteC7:
+        return 'נקודתי — רש"ק חודר מוקטן';
+      default:
+        return "גבוה";
+    }
+  };
+
+  const calculateFlightDistance = (threat: DroneSimState): string => {
+    if (threat.route && threat.route.length >= 2) {
+      const end = threat.route[threat.route.length - 1];
+      const R = 6371; // km
+      const dLat = ((end.latitude - threat.location.latitude) * Math.PI) / 180;
+      const dLon = ((end.longitude - threat.location.longitude) * Math.PI) / 180;
+      const a =
+        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos((threat.location.latitude * Math.PI) / 180) *
+          Math.cos((end.latitude * Math.PI) / 180) *
+          Math.sin(dLon / 2) *
+          Math.sin(dLon / 2);
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+      const dist = Math.max(1, Math.round(R * c));
+      return `${dist} ק"מ`;
+    }
+    return '250 ק"מ';
   };
 
   const handleStartSimulation = () => {
@@ -813,14 +986,15 @@ export const App = () => {
           onAddInterceptorGroup={() => setDefenseModalOpen(true)}
         />
         <CoordinatesControl coords={coords} />
-        {selectedDrone && (
+        {selectedThreatId !== null && currentThreat && !isThreatNeutralized && (
           <DroneModal
-            drone={selectedDrone}
-            estimatedDamage="1"
-            flightDistance={300}
-            droneName="meofefi"
-            hebrewName="מעופפי"
-            onClose={() => setSelectedDrone(null)}
+            drone={currentThreat}
+            position={modalPosition}
+            droneName={`איום #${currentThreat.id}`}
+            hebrewName={getDroneHebrewName(currentThreat.type)}
+            flightDistance={calculateFlightDistance(currentThreat)}
+            estimatedDamage={getEstimatedDamage(currentThreat.type)}
+            onClose={() => setSelectedThreatId(null)}
           />
         )}
         {showMainAdditionalComponents && (
