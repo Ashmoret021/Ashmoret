@@ -11,6 +11,7 @@ import {
 import { FC, useState } from "react";
 import { useGetAllLaunchersGroups } from "../../../api/hooks";
 import { LauncherGroup } from "../../../types/types";
+import { DefenseSide } from "../../DefenseSide/defenseSide";
 
 export interface LauncherSelectionPageProps {
   selectedGroup?: number;
@@ -106,6 +107,7 @@ export const LauncherSelectionPage: FC<LauncherSelectionPageProps> = ({
 }) => {
   const [internalGroup, setInternalGroup] = useState<number>(0);
   const {launchersGroups} = useGetAllLaunchersGroups();
+  const [isDefenseSideOPen, setIsDefenseSideOpen] = useState<boolean>(false);
 
   const currentGroup = propGroup ?? internalGroup;
 
@@ -115,6 +117,11 @@ export const LauncherSelectionPage: FC<LauncherSelectionPageProps> = ({
     const chosen = launchersGroups?.data?.find((b: LauncherGroup) => b.id === +val);
     onSelectGroup?.(val, chosen?.name);
   };
+
+  const handleClose = () => {
+    setIsDefenseSideOpen(false);
+    setInternalGroup(launchersGroups.data[launchersGroups.data.length - 1].id)
+  }
 
   return (
     <Box dir="rtl" sx={{ width: "100%", direction: "rtl", textAlign: "right", pt: 1 }}>
@@ -140,6 +147,7 @@ export const LauncherSelectionPage: FC<LauncherSelectionPageProps> = ({
         <Button
           variant="outlined"
           fullWidth
+          onClick={() => setIsDefenseSideOpen(true)}
           sx={{
             color: "#38bdf8",
             borderColor: "rgba(56, 189, 248, 0.4)",
@@ -151,6 +159,7 @@ export const LauncherSelectionPage: FC<LauncherSelectionPageProps> = ({
         >
           יצירת קבוצת משגרים
         </Button>
+        <DefenseSide open={isDefenseSideOPen} onClose={() => {setIsDefenseSideOpen(false)}}/>
       </Stack>
     </Box>
   );
