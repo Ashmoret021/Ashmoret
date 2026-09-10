@@ -3,12 +3,18 @@ import "./DroneCard.css";
 type DroneCardProps = {
   name: string;
   id: string;
-  battery: number;
-  accumulatedTime: string;
-  recurringFault: string;
-  previousFault: string;
-  lastCheck: string;
-  lastFix: string;
+
+  droneType: string;
+  estimatedAttackQuantity: number | string;
+  unitCost: number | string;
+  totalCost: number | string;
+  simulatedThreatNature: string;
+  flightDistance: number | string;
+  flightSpeed: number | string;
+  estimatedDamage: string;
+  intelligenceAssessmentLebanon: string;
+  intelligenceAssessmentGaza: string;
+
   status?: string;
 };
 
@@ -20,10 +26,8 @@ function DroneIcon() {
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
     >
-      {/* center */}
       <circle cx="50" cy="50" r="7" stroke="white" strokeWidth="4" />
 
-      {/* upper left arm */}
       <path
         d="M46 46L28 28"
         stroke="white"
@@ -32,7 +36,6 @@ function DroneIcon() {
       />
       <circle cx="23" cy="23" r="12" stroke="white" strokeWidth="4" />
 
-      {/* upper right arm */}
       <path
         d="M54 46L72 28"
         stroke="white"
@@ -41,7 +44,6 @@ function DroneIcon() {
       />
       <circle cx="77" cy="23" r="12" stroke="white" strokeWidth="4" />
 
-      {/* bottom left arm */}
       <path
         d="M46 54L28 72"
         stroke="white"
@@ -50,7 +52,6 @@ function DroneIcon() {
       />
       <circle cx="23" cy="77" r="12" stroke="white" strokeWidth="4" />
 
-      {/* bottom right arm */}
       <path
         d="M54 54L72 72"
         stroke="white"
@@ -61,6 +62,7 @@ function DroneIcon() {
     </svg>
   );
 }
+
 
 function LocationIcon() {
   return (
@@ -90,13 +92,17 @@ function LocationIcon() {
 export default function DroneCard({
   name,
   id,
-  battery,
-  accumulatedTime,
-  recurringFault,
-  previousFault,
-  lastCheck,
-  lastFix,
-  status = "נשא",
+  droneType,
+  estimatedAttackQuantity,
+  unitCost,
+  totalCost,
+  simulatedThreatNature,
+  flightDistance,
+  flightSpeed,
+  estimatedDamage,
+  intelligenceAssessmentLebanon,
+  intelligenceAssessmentGaza,
+  status = "רחפן",
 }: DroneCardProps) {
   return (
     <div className="drone-card" dir="rtl">
@@ -108,7 +114,6 @@ export default function DroneCard({
 
       {/* HEADER */}
       <div className="drone-header">
-
         <div className="drone-main-info">
           <DroneIcon />
 
@@ -122,80 +127,82 @@ export default function DroneCard({
             </div>
           </div>
         </div>
+      </div>
 
-    
+      {/* DRONE INFORMATION */}
+      <div className="drone-info">
+
+        <div className="info-item">
+          <span>סוג רחפן:</span>
+          <strong>{droneType}</strong>
+        </div>
+
+        <div className="info-item">
+          <span>כמות משוערת תקיפה:</span>
+          <strong>{estimatedAttackQuantity}</strong>
+        </div>
+
+        <div className="info-item">
+          <span>עלות יחידה:</span>
+          <strong>{unitCost + "₪"}</strong>
+        </div>
+
+        <div className="info-item">
+          <span>עלות כוללת:</span>
+          <strong>{totalCost + "₪"}</strong>
+        </div>
+
+        <div className="info-item stacked">
+          <span>אופי איום מדומה:</span>
+          <strong>{simulatedThreatNature}</strong>
+        </div>
+
+        <div className="info-item">
+          <span>מרחק טיסה:</span>
+          <strong>{flightDistance + "km"}</strong>
+        </div>
+
+        <div className="info-item">
+          <span>מהירות טיסה:</span>
+          <strong>{flightSpeed + "km/h"}</strong>
+        </div>
+
+        <div className="info-item">
+          <span>נזק משוער:</span>
+          <strong>{estimatedDamage + "₪"}</strong>
+        </div>
+
+        <div className="info-item intelligence">
+          <span>הערכה מודיעינית מלבנון:</span>
+          <strong>{intelligenceAssessmentLebanon}</strong>
+        </div>
+
+        <div className="info-item intelligence">
+          <span>הערכה מודיעינית מעזה:</span>
+          <strong>{intelligenceAssessmentGaza}</strong>
+        </div>
+
+      </div>
+
+      {/* BOTTOM PATH */}
+      <div className="drone-path">
+
+        <div className="path-start" />
+
+        <div className="path-line" />
+
+        <div className="path-drone">
+          <DroneIcon />
+        </div>
+
+        <div className="path-line" />
+
+        <div className="path-location">
+          <LocationIcon />
+        </div>
+
+      </div>
 
     </div>
-
-    <div className="usage-row">
-
-    <div className="battery">
-        <span>סוללה:</span>
-        <strong>{battery}%</strong>
-      </div>
-
-      <div className="accumulated-time">
-        זמן שימוש מצטבר: {accumulatedTime}
-      </div>
-
-    </div>
-
-
-    <div className="faults">
-
-      {/* LEFT SIDE */}
-      <div className="fault-block fault-left">
-        <div className="fault-line">
-          <span>תקלות קודמות:</span>
-          <span>כנף</span>
-        </div>
-
-        <div className="fault-line">
-          <span>שבור</span>
-        </div>
-
-        <div className="fault-date">
-          תיקון אחרון: 6.2.23
-        </div>
-      </div>
-
-
-      {/* RIGHT SIDE */}
-      <div className="fault-block fault-right">
-        <div className="fault-line">
-          <span>תקלות חוזרות:</span>
-          <span>חיישן</span>
-        </div>
-
-        <div className="fault-line">
-          <span>כנף</span>
-        </div>
-
-        <div className="fault-date">
-          בדיקה אחרונה: 6.2.23
-        </div>
-      </div>
-
-    </div>
-
-    {/* BOTTOM PATH */}
-    <div className="drone-path">
-      <div className="path-start" />
-
-      <div className="path-line" />
-
-      <div className="path-drone">
-        <DroneIcon />
-      </div>
-
-      <div className="path-line" />
-
-      <div className="path-location">
-        <LocationIcon />
-      </div>
-
-    </div>
-
-  </div>
   );
 }
