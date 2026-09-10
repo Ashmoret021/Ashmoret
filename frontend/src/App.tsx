@@ -5,9 +5,13 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
+  Paper,
+  TextField,
 } from "@mui/material";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
+import "../src/styles/App.css";
+
 import { useSimulation } from "./simulation/useSimulation";
 import { SimulationControls } from "./ui/SimulationControls";
 import { SimulationStats } from "./ui/SimulationStats";
@@ -16,7 +20,13 @@ import DroneModal from "./components/DroneModal/DroneModal";
 
 export default function App() {
   const mapRef = useRef<HTMLDivElement | null>(null);
+  const mapInstanceRef = useRef<L.Map | null>(null);
+  const markerRef = useRef<L.Marker | null>(null);
+  const [latitude, setLatitude] = useState("");
+  const [longitude, setLongitude] = useState("");
   const [isStateDialogOpen, setIsStateDialogOpen] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [hasMarker, setHasMarker] = useState(false);
   const { state, pauseClock, resumeClock, setSpeed, startClock } =
     useSimulation();
 
@@ -26,6 +36,8 @@ export default function App() {
     }
 
     const map = L.map(mapRef.current).setView([31.0461, 34.8516], 6);
+
+    mapInstanceRef.current = map;
 
     const streetLayer = L.tileLayer(
       "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
@@ -75,9 +87,89 @@ export default function App() {
       });
 
     return () => {
+      mapInstanceRef.current = null;
       map.remove();
     };
   }, []);
+
+  const isValidLatitude = (value: string) => {
+    if (value === "" || value === "-" || value === ".") {
+      return false;
+    }
+
+    const number = Number(value);
+
+    return Number.isFinite(number) && number >= -90 && number <= 90;
+  };
+
+  const isValidLongitude = (value: string) => {
+    if (value === "" || value === "-" || value === ".") {
+      return false;
+    }
+
+    const number = Number(value);
+
+    return Number.isFinite(number) && number >= -180 && number <= 180;
+  };
+
+  const latitudeValid = isValidLatitude(latitude);
+  const longitudeValid = isValidLongitude(longitude);
+
+  const coordinatesValid = latitudeValid && longitudeValid;
+
+  const goToCoordinates = () => {
+    if (!coordinatesValid) {
+      return;
+    }
+
+    const lat = Number(latitude);
+    const lng = Number(longitude);
+
+    const map = mapInstanceRef.current;
+
+    if (!map) {
+      return;
+    }
+
+    map.flyTo([lat, lng], 12, {
+      animate: true,
+      duration: 1.5,
+    });
+
+    if (markerRef.current) {
+      markerRef.current.remove();
+      markerRef.current = null;
+    }
+
+    markerRef.current = L.marker([lat, lng])
+      .addTo(map)
+      .bindPopup(`<span style="font-size: 11px;">${lat}/${lng}</span>`, {
+        maxWidth: 140,
+        minWidth: 80,
+        className: "small-popup",
+      })
+      .openPopup();
+
+    setHasMarker(true);
+    setIsSearchOpen(false);
+  };
+
+  const handleCoordinateKeyDown = (
+    event: React.KeyboardEvent<HTMLInputElement>,
+  ) => {
+    if (event.key === "Enter") {
+      goToCoordinates();
+    }
+  };
+
+  const removeMarker = () => {
+    if (markerRef.current) {
+      markerRef.current.remove();
+      markerRef.current = null;
+    }
+
+    setHasMarker(false);
+  };
 
   const stateJson = JSON.stringify(state, null, 2);
   const isRunning = state.status === "running";
@@ -95,7 +187,12 @@ export default function App() {
 
   const drone: Drone = {
     id: 1,
-    location: { agl: 1, asl: 1, latitude: 31, longitude: 34 },
+    location: {
+      agl: 1,
+      asl: 1,
+      latitude: 31,
+      longitude: 34,
+    },
     type: DroneType.FalconLongX4,
     velocity: 67,
     heading: 3,
@@ -112,6 +209,173 @@ export default function App() {
         overflow: "hidden",
       }}
     >
+      <>
+        <div
+          style={{
+            position: "absolute",
+            top: 62,
+            right: 8,
+            zIndex: 1000,
+            display: "flex",
+            gap: 8,
+          }}
+        >
+          <Button
+            variant="contained"
+            onClick={() => setIsSearchOpen((prev) => !prev)}
+            sx={{
+              minWidth: 48,
+              width: 48,
+              height: 48,
+              borderRadius: 2,
+              fontSize: 22,
+            }}
+          >
+            🔍
+          </Button>
+
+          {hasMarker && (
+            <Button
+              variant="contained"
+              onClick={removeMarker}
+              sx={{
+                minWidth: 48,
+                width: 48,
+                height: 48,
+                borderRadius: 2,
+                fontSize: 20,
+                backgroundColor: "#c62828",
+
+                "&:hover": {
+                  backgroundColor: "#b71c1c",
+                },
+              }}
+            >
+              🗑️
+            </Button>
+          )}
+        </div>
+
+        {isSearchOpen && (
+          <Paper
+            elevation={4}
+            style={{
+              position: "absolute",
+              top: 55,
+              right: 63,
+              zIndex: 1000,
+              padding: 12,
+              display: "flex",
+              gap: 10,
+              alignItems: "center",
+              borderRadius: 4,
+              backgroundColor: "rgba(15, 23, 42, 0.92)",
+              backdropFilter: "blur(12px)",
+              border: "1px solid rgba(255, 255, 255, 0.15)",
+              boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.5)",
+            }}
+          >
+            <TextField
+              label="Latitude"
+              value={latitude}
+              onChange={(event) => {
+                const value = event.target.value;
+
+                if (/^-?\d*\.?\d*$/.test(value)) {
+                  setLatitude(value);
+                }
+              }}
+              onKeyDown={handleCoordinateKeyDown}
+              size="small"
+              placeholder="31.0461"
+              error={latitude !== "" && !latitudeValid}
+              helperText={
+                latitude !== "" && !latitudeValid
+                  ? "Must be between -90 and 90"
+                  : ""
+              }
+              sx={{
+                width: 180,
+                "& .MuiInputBase-root": {
+                  color: "#ffffff",
+                  backgroundColor: "rgba(255, 255, 255, 0.06)",
+                },
+                "& .MuiInputLabel-root": {
+                  color: "rgba(255, 255, 255, 0.7)",
+                },
+                "& .MuiInputLabel-root.Mui-focused": {
+                  color: "#90caf9",
+                },
+                "& .MuiOutlinedInput-root fieldset": {
+                  borderColor: "rgba(255, 255, 255, 0.25)",
+                },
+                "& .MuiFormHelperText-root": {
+                  color: "rgba(255, 255, 255, 0.55)",
+                },
+              }}
+            />
+
+            <TextField
+              label="Longitude"
+              value={longitude}
+              onChange={(event) => {
+                const value = event.target.value;
+
+                if (/^-?\d*\.?\d*$/.test(value)) {
+                  setLongitude(value);
+                }
+              }}
+              onKeyDown={handleCoordinateKeyDown}
+              size="small"
+              placeholder="34.8516"
+              error={longitude !== "" && !longitudeValid}
+              helperText={
+                longitude !== "" && !longitudeValid
+                  ? "Must be between -180 and 180"
+                  : ""
+              }
+              sx={{
+                width: 180,
+                "& .MuiInputBase-root": {
+                  color: "#ffffff",
+                  backgroundColor: "rgba(255, 255, 255, 0.06)",
+                },
+                "& .MuiInputLabel-root": {
+                  color: "rgba(255, 255, 255, 0.7)",
+                },
+                "& .MuiInputLabel-root.Mui-focused": {
+                  color: "#90caf9",
+                },
+                "& .MuiOutlinedInput-root fieldset": {
+                  borderColor: "rgba(255, 255, 255, 0.25)",
+                },
+                "& .MuiFormHelperText-root": {
+                  color: "rgba(255, 255, 255, 0.55)",
+                },
+              }}
+            />
+
+            <Button
+              variant="contained"
+              onClick={goToCoordinates}
+              disabled={!coordinatesValid}
+              sx={{
+                minWidth: 70,
+                height: 40,
+
+                "&.Mui-disabled": {
+                  backgroundColor: "rgba(255, 255, 255, 0.15)",
+                  color: "rgba(255, 255, 255, 0.5)",
+                  opacity: 1,
+                },
+              }}
+            >
+              Go
+            </Button>
+          </Paper>
+        )}
+      </>
+
       {selectedDrone && (
         <DroneModal
           drone={selectedDrone}
@@ -122,10 +386,23 @@ export default function App() {
           onClose={() => setSelectedDrone(null)}
         />
       )}
-      <div ref={mapRef} style={{ height: "100%", width: "100%" }} />
+
+      <div
+        ref={mapRef}
+        style={{
+          height: "100%",
+          width: "100%",
+        }}
+      />
+
       <Button
         onClick={() => setIsStateDialogOpen(true)}
-        style={{ left: 16, position: "absolute", top: 16, zIndex: 1000 }}
+        style={{
+          left: 16,
+          position: "absolute",
+          top: 16,
+          zIndex: 1000,
+        }}
         variant="contained"
       >
         View simulation state
@@ -144,6 +421,7 @@ export default function App() {
         open={isStateDialogOpen}
       >
         <DialogTitle>Simulation state</DialogTitle>
+
         <DialogContent>
           <pre
             style={{
