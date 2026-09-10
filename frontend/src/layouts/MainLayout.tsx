@@ -1,12 +1,19 @@
 import { Header } from "../components/Header/Header";
 import { EventsPanel } from "../components/EventsPanel/EventsPanel";
 import { InterceptorsPanel } from "../components/InterceptorsPanel/InterceptorsPanel";
-import { SideNavDrawer, NavViewMode } from "../components/Navigation/SideNavDrawer";
+import {
+  SideNavDrawer,
+  NavViewMode,
+} from "../components/Navigation/SideNavDrawer";
 import { SimulationSummaryPanel } from "../components/SimulationSummary/SimulationSummaryPanel";
 import { LaunchersDronesPanel } from "../components/LaunchersDronesPanel/LaunchersDronesPanel";
 import { ScenarioItem } from "../types/simulation";
 import { DroneGroup, LauncherGroup } from "../types/types";
-import { INITIAL_DRONE_GROUPS, INITIAL_LAUNCHER_GROUPS, INITIAL_SCENARIOS } from "../mock/events";
+import {
+  INITIAL_DRONE_GROUPS,
+  INITIAL_LAUNCHER_GROUPS,
+  INITIAL_SCENARIOS,
+} from "../mock/events";
 import "./MainLayout.css";
 import React, { useEffect, useRef, useState } from "react";
 import {
@@ -19,9 +26,13 @@ import {
 import L, { Map } from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { useSimulation } from "../simulation/useSimulation";
-import { AddScenerioModal } from '../components';
+import { AddScenerioModal } from "../components";
 import { MapView } from "../ui/MapView";
-import { clearScenario, loadScenario, stopClock } from "../simulation/SimulationContext";
+import {
+  clearScenario,
+  loadScenario,
+  stopClock,
+} from "../simulation/SimulationContext";
 import { getScenarioById } from "../simulation/sampleScenario";
 import { visualEventQueue } from "../visual/VisualEventQueue";
 import { algorithmClient } from "../algorithm/AlgorithmClient";
@@ -33,9 +44,14 @@ interface MainLayoutProps {
   simId?: string;
   onStartSimulation?: () => void;
   handleMapReady?: (map: Map) => void;
-  setShowMainAdditionalComponents: React.Dispatch<React.SetStateAction<boolean>>;
+  setShowMainAdditionalComponents: React.Dispatch<
+    React.SetStateAction<boolean>
+  >;
   onAddDroneGroup?: () => void;
   onAddInterceptorGroup?: () => void;
+  layersOpen?: boolean;
+  onLayersToggle?: () => void;
+  layersMenuRef?: React.RefObject<HTMLDivElement | null>;
 }
 
 export const MainLayout: React.FC<MainLayoutProps> = ({
@@ -48,10 +64,18 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
   setShowMainAdditionalComponents,
   onAddDroneGroup,
   onAddInterceptorGroup,
+  layersOpen = false,
+  onLayersToggle,
+  layersMenuRef,
 }) => {
   const [navView, setNavView] = useState<NavViewMode>("drones");
-  const [selectedScenario, setSelectedScenario] = useState<ScenarioItem | null>(null);
-  const [selectedGroup, setSelectedGroup] = useState<DroneGroup | LauncherGroup | null>(null);
+  const [selectedScenario, setSelectedScenario] = useState<ScenarioItem | null>(
+    null,
+  );
+  const [selectedGroup, setSelectedGroup] = useState<
+    DroneGroup | LauncherGroup | null
+  >(null);
+  const [rulerActive, setRulerActive] = useState(false);
 
   const [isStateDialogOpen, setIsStateDialogOpen] = useState(false);
   const [isCreateScenarioOpen, setIsCreateScenarioOpen] = useState(false);
@@ -158,6 +182,11 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
         isConnected={true}
         isSafeMode={true}
         statusMode={selectedScenario ? "תרחיש פעיל" : "תכנון תרחיש"}
+        rulerActive={rulerActive}
+        onRulerToggle={() => setRulerActive((active) => !active)}
+        layersOpen={layersOpen}
+        onLayersToggle={onLayersToggle}
+        layersMenuRef={layersMenuRef}
         logoSrc={logoSrc}
       />
 
@@ -172,8 +201,10 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
         ) : (
           <>
             {/* Tactical Map */}
-            <div style={{ height: "100%", position: "relative", width: "100%" }}>
-              <MapView onMapReady={handleMapReady} />
+            <div
+              style={{ height: "100%", position: "relative", width: "100%" }}
+            >
+              <MapView onMapReady={handleMapReady} rulerActive={rulerActive} />
 
               {/* Debug state dialog */}
               <Dialog
@@ -218,7 +249,9 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
                       </option>
                     ))}
                   </select>
-                  <Button onClick={() => setIsStateDialogOpen(false)}>Close</Button>
+                  <Button onClick={() => setIsStateDialogOpen(false)}>
+                    Close
+                  </Button>
                 </DialogActions>
               </Dialog>
             </div>
@@ -232,7 +265,10 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
                 onCreateScenario={handleCreateScenario}
               />
             )}
-            <AddScenerioModal open={isCreateScenarioOpen} onClose={() => setIsCreateScenarioOpen(false)} />
+            <AddScenerioModal
+              open={isCreateScenarioOpen}
+              onClose={() => setIsCreateScenarioOpen(false)}
+            />
 
             {/* Scenarios panel (dedicated scenarios view) */}
             {navView === "scenarios" && (
@@ -255,14 +291,15 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
             )}
 
             {/* Drone groups panel (attack-side placement) */}
-            {navView === "drones" && false /* handled above by EventsPanel */ && (
-              <LaunchersDronesPanel
-                groups={INITIAL_DRONE_GROUPS}
-                selectedGroupId={selectedGroup?.id}
-                onGroupSelect={handleGroupSelect}
-                onCreateGroup={onAddDroneGroup ?? handleCreateGroup}
-              />
-            )}
+            {navView === "drones" &&
+              false /* handled above by EventsPanel */ && (
+                <LaunchersDronesPanel
+                  groups={INITIAL_DRONE_GROUPS}
+                  selectedGroupId={selectedGroup?.id}
+                  onGroupSelect={handleGroupSelect}
+                  onCreateGroup={onAddDroneGroup ?? handleCreateGroup}
+                />
+              )}
           </>
         )}
       </main>

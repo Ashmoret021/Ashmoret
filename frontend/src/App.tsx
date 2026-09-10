@@ -61,6 +61,9 @@ export const App = () => {
   const rendererRef = useRef<LeafletRenderer | null>(null);
   const engagedDronesRef = useRef<Set<number>>(new Set());
   const [layers, setLayers] = useState<string[]>(["🗺️ מפה רגילה"]);
+  const [layersOpen, setLayersOpen] = useState(false);
+  const layerControlRef = useRef<L.Control.Layers | null>(null);
+  const layersMenuRef = useRef<HTMLDivElement | null>(null);
   const [selectedDrone, setSelectedDrone] = useState<Drone | null>(null);
   const [map, setMap] = useState<L.Map | null>(null);
   const [showMainAdditionalComponents, setShowMainAdditionalComponents] =
@@ -108,7 +111,7 @@ export const App = () => {
     open: false,
     title: "",
     message: "",
-    onConfirm: () => { },
+    onConfirm: () => {},
   });
   const [toast, setToast] = useState<{
     message: string;
@@ -153,8 +156,16 @@ export const App = () => {
 
       // Log newly activated threats
       for (const [idStr, t] of Object.entries(updatedThreats)) {
-        if (t.logicalStatus === 'active' && prevThreats[Number(idStr)]?.logicalStatus === 'waiting') {
-          appendLog('detection', 'זיהוי איום', `איום #${idStr} זוהה באוויר`, t.route[0]);
+        if (
+          t.logicalStatus === "active" &&
+          prevThreats[Number(idStr)]?.logicalStatus === "waiting"
+        ) {
+          appendLog(
+            "detection",
+            "זיהוי איום",
+            `איום #${idStr} זוהה באוויר`,
+            t.route[0],
+          );
         }
       }
 
@@ -162,7 +173,11 @@ export const App = () => {
       const flightDuration = 40;
       const next = { ...updatedThreats };
       for (const [idStr, threat] of Object.entries(updatedThreats)) {
-        if (threat.logicalStatus !== 'active' && threat.logicalStatus !== 'interceptPending') continue;
+        if (
+          threat.logicalStatus !== "active" &&
+          threat.logicalStatus !== "interceptPending"
+        )
+          continue;
         if (!threat.route || threat.route.length < 2) continue;
 
         const elapsed = simTime - threat.startTime;
@@ -173,7 +188,8 @@ export const App = () => {
         const end = threat.route[threat.route.length - 1];
         const location = {
           latitude: start.latitude + (end.latitude - start.latitude) * progress,
-          longitude: start.longitude + (end.longitude - start.longitude) * progress,
+          longitude:
+            start.longitude + (end.longitude - start.longitude) * progress,
           asl: start.asl + (end.asl - start.asl) * progress,
           agl: start.agl + (end.agl - start.agl) * progress,
         };
@@ -187,28 +203,28 @@ export const App = () => {
         const prev = prevThreats[id];
         if (
           t.progress >= 1 &&
-          t.logicalStatus !== 'intercepted' &&
-          t.logicalStatus !== 'impacted' &&
-          prev?.logicalStatus !== 'impacted'
+          t.logicalStatus !== "intercepted" &&
+          t.logicalStatus !== "impacted" &&
+          prev?.logicalStatus !== "impacted"
         ) {
           updatedThreats = {
             ...updatedThreats,
-            [id]: { ...t, logicalStatus: 'impacted' },
+            [id]: { ...t, logicalStatus: "impacted" },
           };
 
           visualEventQueue.enqueue({
             id: `evt-impact-${id}`,
-            type: 'impact',
+            type: "impact",
             startTime: simTime,
             targetId: `איום ${id}`,
             position: t.location,
-            status: 'pending',
+            status: "pending",
           });
 
           appendLog(
-            'impact',
-            'פגיעה בשטח',
-            `איום #${id} (סוג: ${t.type ?? 'אויב'}) פגע בשטח`,
+            "impact",
+            "פגיעה בשטח",
+            `איום #${id} (סוג: ${t.type ?? "אויב"}) פגע בשטח`,
             t.location,
           );
         }
@@ -334,7 +350,8 @@ export const App = () => {
     renderer.initDefenseSystems();
     renderer.start();
     (window as any).__leafletRenderer = renderer;
-    (window as any).__clearEngagedDrones = () => engagedDronesRef.current.clear();
+    (window as any).__clearEngagedDrones = () =>
+      engagedDronesRef.current.clear();
     // Full simulation state reset — called by MainLayout on scenario switch / restart
     (window as any).__resetSimulationRefs = () => {
       simulationGenerationRef.current += 1; // invalidate any in-flight async callbacks
@@ -374,9 +391,11 @@ export const App = () => {
       "🛰️ צילום לווייני": satelliteLayer,
     };
 
-    const layerControl = L.control
-      .layers(baseMaps, undefined, { position: "topright" })
-      .addTo(map);
+    const layerControl = L.control.layers(baseMaps, undefined, {
+      collapsed: false,
+    });
+    layerControl.addTo(map);
+    layerControlRef.current = layerControl;
 
     map.on("mousemove", (e: L.LeafletMouseEvent) => {
       setCoords({ lat: e.latlng.lat, lng: e.latlng.lng });
@@ -389,18 +408,10 @@ export const App = () => {
     const baseLayerNames = Object.keys(baseMaps);
 
     const container = layerControl.getContainer();
+    const layersMenu = layersMenuRef.current;
 
-    if (container) {
-      map.getContainer().appendChild(container);
-
-      Object.assign(container.style, {
-        position: "absolute",
-        top: "10px",
-        left: "50%",
-        transform: "translateX(-50%)",
-        margin: "0",
-        zIndex: "800",
-      });
+    if (container && layersMenu) {
+      layersMenu.appendChild(container);
     }
 
     map.on("baselayerchange", (e: L.LayersControlEvent) => {
@@ -469,6 +480,10 @@ export const App = () => {
       .catch((error) => {
         console.error("Failed to load sensitives layer:", error);
       });
+  }, []);
+
+  const handleLayersToggle = useCallback(() => {
+    setLayersOpen((isOpen) => !isOpen);
   }, []);
 
   const handleRestart = useCallback(() => {
@@ -811,6 +826,9 @@ export const App = () => {
           setShowMainAdditionalComponents={setShowMainAdditionalComponents}
           onAddDroneGroup={() => setAttackModalOpen(true)}
           onAddInterceptorGroup={() => setDefenseModalOpen(true)}
+          layersOpen={layersOpen}
+          onLayersToggle={handleLayersToggle}
+          layersMenuRef={layersMenuRef}
         />
         <CoordinatesControl coords={coords} />
         {selectedDrone && (
@@ -872,10 +890,10 @@ export const App = () => {
                 prev.map((wave) =>
                   String(wave.id) === String(waveId)
                     ? {
-                      ...wave,
-                      placementMode: options.mode,
-                      batchSize: options.count,
-                    }
+                        ...wave,
+                        placementMode: options.mode,
+                        batchSize: options.count,
+                      }
                     : wave,
                 ),
               );

@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 import {
   Settings,
   Bell,
@@ -6,8 +6,10 @@ import {
   Wifi,
   ShieldCheck,
   Crosshair,
-} from 'lucide-react';
-import './Header.css';
+  Ruler,
+  Layers3,
+} from "lucide-react";
+import "./Header.css";
 
 interface HeaderProps {
   scenarioName?: string;
@@ -16,15 +18,25 @@ interface HeaderProps {
   isSafeMode?: boolean;
   statusMode?: string;
   logoSrc?: string;
+  rulerActive?: boolean;
+  onRulerToggle?: () => void;
+  layersOpen?: boolean;
+  onLayersToggle?: () => void;
+  layersMenuRef?: React.RefObject<HTMLDivElement | null>;
 }
 
 export const Header: React.FC<HeaderProps> = ({
-  scenarioName = 'רב-זירתי - צפון ומזרח',
-  simId = 'SIM-01',
+  scenarioName = "רב-זירתי - צפון ומזרח",
+  simId = "SIM-01",
   isConnected = true,
   isSafeMode = true,
-  statusMode = 'תכנון תרחיש',
+  statusMode = "תכנון תרחיש",
   logoSrc,
+  rulerActive = false,
+  onRulerToggle,
+  layersOpen = false,
+  onLayersToggle,
+  layersMenuRef,
 }) => {
   return (
     <header className="tactical-header">
@@ -53,6 +65,37 @@ export const Header: React.FC<HeaderProps> = ({
             {statusMode}
           </span>
         </div>
+
+        <div className="map-tools-section" aria-label="כלי מפה">
+          <span className="map-tools-title">כלי מפה</span>
+          <div className="map-tools-actions">
+            <button
+              className={`header-action-btn map-tool-btn ${rulerActive ? "header-action-btn-active" : ""}`}
+              title={rulerActive ? "בטל מדידה (ESC)" : "מדוד מרחק"}
+              aria-label={rulerActive ? "בטל מדידה" : "מדוד מרחק"}
+              aria-pressed={rulerActive}
+              onClick={onRulerToggle}
+            >
+              <Ruler size={20} />
+              <span>מדוד מרחק</span>
+            </button>
+            <div
+              className={`map-layers-menu-anchor ${layersOpen ? "map-layers-menu-open" : ""}`}
+              ref={layersMenuRef}
+            >
+              <button
+                className={`header-action-btn map-tool-btn ${layersOpen ? "header-action-btn-active" : ""}`}
+                title="שכבות"
+                aria-label="שכבות"
+                aria-pressed={layersOpen}
+                onClick={onLayersToggle}
+              >
+                <Layers3 size={20} />
+                <span>שכבות</span>
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Left section: Controls, scenario tag, and system indicators */}
@@ -72,9 +115,11 @@ export const Header: React.FC<HeaderProps> = ({
         )}
 
         {/* Connection status pill */}
-        <div className={`status-pill connection-pill ${isConnected ? 'connected' : 'disconnected'}`}>
+        <div
+          className={`status-pill connection-pill ${isConnected ? "connected" : "disconnected"}`}
+        >
           <span className="pulse-indicator" />
-          <span>{isConnected ? 'מערכת מחוברת' : 'מנותק'}</span>
+          <span>{isConnected ? "מערכת מחוברת" : "מנותק"}</span>
           <Wifi size={14} className="wifi-icon" />
         </div>
 
@@ -85,13 +130,21 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
 
         {/* Notification button */}
-        <button className="header-action-btn" title="התראות" aria-label="התראות">
+        <button
+          className="header-action-btn"
+          title="התראות"
+          aria-label="התראות"
+        >
           <Bell size={17} />
           <span className="notification-dot" />
         </button>
 
         {/* Settings button */}
-        <button className="header-action-btn" title="הגדרות מערכת" aria-label="הגדרות">
+        <button
+          className="header-action-btn"
+          title="הגדרות מערכת"
+          aria-label="הגדרות"
+        >
           <Settings size={17} />
         </button>
       </div>
