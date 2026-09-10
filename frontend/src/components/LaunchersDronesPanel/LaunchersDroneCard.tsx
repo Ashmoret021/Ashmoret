@@ -1,6 +1,7 @@
 import React from 'react';
 import { ChevronLeft, Crosshair, Shield, Info } from 'lucide-react';
 import { DroneType, LauncherType, LauncherGroup, DroneGroup } from '../../types/types';
+import { getDroneIconUrl, getDefenseIconUrl } from '../../map/icons';
 import './LaunchersDronesPanel.css';
 
 type EntityGroup = DroneGroup | LauncherGroup;
@@ -131,7 +132,9 @@ export const LaunchersDroneCard: React.FC<LaunchersDroneCardProps> = ({
                 <span
                   key={droneType}
                   className={`drone-type-badge ${getDroneTypeClass(droneType)}`}
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '2px 6px' }}
                 >
+                  <img src={getDroneIconUrl(droneType)} width="14" height="14" alt={droneType} />
                   {droneType}
                 </span>
               ))
@@ -139,7 +142,9 @@ export const LaunchersDroneCard: React.FC<LaunchersDroneCardProps> = ({
                 <span
                   key={launcherType}
                   className={`drone-type-badge ${getLauncherTypeClass(launcherType)}`}
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '2px 6px' }}
                 >
+                  <img src={getDefenseIconUrl(launcherType)} width="14" height="14" alt={String(launcherType)} />
                   {LauncherType[launcherType]}
                 </span>
               ))}

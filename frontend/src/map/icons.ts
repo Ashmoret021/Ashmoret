@@ -5,43 +5,61 @@
  * Custom SVG icons for Leaflet simulation entities.
  *
  * Entities:
- *  - Threat Drone (🔴 with directional rotation)
+ *  - Threat Drone (Custom SVG by DroneType)
  *  - Interceptor (🔵 missile with trajectory rotation)
- *  - Defense System / Launcher (🟦 battery icon)
+ *  - Defense System / Launcher (Custom SVG by LauncherType)
  *  - Interception / Explosion (✴ burst effect)
  *  - Ground Impact (💥 impact crater & shockwave)
  */
 
 import L from 'leaflet';
+import { DroneType, LauncherType } from '../types/types';
+
+export function getDroneIconUrl(type?: string | DroneType): string {
+  if (type === undefined || type === null) return '/Falcon-Long-X4.svg';
+  const t = String(type).toLowerCase();
+  if (t.includes('skymite') || t.includes('c7')) return '/SkyMite-C7.svg';
+  if (t.includes('loadbee') || t.includes('m2')) return '/LoadBee-M2.svg';
+  if (t.includes('nanoswarm') || t.includes('q9')) return '/NanoSwarm-Q9.svg';
+  if (t.includes('falcon') || t.includes('x4')) return '/Falcon-Long-X4.svg';
+  return '/Falcon-Long-X4.svg';
+}
+
+export function getDefenseIconUrl(type?: string | LauncherType | number): string {
+  if (type === undefined || type === null) return '/ShieldNest-Lite.svg';
+  const t = String(type).toLowerCase();
+  if (t.includes('shieldnest') || t === '0' || t === 'shieldnestlite') return '/ShieldNest-Lite.svg';
+  if (t.includes('ironhook') || t === '1' || t === 'ironhooksr') return '/IronHook-SR.svg';
+  if (t.includes('horizoneye') || t === '2' || t === 'horizoneyemx') return '/HorizonEye-MX.svg';
+  if (t.includes('cloudfence') || t === '3' || t === 'cloudfencearea') return '/CloudFence-Area.svg';
+  return '/ShieldNest-Lite.svg';
+}
 
 /**
- * Creates an SVG DivIcon for a threat drone.
+ * Creates an SVG DivIcon for a threat drone using item type icon.
  * Rotates smoothly in the direction of heading (0° = North, 90° = East).
  */
-export function createThreatIcon(heading: number = 0, label?: string): L.DivIcon {
+export function createThreatIcon(heading: number = 0, label?: string, type?: string | DroneType): L.DivIcon {
   const rotation = heading;
+  const iconUrl = getDroneIconUrl(type);
   return L.divIcon({
     className: 'ashmoret-marker-threat',
-    iconSize: [28, 28],
-    iconAnchor: [14, 14],
+    iconSize: [32, 32],
+    iconAnchor: [16, 16],
     html: `
       <div style="
-        width: 28px;
-        height: 28px;
+        width: 32px;
+        height: 32px;
         display: flex;
         align-items: center;
         justify-content: center;
         transform: rotate(${rotation}deg);
-        filter: drop-shadow(0 2px 4px rgba(239, 68, 68, 0.6));
+        filter: drop-shadow(0 2px 4px rgba(239, 68, 68, 0.7));
         transition: transform 0.1s linear;
       ">
-        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <!-- Outer combat delta / chevron drone shape -->
-          <path d="M12 2L2 21L12 17L22 21L12 2Z" fill="#ef4444" stroke="#ffffff" stroke-width="1.5" stroke-linejoin="round"/>
-          <circle cx="12" cy="11" r="2.5" fill="#ffffff" />
-        </svg>
+        <img src="${iconUrl}" width="28" height="28" style="display: block; pointer-events: none;" alt="Threat" />
       </div>
-      ${label ? `<div style="position: absolute; top: -14px; left: 50%; transform: translateX(-50%); white-space: nowrap; font-size: 10px; font-weight: 700; color: #fca5a5; background: rgba(15,23,42,0.75); padding: 1px 4px; border-radius: 4px; border: 1px solid rgba(239,68,68,0.4); pointer-events: none;">${label}</div>` : ''}
+      ${label ? `<div style="position: absolute; top: -14px; left: 50%; transform: translateX(-50%); white-space: nowrap; font-size: 10px; font-weight: 700; color: #fca5a5; background: rgba(15,23,42,0.85); padding: 1px 4px; border-radius: 4px; border: 1px solid rgba(239,68,68,0.4); pointer-events: none;">${label}</div>` : ''}
     `,
   });
 }
@@ -77,31 +95,24 @@ export function createInterceptorIcon(heading: number = 0): L.DivIcon {
 }
 
 /**
- * Creates an SVG DivIcon for a static defense battery / launcher.
+ * Creates an SVG DivIcon for a static defense battery / launcher using item type icon.
  */
-export function createDefenseIcon(label?: string): L.DivIcon {
+export function createDefenseIcon(label?: string, type?: string | LauncherType | number): L.DivIcon {
+  const iconUrl = getDefenseIconUrl(type);
   return L.divIcon({
     className: 'ashmoret-marker-defense',
-    iconSize: [32, 32],
-    iconAnchor: [16, 16],
+    iconSize: [36, 36],
+    iconAnchor: [18, 18],
     html: `
       <div style="
-        width: 32px;
-        height: 32px;
+        width: 36px;
+        height: 36px;
         display: flex;
         align-items: center;
         justify-content: center;
-        filter: drop-shadow(0 4px 6px rgba(59, 130, 246, 0.5));
+        filter: drop-shadow(0 4px 6px rgba(59, 130, 246, 0.6));
       ">
-        <svg viewBox="0 0 24 24" width="28" height="28" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <!-- Defense Shield & Radar array base -->
-          <rect x="3" y="14" width="18" height="7" rx="2" fill="#1e3a8a" stroke="#60a5fa" stroke-width="1.5" />
-          <path d="M12 3L5 6V11C5 15.5 8 18 12 19C16 18 19 15.5 19 11V6L12 3Z" fill="#2563eb" fill-opacity="0.85" stroke="#93c5fd" stroke-width="1.5" stroke-linejoin="round"/>
-          <!-- Battery missile pods -->
-          <circle cx="9" cy="10" r="1.5" fill="#ffffff" />
-          <circle cx="15" cy="10" r="1.5" fill="#ffffff" />
-          <path d="M12 6V13" stroke="#ffffff" stroke-width="1.5" stroke-linecap="round" />
-        </svg>
+        <img src="${iconUrl}" width="32" height="32" style="display: block; pointer-events: none;" alt="Defense Battery" />
       </div>
       ${label ? `<div style="position: absolute; bottom: -12px; left: 50%; transform: translateX(-50%); white-space: nowrap; font-size: 10px; font-weight: 700; color: #93c5fd; background: rgba(15,23,42,0.85); padding: 1px 4px; border-radius: 4px; border: 1px solid rgba(59,130,246,0.4); pointer-events: none;">${label}</div>` : ''}
     `,
