@@ -64,3 +64,10 @@ export const InterceptorRange: Record<InterceptorType, number> = {
   [InterceptorType.SwarmMist5]: 5000,
   [InterceptorType.MicroNetR]: 7000,
 };
+
+export type ScenerioCreationType = {
+  name: string;
+  type: string;
+  dronesGroupId: number;
+  launchersGroupId: number;
+}
