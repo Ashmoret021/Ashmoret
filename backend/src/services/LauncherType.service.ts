@@ -61,7 +61,7 @@ export const updateLauncherType = async (
     updatePayload.reload_time = data.reload_time ?? data.reloadTime;
   }
 
-  await repo.update(id, updatePayload);
+  await repo.update(id, updatePayload as any);
   const updated = await repo.findOneBy({ id });
   if (updated) {
     logger.info(`Updated launcher type with id: ${id}`);

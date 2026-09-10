@@ -1,4 +1,5 @@
-import { Column, Entity, JoinColumn, ManyToOne, PrimaryColumn } from "typeorm";
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryColumn } from "typeorm";
+import { AttackSide } from "./AttackSide.entity";
 import { DronesGroup } from "./DronesGroup.entity";
 import { LaunchersGroup } from "./LaunchersGroup.entity";
 
@@ -35,4 +36,7 @@ export class Scenario {
 
   // Transient property - not persisted to DB. Populated at runtime by services.
   locations?: string[];
+
+  @OneToMany(() => AttackSide, (attackSide: AttackSide) => attackSide.scenario)
+  attackSides!: AttackSide[];
 }

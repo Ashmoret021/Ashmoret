@@ -3,8 +3,10 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from "typeorm";
+import { AttackSide } from "./AttackSide.entity";
 import { DronesGroup } from "./DronesGroup.entity";
 import { DroneType } from "./DroneType.entity";
 
@@ -47,4 +49,7 @@ export class Drone {
   @ManyToOne(() => DroneType, (droneType: DroneType) => droneType.drones)
   @JoinColumn({ name: "type" })
   droneType!: DroneType;
+
+  @OneToMany(() => AttackSide, (attackSide: AttackSide) => attackSide.drone)
+  attackSides!: AttackSide[];
 }
