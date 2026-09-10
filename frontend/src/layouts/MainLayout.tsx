@@ -8,12 +8,13 @@ import {
 import { SimulationSummaryPanel } from "../components/SimulationSummary/SimulationSummaryPanel";
 import { LaunchersDronesPanel } from "../components/LaunchersDronesPanel/LaunchersDronesPanel";
 import { ScenarioItem } from "../types/simulation";
-import { DroneGroup, LauncherGroup } from "../types/types";
+import { DroneGroup, LauncherGroup, Location } from "../types/types";
 import {
   INITIAL_DRONE_GROUPS,
   INITIAL_LAUNCHER_GROUPS,
   INITIAL_SCENARIOS,
 } from "../mock/events";
+import type { SimulationScenario } from "../simulation/SimulationContext";
 import "./MainLayout.css";
 import React, { useEffect, useRef, useState } from "react";
 import {
@@ -36,6 +37,113 @@ import {
   stopClock,
 } from "../simulation/SimulationContext";
 import { getScenarioById } from "../simulation/sampleScenario";
+
+// ── DB → SimulationScenario adapter ───────────────────────────────────────
+// Backend `GET /api/scenarios` returns each scenario with its drones and
+// launchers populated via TypeORM relations, but the sim engine expects the
+// flat `SimulationScenario` shape (drones/launchers at the top level, plus
+// runtime-only `startTime` and `route` fields on each drone). This adapter
+// bridges the two so that picking a real scenario actually runs its own
+// drones/launchers instead of falling back to a hardcoded sample.
+const toNumber = (v: unknown, fallback = 0): number => {
+  const n = typeof v === "number" ? v : Number(v);
+  return Number.isFinite(n) ? n : fallback;
+};
+
+// Project a destination `Location` `distanceM` meters from `start` along
+// compass bearing `headingDeg` (0° = North, 90° = East — standard aviation
+// convention). Uses the spherical forward geodesic (haversine). We keep the
+// altitude fields unchanged so drones fly level from start to endpoint.
+const EARTH_RADIUS_M = 6371000;
+const DEFAULT_ROUTE_DISTANCE_M = 120_000; // ~120 km — spans Israel end-to-end
+const projectDestination = (
+  start: Location,
+  headingDeg: number,
+  distanceM: number,
+): Location => {
+  const bearing = (headingDeg * Math.PI) / 180;
+  const angDist = distanceM / EARTH_RADIUS_M;
+  const lat1 = (start.latitude * Math.PI) / 180;
+  const lon1 = (start.longitude * Math.PI) / 180;
+  const lat2 = Math.asin(
+    Math.sin(lat1) * Math.cos(angDist) +
+      Math.cos(lat1) * Math.sin(angDist) * Math.cos(bearing),
+  );
+  const lon2 =
+    lon1 +
+    Math.atan2(
+      Math.sin(bearing) * Math.sin(angDist) * Math.cos(lat1),
+      Math.cos(angDist) - Math.sin(lat1) * Math.sin(lat2),
+    );
+  return {
+    latitude: (lat2 * 180) / Math.PI,
+    longitude: (lon2 * 180) / Math.PI,
+    asl: start.asl,
+    agl: start.agl,
+  };
+};
+
+const buildSimulationFromDbScenario = (
+  scenario: ScenarioItem,
+): SimulationScenario | null => {
+  const dbDrones = scenario.dronesGroup?.drones;
+  const dbLaunchers = scenario.launchersGroup?.launchers;
+  if (!dbDrones || !dbLaunchers) return null;
+
+  const drones = dbDrones.map((d) => {
+    const start: Location = {
+      longitude: toNumber(d.longitude),
+      latitude: toNumber(d.latitude),
+      asl: toNumber(d.asl),
+      agl: toNumber(d.agl),
+    };
+    const heading = toNumber(d.heading);
+    const velocity = toNumber(d.velocity);
+    // DB drones have no waypoint list — synthesize a two-point route by
+    // projecting an endpoint along the heading. ThreatEngine needs
+    // route.length ≥ 2 to actually advance the drone; otherwise it just
+    // parks at route[0]. See ThreatEngine.calculateProgress.
+    const end = projectDestination(start, heading, DEFAULT_ROUTE_DISTANCE_M);
+    return {
+      ...d,
+      longitude: start.longitude,
+      latitude: start.latitude,
+      asl: start.asl,
+      agl: start.agl,
+      heading,
+      velocity,
+      startTime: toNumber(d.startTime, 0),
+      route: [start, end] as Location[],
+    };
+  });
+
+  const launchers = dbLaunchers.map((l) => ({
+    ...l,
+    longitude: toNumber(l.longitude),
+    latitude: toNumber(l.latitude),
+    asl: toNumber(l.asl),
+    agl: toNumber(l.agl),
+  }));
+
+  return {
+    id: scenario.id,
+    name: scenario.name,
+    startTime: 0,
+    drones,
+    launchers,
+  };
+};
+
+const resolveSimulationScenario = (
+  scenario: ScenarioItem,
+): SimulationScenario => {
+  // Legacy hardcoded samples (sc-*) keep their designed multi-waypoint
+  // routes; DB scenarios go through the adapter.
+  if (typeof scenario.id === "string" && scenario.id.startsWith("sc-")) {
+    return getScenarioById(scenario.id);
+  }
+  return buildSimulationFromDbScenario(scenario) ?? getScenarioById(scenario.id);
+};
 import { visualEventQueue } from "../visual/VisualEventQueue";
 import { algorithmClient } from "../algorithm/AlgorithmClient";
 import {
@@ -142,7 +250,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
         renderer.resetVisuals();
       }
       // Load specific scenario into simulation context
-      loadScenario(getScenarioById(scenario.id));
+      loadScenario(resolveSimulationScenario(scenario));
       if (renderer) {
         renderer.initDefenseSystems();
       }
@@ -151,7 +259,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
   };
 
   const handleScenarioSelectFromSummary = (scenarioId: string) => {
-    const foundScenario = INITIAL_SCENARIOS.find((s) => s.id === scenarioId);
+    const foundScenario = scenarios.find((s: ScenarioItem) => s.id === scenarioId);
     if (foundScenario) {
       setSelectedScenario(foundScenario);
     }
@@ -168,7 +276,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
       renderer.resetVisuals();
     }
     if (selectedScenario) {
-      loadScenario(getScenarioById(selectedScenario.id));
+      loadScenario(resolveSimulationScenario(selectedScenario));
       if (renderer) {
         renderer.initDefenseSystems();
       }
@@ -242,7 +350,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
         ) : navView === "summary_scenarios" ? (
           /* View 2: Scenarios Repository Panel (מאגר תרחישים) */
           <EventSummary
-            scenarios={INITIAL_SCENARIOS}
+            scenarios={scenarios}
             onSelectScenario={handleScenarioSelectFromSummary}
           />
         ) : (

@@ -15,7 +15,9 @@ export const getAllScenarios = async (): Promise<Scenario[]> => {
   const scenarios = await repo.find({
     relations: {
       dronesGroup: { drones: { droneType: true } },
-      launchersGroup: { launchers: { launcherType: true } },
+      launchersGroup: {
+        launchers: { launcherType: true, ammunition: true },
+      },
     },
     order: { id: "ASC" },
   });
@@ -34,7 +36,9 @@ export const getScenarioById = async (id: string): Promise<Scenario | null> => {
     where: { id },
     relations: {
       dronesGroup: { drones: { droneType: true } },
-      launchersGroup: { launchers: { launcherType: true } },
+      launchersGroup: {
+        launchers: { launcherType: true, ammunition: true },
+      },
     },
   });
 

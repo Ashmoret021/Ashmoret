@@ -69,6 +69,12 @@ export const createDronesGroupWithDrones = async (data: {
             const normalizedAgl = Number(droneData.agl ?? droneData.asl ?? 100);
             const normalizedHeading = Number(droneData.heading ?? 0);
             const normalizedVelocity = Number(droneData.velocity ?? 60);
+            // scenario.drone.start_time is NOT NULL with no default — the
+            // frontend attack-side builder doesn't send a per-drone start
+            // time, so we default to 0 (relative to scenario start).
+            const rawStartTime = (droneData as { startTime?: number; start_time?: number }).startTime
+              ?? (droneData as { startTime?: number; start_time?: number }).start_time;
+            const normalizedStartTime = Number(rawStartTime ?? 0);
 
             return droneRepo.create({
               dronesGroupId: group.id,
@@ -78,6 +84,7 @@ export const createDronesGroupWithDrones = async (data: {
               agl: normalizedAgl,
               heading: Number.isFinite(normalizedHeading) ? normalizedHeading : 0,
               velocity: Number.isFinite(normalizedVelocity) ? normalizedVelocity : 60,
+              startTime: Number.isFinite(normalizedStartTime) ? normalizedStartTime : 0,
               type: Number.isFinite(normalizedType) ? normalizedType : 1,
             });
           }),
@@ -184,6 +191,11 @@ export const updateDronesGroupWithDrones = async (
       const normalizedAgl = Number(droneData.agl ?? droneData.asl ?? 100);
       const normalizedHeading = Number(droneData.heading ?? 0);
       const normalizedVelocity = Number(droneData.velocity ?? 60);
+      // scenario.drone.start_time is NOT NULL with no default — default
+      // to 0 when the client doesn't send one.
+      const rawStartTime = (droneData as { startTime?: number; start_time?: number }).startTime
+        ?? (droneData as { startTime?: number; start_time?: number }).start_time;
+      const normalizedStartTime = Number(rawStartTime ?? 0);
 
       const droneEntity = {
         dronesGroupId: id,
@@ -193,6 +205,7 @@ export const updateDronesGroupWithDrones = async (
         agl: normalizedAgl,
         heading: Number.isFinite(normalizedHeading) ? normalizedHeading : 0,
         velocity: Number.isFinite(normalizedVelocity) ? normalizedVelocity : 60,
+        startTime: Number.isFinite(normalizedStartTime) ? normalizedStartTime : 0,
         type: Number.isFinite(normalizedType) ? normalizedType : 1,
       };
 

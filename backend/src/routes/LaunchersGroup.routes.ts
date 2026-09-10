@@ -4,6 +4,7 @@ import {
   getAllLaunchersGroups,
   getLaunchersGroupById,
   createLaunchersGroup,
+  createLaunchersGroupWithLaunchers,
   updateLaunchersGroup,
   deleteLaunchersGroup,
 } from '../services/LaunchersGroup.service';
@@ -42,6 +43,15 @@ router.post('/', async (req, res, next) => {
   try {
     const created = await createLaunchersGroup(req.body);
     res.status(StatusCodes.CREATED).json(created);
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.post('/with-launchers', async (req, res, next) => {
+  try {
+    const created = await createLaunchersGroupWithLaunchers(req.body ?? {});
+    res.status(StatusCodes.CREATED).json({ status: 'ok', data: created });
   } catch (err) {
     next(err);
   }

@@ -2,7 +2,6 @@ import React, { useState, useMemo } from 'react';
 import { Search } from 'lucide-react';
 import { Event } from './Event';
 import { ScenarioItem } from '../../types/simulation';
-import { INITIAL_SCENARIOS } from '../../mock/scenarios';
 import './EventSummary.css';
 
 interface EventSummaryProps {
@@ -11,7 +10,7 @@ interface EventSummaryProps {
 }
 
 export const EventSummary: React.FC<EventSummaryProps> = ({
-  scenarios = INITIAL_SCENARIOS,
+  scenarios = [],
   onSelectScenario,
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -19,13 +18,19 @@ export const EventSummary: React.FC<EventSummaryProps> = ({
   const filteredScenarios = useMemo(() => {
     if (!searchQuery.trim()) return scenarios;
     const query = searchQuery.trim().toLowerCase();
-    return scenarios.filter(
-      (scen) =>
-        scen.title.toLowerCase().includes(query) ||
-        scen.typeLabel.toLowerCase().includes(query) ||
-        scen.entryPoints.some((p) => p.toLowerCase().includes(query)) ||
-        scen.droneTypes.some((d) => d.toLowerCase().includes(query))
-    );
+    return scenarios.filter((scen) => {
+      if (scen.name?.toLowerCase().includes(query)) return true;
+      if (scen.type?.toLowerCase?.().includes(query)) return true;
+      if (scen.entryPoints?.some((p) => p.toLowerCase().includes(query)))
+        return true;
+      if (
+        scen.dronesGroup?.drones?.some((d) =>
+          String(d.type).toLowerCase().includes(query),
+        )
+      )
+        return true;
+      return false;
+    });
   }, [scenarios, searchQuery]);
 
   return (

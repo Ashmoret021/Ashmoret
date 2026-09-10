@@ -1,5 +1,11 @@
 import React, { useState, useEffect, useRef } from "react";
 import L from "leaflet";
+import {
+  createLaunchersGroupWithLaunchers,
+  getLauncherTypes,
+  getInterceptorTypes,
+  type DroneTypeRecord,
+} from "../../api/attackSide";
 
 export type DefenseDetails = {
   id: number;
@@ -204,6 +210,26 @@ export const DefenseSide: React.FC<DefenseSideProps> = ({
   const [defenseDetails, setDefenseDetails] = useState<DefenseDetails[]>([
     createEmptyDefense(),
   ]);
+
+  // launcher_type rows fetched from the API. Used to resolve the human-
+  // readable `simulatedSystemName` on each defense card back to the int FK
+  // the DB expects for `launcher.type`.
+  const [launcherTypeOptions, setLauncherTypeOptions] = useState<DroneTypeRecord[]>([]);
+  // interceptor_type rows. Used to resolve the human-readable
+  // `simulatedInterceptorName` on each card into the int FK the DB expects
+  // for `launcher_ammunition.interceptor_type_id`, so the algorithm sees
+  // real ammunition (otherwise no interceptor is ever fired).
+  const [interceptorTypeOptions, setInterceptorTypeOptions] = useState<DroneTypeRecord[]>([]);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    getLauncherTypes()
+      .then((types) => setLauncherTypeOptions(types))
+      .catch(() => setLauncherTypeOptions([]));
+    getInterceptorTypes()
+      .then((types) => setInterceptorTypeOptions(types))
+      .catch(() => setInterceptorTypeOptions([]));
+  }, []);
 
   const [pickingCardId, setPickingCardId] = useState<number | null>(null);
 
@@ -420,11 +446,82 @@ export const DefenseSide: React.FC<DefenseSideProps> = ({
     );
   };
 
-  const handleSave = () => {
-    console.log("Defense side:", {
-      defenseDetails,
+  const handleSave = async () => {
+    if (saving) return;
+
+    const withLocation = defenseDetails.filter((detail) => detail.location);
+    if (withLocation.length === 0) {
+      window.alert("יש לבחור מיקום ללפחות משגר אחד לפני שמירת קבוצת ההגנה");
+      return;
+    }
+
+    // Normalize the human-readable system name to a launcher_type.id.
+    // If the name doesn't map to a known type, fall back to 1 (first row)
+    // so the INSERT can still succeed.
+    const normalizeTypeName = (value: string) =>
+      value.toLowerCase().replace(/[^a-z0-9]/g, "");
+    const typeIdByName = new Map(
+      launcherTypeOptions.map((type) => [normalizeTypeName(type.name), type.id] as const),
+    );
+    // Same idea for interceptor names ("BuzzStop-15" → interceptor_type.id).
+    // Every launcher gets at least one ammunition row so the algorithm can
+    // actually dispatch an interceptor. The stockpile amount per type is
+    // decided by the backend (constant per interceptor type), so we only
+    // send the `interceptorTypeId` — no client-side amount.
+    const interceptorIdByName = new Map(
+      interceptorTypeOptions.map(
+        (type) => [normalizeTypeName(type.name), type.id] as const,
+      ),
+    );
+    const fallbackInterceptorTypeId = interceptorTypeOptions[0]?.id;
+
+    const launchers = withLocation.map((detail) => {
+      const typeKey = normalizeTypeName(detail.simulatedSystemName ?? "");
+      const matchedTypeId = typeIdByName.get(typeKey);
+      const alt = Number(detail.altitudeAsl || detail.altitudeAgl || 0);
+
+      const interceptorKey = normalizeTypeName(
+        detail.simulatedInterceptorName ?? "",
+      );
+      const matchedInterceptorId =
+        interceptorIdByName.get(interceptorKey) ?? fallbackInterceptorTypeId;
+
+      const ammunition = matchedInterceptorId
+        ? [{ interceptorTypeId: matchedInterceptorId }]
+        : [];
+
+      return {
+        longitude: Number(detail.location!.lng),
+        latitude: Number(detail.location!.lat),
+        asl: Number.isFinite(alt) ? alt : 0,
+        agl: Number(detail.altitudeAgl || detail.altitudeAsl || 0) || 0,
+        type: matchedTypeId ?? launcherTypeOptions[0]?.id ?? 1,
+        amount: 1,
+        active: true,
+        ammunition,
+      };
     });
-    onClose();
+
+    const payload = {
+      name:
+        `צד הגנה ${new Date().toLocaleTimeString("he-IL", {
+          hour: "2-digit",
+          minute: "2-digit",
+        })}`,
+      launchers,
+    };
+
+    setSaving(true);
+    try {
+      await createLaunchersGroupWithLaunchers(payload as Record<string, unknown>);
+      onClose();
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Request failed";
+      console.error("Failed to save defense side:", message);
+      window.alert("לא ניתן לשמור את צד ההגנה. נסה שוב.");
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleCancel = () => {
@@ -1697,6 +1794,7 @@ export const DefenseSide: React.FC<DefenseSideProps> = ({
             <button
               type="button"
               onClick={handleSave}
+              disabled={saving}
               style={{
                 flex: 1.5,
                 height: "44px",
@@ -1705,14 +1803,15 @@ export const DefenseSide: React.FC<DefenseSideProps> = ({
                 background:
                   "linear-gradient(135deg, #1765b5, #1d7ed0)",
                 color: "#fff",
-                cursor: "pointer",
+                cursor: saving ? "not-allowed" : "pointer",
                 fontSize: "14px",
                 fontWeight: 700,
                 boxShadow:
                   "0 5px 12px rgba(23, 101, 181, 0.22)",
+                opacity: saving ? 0.7 : 1,
               }}
             >
-              שמור צד הגנה
+              {saving ? "שומר..." : "שמור צד הגנה"}
             </button>
           </div>
         </div>

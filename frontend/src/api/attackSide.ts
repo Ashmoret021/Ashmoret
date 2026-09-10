@@ -88,3 +88,22 @@ export async function deleteAttackSide(id: number) {
     method: 'DELETE',
   });
 }
+
+/**
+ * Create a launchers group + its launcher rows in one call. Mirrors
+ * `createDronesGroupWithDrones` for the defense-side modal.
+ */
+export async function createLaunchersGroupWithLaunchers(payload: Record<string, unknown>) {
+  return request('/launchers-groups/with-launchers', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function getLauncherTypes(): Promise<DroneTypeRecord[]> {
+  return request<DroneTypeRecord[]>('/launcher-types');
+}
+
+export async function getInterceptorTypes(): Promise<DroneTypeRecord[]> {
+  return request<DroneTypeRecord[]>('/interceptor-types');
+}
