@@ -9,7 +9,8 @@ on:
 
 jobs:
   pipeline:
-    uses: Devops-Had-Hatzot/ci-template/.github/workflows/main.yml@main
+    uses: Ashmoret021/Gitops/.github/workflows/main.yml@main
     with:
       TAG: "1.0.0"
     secrets: inherit
+    

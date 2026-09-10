@@ -99,66 +99,309 @@ CREATE TEMP TABLE _ashmoret_seed_drone (
 
 INSERT INTO _ashmoret_seed_drone (name, category, source_estimated_attack_quantity, unit_cost_ils, source_total_cost_ils, threat_description, flight_range_km, estimated_damage, flight_speed_kmh, source_estimate_lebanon, source_estimate_gaza)
 VALUES
-    ('SkyMite-C7', 'רחפן מסחרי קל', 1200, 2500, 3000000, 'הצפה כמותית, חתימה נמוכה, מתאים לשחיקת קשב וגלאים.', 15.0, 350000, 60.0, 800, 400),
-    ('LoadBee-M2', 'רחפן נשיאת מטען קל', 650, 8000, 5200000, 'נשיאת מטען מוגבל, איום נקודתי על אתרים רגישים.', 15.0, 1000000, 60.0, 500, 150),
-    ('Falcon-Long X4', 'רחפן ארוך־טווח מאולתר', 320, 18000, 5760000, 'חדירה מעומק, דורש גילוי מוקדם ותעדוף מיירטים יקרים.', 50.0, 2000000, 60.0, 200, 120),
-    ('NanoSwarm-Q9', 'נחיל רחפנים זעירים', 2400, 900, 2160000, 'איום רווי וזול, מיועד לשחיקת מלאי וליצירת ריבוי מטרות.', 25.0, 150000, 60.0, 1000, 1400);
+    (
+        'משגרי הצפון',
+        'קבוצת משגרים הממוקמת באזור הצפוני'
+    ),
+    (
+        'משגרי הדרום',
+        'קבוצת משגרים הממוקמת באזור הדרומי'
+    ),
+    (
+        'משגרי המרכז',
+        'קבוצת משגרים הממוקמת באזור המרכזי'
+    ),
+    (
+        'משגרי אימון',
+        'משגרים המשמשים לתרחישי אימון ובדיקות'
+    );
 
-CREATE TEMP TABLE _ashmoret_seed_launcher (
-    name VARCHAR(255) NOT NULL,
-    source_system_quantity INTEGER NOT NULL
-) ON COMMIT DROP;
 
-INSERT INTO _ashmoret_seed_launcher (name, source_system_quantity)
+-- ============================================================
+-- 4. SCENARIOS
+-- תרחישים
+-- ============================================================
+
+INSERT INTO scenario.scenario (
+    id,
+    name,
+    drones_group_id,
+    launchers_group_id,
+    type
+)
 VALUES
-    ('ShieldNest-Lite', 8),
-    ('IronHook-SR', 6),
-    ('HorizonEye-MX', 4),
-    ('CloudFence-Area', 10);
+    (
+        'SCENARIO-001',
+        'הגנה צפונית',
+        (SELECT id
+         FROM scenario.drones_group
+         WHERE name = 'רחפני אלפא'),
+        (SELECT id
+         FROM scenario.launchers_group
+         WHERE name = 'משגרי הצפון'),
+        'יחיד'
+    ),
+    (
+        'SCENARIO-002',
+        'הגנה דרומית',
+        (SELECT id
+         FROM scenario.drones_group
+         WHERE name = 'רחפני בראבו'),
+        (SELECT id
+         FROM scenario.launchers_group
+         WHERE name = 'משגרי הדרום'),
+        'רב-מערכתי'
+    ),
+    (
+        'SCENARIO-003',
+        'תצפית מרכזית',
+        (SELECT id
+         FROM scenario.drones_group
+         WHERE name = 'רחפני צ׳רלי'),
+        (SELECT id
+         FROM scenario.launchers_group
+         WHERE name = 'משגרי המרכז'),
+        'יחיד'
+    ),
+    (
+        'SCENARIO-004',
+        'תרגיל אימון',
+        (SELECT id
+         FROM scenario.drones_group
+         WHERE name = 'רחפני אימון'),
+        (SELECT id
+         FROM scenario.launchers_group
+         WHERE name = 'משגרי אימון'),
+        'רב-מערכתי'
+    );
 
-CREATE TEMP TABLE _ashmoret_seed_interceptor (
-    name VARCHAR(255) NOT NULL,
-    unit_cost_ils NUMERIC(18,2) NOT NULL
-) ON COMMIT DROP;
 
-INSERT INTO _ashmoret_seed_interceptor (name, unit_cost_ils)
+-- ============================================================
+-- 5. DRONES
+-- רחפנים
+-- ============================================================
+
+INSERT INTO scenario.drone (
+    drones_group_id,
+    longitude,
+    latitude,
+    asl,
+    agl,
+    heading,
+    velocity,
+    type
+)
 VALUES
-    ('BuzzStop-15', 15000),
-    ('NetWing-30', 22000),
-    ('DartFox-S', 45000),
-    ('SpearMini-70', 68000),
-    ('SkyLance-M', 120000),
-    ('FalconClip-H', 180000),
-    ('SwarmMist-5', 7500),
-    ('MicroNet-R', 18000);
+    (
+        (SELECT id FROM scenario.drones_group
+         WHERE name = 'רחפני אלפא'),
+        34.781800,
+        32.085300,
+        120,
+        80,
+        45,
+        25,
+        (SELECT id FROM scenario.drone_type
+         WHERE name = 'רחפן מרובע')
+    ),
+    (
+        (SELECT id FROM scenario.drones_group
+         WHERE name = 'רחפני אלפא'),
+        34.790200,
+        32.090100,
+        150,
+        100,
+        90,
+        30,
+        (SELECT id FROM scenario.drone_type
+         WHERE name = 'רחפן מרובע')
+    ),
+    (
+        (SELECT id FROM scenario.drones_group
+         WHERE name = 'רחפני אלפא'),
+        34.800500,
+        32.095500,
+        200,
+        150,
+        180,
+        35,
+        (SELECT id FROM scenario.drone_type
+         WHERE name = 'רחפן כנף קבועה')
+    ),
+    (
+        (SELECT id FROM scenario.drones_group
+         WHERE name = 'רחפני בראבו'),
+        34.810000,
+        31.950000,
+        100,
+        70,
+        270,
+        20,
+        (SELECT id FROM scenario.drone_type
+         WHERE name = 'רחפן המראה ונחיתה אנכית')
+    ),
+    (
+        (SELECT id FROM scenario.drones_group
+         WHERE name = 'רחפני בראבו'),
+        34.820000,
+        31.960000,
+        130,
+        90,
+        315,
+        28,
+        (SELECT id FROM scenario.drone_type
+         WHERE name = 'רחפן מרובע')
+    ),
+    (
+        (SELECT id FROM scenario.drones_group
+         WHERE name = 'רחפני צ׳רלי'),
+        34.750000,
+        32.000000,
+        250,
+        200,
+        135,
+        40,
+        (SELECT id FROM scenario.drone_type
+         WHERE name = 'רחפן תצפית')
+    ),
+    (
+        (SELECT id FROM scenario.drones_group
+         WHERE name = 'רחפני צ׳רלי'),
+        34.760000,
+        32.010000,
+        300,
+        250,
+        225,
+        45,
+        (SELECT id FROM scenario.drone_type
+         WHERE name = 'רחפן כנף קבועה')
+    ),
+    (
+        (SELECT id FROM scenario.drones_group
+         WHERE name = 'רחפני אימון'),
+        34.770000,
+        32.020000,
+        80,
+        50,
+        0,
+        15,
+        (SELECT id FROM scenario.drone_type
+         WHERE name = 'רחפן מרובע')
+    );
 
-CREATE TEMP TABLE _ashmoret_seed_ammunition (
-    launcher_name VARCHAR(255) NOT NULL,
-    interceptor_name VARCHAR(255) NOT NULL,
-    ammunition_per_system INTEGER NOT NULL,
-    source_total_ammunition INTEGER NOT NULL,
-    operating_range_km DOUBLE PRECISION NOT NULL
-) ON COMMIT DROP;
 
-INSERT INTO _ashmoret_seed_ammunition (launcher_name, interceptor_name, ammunition_per_system, source_total_ammunition, operating_range_km)
+-- ============================================================
+-- 6. LAUNCHERS
+-- משגרים
+-- ============================================================
+
+INSERT INTO scenario.launcher (
+    launchers_group_id,
+    longitude,
+    latitude,
+    asl,
+    agl,
+    type,
+    amount,
+    active
+)
 VALUES
-    ('ShieldNest-Lite', 'BuzzStop-15', 24, 192, 10.0),
-    ('ShieldNest-Lite', 'NetWing-30', 16, 128, 10.0),
-    ('IronHook-SR', 'DartFox-S', 15, 90, 30.0),
-    ('IronHook-SR', 'SpearMini-70', 10, 60, 30.0),
-    ('HorizonEye-MX', 'SkyLance-M', 12, 48, 50.0),
-    ('HorizonEye-MX', 'FalconClip-H', 6, 24, 70.0),
-    ('CloudFence-Area', 'SwarmMist-5', 45, 450, 5.0),
-    ('CloudFence-Area', 'MicroNet-R', 15, 150, 7.0);
+    (
+        (SELECT id FROM scenario.launchers_group
+         WHERE name = 'משגרי הצפון'),
+        34.770000,
+        32.070000,
+        50,
+        10,
+        (SELECT id FROM scenario.launcher_type
+         WHERE name = 'משגר קרקעי'),
+        4,
+        TRUE
+    ),
+    (
+        (SELECT id FROM scenario.launchers_group
+         WHERE name = 'משגרי הצפון'),
+        34.775000,
+        32.075000,
+        55,
+        12,
+        (SELECT id FROM scenario.launcher_type
+         WHERE name = 'משגר נייד'),
+        3,
+        TRUE
+    ),
+    (
+        (SELECT id FROM scenario.launchers_group
+         WHERE name = 'משגרי הדרום'),
+        34.830000,
+        31.940000,
+        45,
+        8,
+        (SELECT id FROM scenario.launcher_type
+         WHERE name = 'משגר קרקעי'),
+        5,
+        TRUE
+    ),
+    (
+        (SELECT id FROM scenario.launchers_group
+         WHERE name = 'משגרי הדרום'),
+        34.835000,
+        31.945000,
+        60,
+        15,
+        (SELECT id FROM scenario.launcher_type
+         WHERE name = 'משגר כבד'),
+        2,
+        FALSE
+    ),
+    (
+        (SELECT id FROM scenario.launchers_group
+         WHERE name = 'משגרי המרכז'),
+        34.760000,
+        32.030000,
+        70,
+        20,
+        (SELECT id FROM scenario.launcher_type
+         WHERE name = 'משגר נייד'),
+        4,
+        TRUE
+    ),
+    (
+        (SELECT id FROM scenario.launchers_group
+         WHERE name = 'משגרי המרכז'),
+        34.765000,
+        32.035000,
+        75,
+        25,
+        (SELECT id FROM scenario.launcher_type
+         WHERE name = 'משגר קרקעי'),
+        6,
+        TRUE
+    ),
+    (
+        (SELECT id FROM scenario.launchers_group
+         WHERE name = 'משגרי אימון'),
+        34.750000,
+        32.010000,
+        30,
+        5,
+        (SELECT id FROM scenario.launcher_type
+         WHERE name = 'משגר נייד'),
+        2,
+        TRUE
+    );
 
-CREATE TEMP TABLE _ashmoret_seed_rate (
-    launcher_name VARCHAR(255) NOT NULL,
-    interceptor_name VARCHAR(255) NOT NULL,
-    drone_name VARCHAR(255) NOT NULL,
-    success_rate_percent NUMERIC(5,2) NOT NULL
-) ON COMMIT DROP;
 
-INSERT INTO _ashmoret_seed_rate (launcher_name, interceptor_name, drone_name, success_rate_percent)
+-- ============================================================
+-- 7. LAUNCHER AMMUNITION
+-- תחמושת משגרים
+-- ============================================================
+
+INSERT INTO scenario.launcher_ammunition (
+    launcher_id,
+    interceptor_type_id,
+    amount
+)
 VALUES
     ('ShieldNest-Lite', 'BuzzStop-15', 'SkyMite-C7', 72.0),
     ('ShieldNest-Lite', 'BuzzStop-15', 'NanoSwarm-Q9', 38.0),
