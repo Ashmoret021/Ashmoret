@@ -99,7 +99,7 @@ export const MapView: React.FC<MapViewProps> = React.memo(
 
       const dotIcon = L.divIcon({
         className: "",
-        html: `<div style="width:10px;height:10px;border-radius:50%;background:#e53935;border:2px solid #fff;box-shadow:0 0 4px rgba(0,0,0,.5);"></div>`,
+        html: `<div style="width:10px;height:10px;border-radius:50%;background:#e53935;border:2px solid #ffffff; background: #29ce31;box-shadow:0 0 4px rgba(0,0,0,.5);"></div>`,
         iconSize: [10, 10],
         iconAnchor: [5, 5],
       });
@@ -113,7 +113,7 @@ export const MapView: React.FC<MapViewProps> = React.memo(
         const distKm = (p1.distanceTo(p2) / 1000).toFixed(2);
 
         const line = L.polyline([p1, p2], {
-          color: "#e53935",
+          color: "#29ce31",
           weight: 2,
           dashArray: "6 4",
         }).addTo(map);
