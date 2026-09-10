@@ -29,17 +29,24 @@
   
   .drone-dialog-content {
     padding: 0 !important;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
   }
   
   /* ---------------- Header ---------------- */
   
-  .drone-header {
+  .modal-header {
+    position: relative !important; /* Overrides any absolute positioning */
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
     padding: 18px 18px 14px 18px;
     background: rgba(255, 255, 255, 0.02);
     border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    flex-shrink: 0;
+    width: 100%;
+    box-sizing: border-box;
   }
   
   .header-info {
