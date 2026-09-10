@@ -9,8 +9,8 @@ export const droneTypes = [
 
 export const borders = [
   "בחר גבול...",
-  "גבול צפוני",
-  "גבול דרומי",
+  "עזה",
+  "לבנון",
 ];
 
 export const directions = [
@@ -63,3 +63,82 @@ export const createWave = (id: number): DroneWave => ({
   altitude: 100,
   simulationArea: false,
 });
+
+/**
+ * Operational boundaries covering southern Gaza through northern Lebanon
+ */
+export const OPERATIONAL_BOUNDS = {
+  minLat: 30.5,
+  maxLat: 34.8,
+  minLng: 33.8,
+  maxLng: 36.8,
+};
+
+export function isWithinOperationalBounds(lat: number, lng: number): boolean {
+  return (
+    lat >= OPERATIONAL_BOUNDS.minLat &&
+    lat <= OPERATIONAL_BOUNDS.maxLat &&
+    lng >= OPERATIONAL_BOUNDS.minLng &&
+    lng <= OPERATIONAL_BOUNDS.maxLng
+  );
+}
+
+/**
+ * Creates a visually balanced tactical formation of drones around a clicked center point
+ */
+export function createDroneFormation(
+  center: { lat: number; lng: number },
+  count: number,
+  spacingMeters: number = 220
+): Array<{ lat: number; lng: number }> {
+  if (count <= 1) {
+    return [{ lat: Number(center.lat.toFixed(6)), lng: Number(center.lng.toFixed(6)) }];
+  }
+
+  const latOffsetPerMeter = 1 / 111000;
+  const cosLat = Math.cos((center.lat * Math.PI) / 180);
+  const lngOffsetPerMeter = 1 / (111000 * (cosLat || 1));
+
+  const dLat = spacingMeters * latOffsetPerMeter;
+  const dLng = spacingMeters * lngOffsetPerMeter;
+
+  // Determine row distribution (symmetrical tactical pattern: e.g. 11 drones -> 3 - 5 - 3)
+  let rowCounts: number[] = [];
+  if (count <= 3) {
+    rowCounts = [count];
+  } else if (count <= 6) {
+    const half = Math.floor(count / 2);
+    rowCounts = [half, count - half];
+  } else if (count <= 15) {
+    const wing = Math.max(2, Math.floor((count - 3) / 2 / 1.5));
+    const centerRow = count - 2 * wing;
+    rowCounts = [wing, centerRow, wing];
+  } else {
+    const numRows = Math.ceil(Math.sqrt(count));
+    const basePerRow = Math.floor(count / numRows);
+    const rem = count % numRows;
+    rowCounts = Array(numRows).fill(basePerRow);
+    for (let i = 0; i < rem; i++) {
+      rowCounts[Math.floor(numRows / 2) + (i % 2 === 0 ? Math.floor(i / 2) : -Math.ceil(i / 2))]++;
+    }
+  }
+
+  const numRows = rowCounts.length;
+  const points: Array<{ lat: number; lng: number }> = [];
+
+  for (let r = 0; r < numRows; r++) {
+    const countInRow = rowCounts[r];
+    const rowOffsetLat = -(r - (numRows - 1) / 2) * dLat;
+
+    for (let c = 0; c < countInRow; c++) {
+      const colOffsetLng = (c - (countInRow - 1) / 2) * dLng;
+      points.push({
+        lat: Number((center.lat + rowOffsetLat).toFixed(6)),
+        lng: Number((center.lng + colOffsetLng).toFixed(6)),
+      });
+    }
+  }
+
+  return points;
+}
+

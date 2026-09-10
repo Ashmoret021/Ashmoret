@@ -22,6 +22,7 @@ export interface PlacedDrone {
   longitude: number;
   altitude: number;
   heading: number;
+  angle?: number;
   status: DroneStatus;
   placedAt: string; // ISO string
 }

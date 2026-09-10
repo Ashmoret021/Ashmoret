@@ -40,7 +40,10 @@ export const DronePlacementControl: React.FC<DronePlacementProps> = ({
   onStartPlacement,
   onClose,
 }) => {
-  const currentBatchSize = wave.batchSize || Math.min(5, remainingForWave);
+  const currentBatchSize =
+    wave.batchSize !== undefined
+      ? Math.min(wave.batchSize, remainingForWave)
+      : remainingForWave;
 
   return (
     <div style={{ marginTop: 6 }}>
@@ -196,6 +199,22 @@ export const DronePlacementControl: React.FC<DronePlacementProps> = ({
             <span style={{ fontSize: 10.5, color: "#64748b" }}>
               (מתוך {remainingForWave} נותרים)
             </span>
+            <button
+              type="button"
+              onClick={() => updateWave(wave.id, "batchSize", remainingForWave)}
+              style={{
+                padding: "3px 7px",
+                fontSize: 10.5,
+                borderRadius: 4,
+                border: "1px solid #cbd5e1",
+                background: "#ffffff",
+                color: "#873535",
+                fontWeight: 700,
+                cursor: "pointer",
+              }}
+            >
+              כל הגל ({remainingForWave})
+            </button>
           </div>
         )}
       </div>
@@ -246,7 +265,7 @@ export const DronePlacementControl: React.FC<DronePlacementProps> = ({
           {isComplete
             ? `✓ כל ${requiredForWave} הרחפנים הוצבו במפה`
             : wave.placementMode === "batch"
-            ? `מקם מקבץ של ${currentBatchSize} במפה`
+            ? `מקם מקבץ של ${currentBatchSize} במפה (בלחיצה אחת)`
             : `מקם רחפנים במפה (נותרו ${remainingForWave})`}
         </span>
       </button>

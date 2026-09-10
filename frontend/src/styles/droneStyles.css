@@ -168,3 +168,48 @@
   background: rgba(255, 255, 255, 0.35);
   color: #ffffff;
 }
+
+/* Direction Heading Pointer & Rotation */
+.drone-heading-pointer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 44px;
+  height: 44px;
+  pointer-events: none;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  z-index: 6;
+}
+
+.drone-heading-arrow-tip {
+  font-size: 11px;
+  line-height: 1;
+  color: #f59e0b;
+  text-shadow: 0 0 2px rgba(0, 0, 0, 0.8), 0 0 6px rgba(245, 158, 11, 0.9);
+  margin-top: -8px;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.5));
+}
+
+.drone-quad-rotator {
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.drone-angle-indicator {
+  position: absolute;
+  bottom: -4px;
+  left: -4px;
+  background: #1e293b;
+  color: #fbbf24;
+  font-size: 9px;
+  font-weight: 800;
+  padding: 1px 4px;
+  border-radius: 8px;
+  border: 1px solid #f59e0b;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.25);
+  z-index: 5;
+  letter-spacing: 0.2px;
+}
+
