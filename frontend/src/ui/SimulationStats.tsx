@@ -142,18 +142,31 @@ export const SimulationStats: React.FC<SimulationStatsProps> = () => {
             </Tooltip>
           </Box>
 
-          <Chip
-            icon={<WifiIcon sx={{ fontSize: 16 }} />}
-            label={isConnected ? "מחובר" : "גיבוי"}
-            size="small"
-            color={isConnected ? "success" : "warning"}
-            variant="outlined"
+          <Box
             sx={{
-              fontWeight: 600,
-              fontSize: "0.7rem",
-              height: 24,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 0.5,
+              minWidth: 68,
+              px: 1,
+              py: 0.25,
+              border: "1px solid",
+              borderColor: isConnected ? "success.main" : "warning.main",
+              borderRadius: 4,
+              color: isConnected ? "success.main" : "warning.main",
+              direction: "rtl",
+              lineHeight: 1,
             }}
-          />
+          >
+            <WifiIcon sx={{ fontSize: 16 }} />
+            <Typography
+              component="span"
+              sx={{ fontWeight: 600, fontSize: "0.7rem" }}
+            >
+              {isConnected ? "מחובר" : "גיבוי"}
+            </Typography>
+          </Box>
         </Box>
 
         <Collapse in={isExpanded}>
