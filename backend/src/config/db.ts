@@ -12,7 +12,7 @@ export const AppDataSource = new DataSource({
   username: process.env.DB_USER || 'pp',
   password: process.env.DB_PASSWORD || 'postgres',
   database: process.env.DB_NAME || 'pp',
-  schema: process.env.DB_SCHEMA || 'scenario_management',
+  schema: process.env.DB_SCHEMA || 'scenario',
   ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : false,
   synchronize: false,
   logging: process.env.NODE_ENV === 'development' ? ['error', 'warn'] : false,
