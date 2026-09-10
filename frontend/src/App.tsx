@@ -207,6 +207,56 @@ export const App = () => {
     storageService.saveStoredUserLayers(userLayers);
   }, [userLayers]);
 
+  const cancelUserLayerDrawing = useCallback(() => {
+    setIsDrawingUserLayer(false);
+    setDraftUserLayerId(null);
+    setDraftPolygonPoints([]);
+    setIsPolygonInfoDialogOpen(false);
+    setPolygonInfoDraft({ name: "", description: "" });
+    if (userDraftPolylineRef.current) {
+      userDraftPolylineRef.current.remove();
+      userDraftPolylineRef.current = null;
+    }
+    if (userDraftPolygonRef.current) {
+      userDraftPolygonRef.current.remove();
+      userDraftPolygonRef.current = null;
+    }
+    userDraftMarkersRef.current.forEach((marker) => marker.remove());
+    userDraftMarkersRef.current = [];
+    if (map) {
+      map.getContainer().style.cursor = "";
+    }
+  }, [map]);
+
+  const removeUserLayer = useCallback(
+    (layerId: string) => {
+      const layer = userLayers.find((entry) => entry.id === layerId);
+      const group = userLayerGroupsRef.current.get(layerId);
+      if (group) {
+        group.remove();
+        userLayerGroupsRef.current.delete(layerId);
+      }
+
+      for (const [key, polygonLayer] of userPolygonRefs.current.entries()) {
+        const [layerKey] = key.split(":");
+        if (layerKey !== layerId) continue;
+        polygonLayer.remove();
+        userPolygonRefs.current.delete(key);
+      }
+
+      setUserLayers((prev) => prev.filter((entry) => entry.id !== layerId));
+
+      if (draftUserLayerId === layerId) {
+        cancelUserLayerDrawing();
+      }
+
+      if (layer) {
+        showToast(`השכבה "${layer.name}" נמחקה.`, "info");
+      }
+    },
+    [cancelUserLayerDrawing, draftUserLayerId, showToast, userLayers],
+  );
+
   const renderUserLayerControls = useCallback(() => {
     const container = layerControlRef.current?.getContainer();
     const list = container?.querySelector(".leaflet-control-layers-list");
@@ -246,6 +296,9 @@ export const App = () => {
     }
 
     userLayers.forEach((layer) => {
+      const row = document.createElement("div");
+      row.className = "user-layer-control-row";
+
       const label = document.createElement("label");
       label.className = "user-layer-control-item";
 
@@ -265,26 +318,53 @@ export const App = () => {
       });
 
       const name = document.createElement("span");
+      name.className = "user-layer-control-name";
       name.textContent = layer.name;
+
+      const deleteButton = document.createElement("button");
+      deleteButton.type = "button";
+      deleteButton.className = "user-layer-delete-button";
+      deleteButton.title = "מחק שכבה";
+      deleteButton.textContent = "✕";
+      deleteButton.setAttribute("aria-label", `Delete layer ${layer.name}`);
+      deleteButton.addEventListener("click", () => {
+        setDeleteModal({
+          open: true,
+          title: `מחיקת שכבה ${layer.name}`,
+          message: `האם אתה בטוח שברצונך למחוק את השכבה "${layer.name}"? כל הפוליגונים שבתוכה יימחקו מהמפה.`,
+          onConfirm: () => {
+            removeUserLayer(layer.id);
+            setDeleteModal((curr) => ({ ...curr, open: false }));
+          },
+        });
+      });
 
       label.appendChild(checkbox);
       label.appendChild(name);
-      targetSection.appendChild(label);
+      row.appendChild(label);
+      row.appendChild(deleteButton);
+      targetSection.appendChild(row);
     });
-  }, [userLayers]);
+  }, [removeUserLayer, userLayers]);
 
   const getPolygonPopupHtml = useCallback((layerName: string, polygon: UserPolygon) => {
     const name = polygon.properties?.name?.trim();
     const description = polygon.properties?.description?.trim();
 
-    const safeName = name && name.length > 0 ? name : "ללא כותרת";
-    const safeDescription = description && description.length > 0 ? description : "אין מידע נוסף.";
+    const contentParts: string[] = [];
+    if (name) {
+      contentParts.push(`<div style="font-weight: 700; margin-bottom: 6px; color: #7dd3fc;">${name}</div>`);
+    }
+    if (description) {
+      contentParts.push(`<div style="font-size: 12px; color: #cbd5e1; line-height: 1.5;">${description}</div>`);
+    }
+    if (layerName) {
+      contentParts.push(`<div style="margin-top: 8px; font-size: 11px; color: #86efac;">שכבה: ${layerName}</div>`);
+    }
 
     return `
       <div style="direction: rtl; font-family: Arial, sans-serif; min-width: 180px; padding: 8px 10px; border-radius: 10px; background: #0f172a; color: #e2e8f0; box-shadow: 0 10px 24px rgba(15,23,42,0.28);">
-        <div style="font-weight: 700; margin-bottom: 6px; color: #7dd3fc;">${safeName}</div>
-        <div style="font-size: 12px; color: #cbd5e1; line-height: 1.5;">${safeDescription}</div>
-        <div style="margin-top: 8px; font-size: 11px; color: #86efac;">שכבה: ${layerName}</div>
+        ${contentParts.join("") || ""}
       </div>
     `;
   }, []);
@@ -414,27 +494,6 @@ export const App = () => {
     }
     showToast("הצירוף של השכבה הושלם.", "success");
   }, [draftPolygonPoints, draftUserLayerId, map, showToast]);
-
-  const cancelUserLayerDrawing = useCallback(() => {
-    setIsDrawingUserLayer(false);
-    setDraftUserLayerId(null);
-    setDraftPolygonPoints([]);
-    setIsPolygonInfoDialogOpen(false);
-    setPolygonInfoDraft({ name: "", description: "" });
-    if (userDraftPolylineRef.current) {
-      userDraftPolylineRef.current.remove();
-      userDraftPolylineRef.current = null;
-    }
-    if (userDraftPolygonRef.current) {
-      userDraftPolygonRef.current.remove();
-      userDraftPolygonRef.current = null;
-    }
-    userDraftMarkersRef.current.forEach((marker) => marker.remove());
-    userDraftMarkersRef.current = [];
-    if (map) {
-      map.getContainer().style.cursor = "";
-    }
-  }, [map]);
 
   const handleFinalizePolygon = useCallback(() => {
     if (!draftUserLayerId || draftPolygonPoints.length < 3) {

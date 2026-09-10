@@ -1,4 +1,4 @@
-import { Scenario } from "./types";
+import { DroneGroup, LauncherGroup } from "./types";
 
 export type PlacementMode = 'auto' | 'manual';
 
@@ -27,15 +27,24 @@ export interface InterceptorItem {
 export type SeverityLevel = 'low' | 'high' | 'extreme';
 
 /**
- * UI-facing scenario shape. It IS the DB scenario (see `Scenario` in
- * types/types.ts) plus a few UI-only optional extras (`severity`,
- * `entryPoints`) that don't come from the backend. Components that read
- * those extras must handle them being undefined when the data comes from
- * the real API.
+ * UI-facing scenario shape used across the app. It intentionally accepts both
+ * the DB-shaped fields and the lighter mock-data fields that are used by older
+ * UI components and scenario lists.
  */
-export interface ScenarioItem extends Scenario {
+export interface ScenarioItem {
+  id: string;
+  name?: string;
+  title?: string;
+  dronesGroupId?: number;
+  launchersGroupId?: number;
+  type?: string;
+  typeLabel?: string;
   severity?: SeverityLevel;
+  droneCount?: number;
   entryPoints?: Direction[];
+  droneTypes?: string[];
+  dronesGroup?: DroneGroup;
+  launchersGroup?: LauncherGroup;
 }
 
 

@@ -19,13 +19,19 @@ export const EventSummary: React.FC<EventSummaryProps> = ({
   const filteredScenarios = useMemo(() => {
     if (!searchQuery.trim()) return scenarios;
     const query = searchQuery.trim().toLowerCase();
-    return scenarios.filter(
-      (scen) =>
-        scen.title.toLowerCase().includes(query) ||
-        scen.typeLabel.toLowerCase().includes(query) ||
-        scen.entryPoints.some((p) => p.toLowerCase().includes(query)) ||
-        scen.droneTypes.some((d) => d.toLowerCase().includes(query))
-    );
+    return scenarios.filter((scen) => {
+      const title = scen.title ?? "";
+      const typeLabel = scen.typeLabel ?? "";
+      const entryPoints = scen.entryPoints ?? [];
+      const droneTypes = scen.droneTypes ?? [];
+
+      return (
+        title.toLowerCase().includes(query) ||
+        typeLabel.toLowerCase().includes(query) ||
+        entryPoints.some((p) => p.toLowerCase().includes(query)) ||
+        droneTypes.some((d) => d.toLowerCase().includes(query))
+      );
+    });
   }, [scenarios, searchQuery]);
 
   return (

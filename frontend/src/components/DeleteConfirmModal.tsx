@@ -1,4 +1,16 @@
 import React from "react";
+import {
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  IconButton,
+  Box,
+  Typography,
+} from "@mui/material";
+import CloseIcon from "@mui/icons-material/Close";
+import WarningAmberRoundedIcon from "@mui/icons-material/WarningAmberRounded";
 
 interface DeleteConfirmModalProps {
   open: boolean;
@@ -15,104 +27,118 @@ export const DeleteConfirmModal: React.FC<DeleteConfirmModalProps> = ({
   onConfirm,
   onCancel,
 }) => {
-  if (!open) return null;
-
   return (
-    <>
-      <div
-        onClick={onCancel}
-        style={{
-          position: "fixed",
-          inset: 0,
-          background: "rgba(15, 23, 42, 0.4)",
-          backdropFilter: "blur(2px)",
-          zIndex: 2200,
-        }}
-      />
-      <div
-        dir="rtl"
-        role="dialog"
-        aria-modal="true"
-        style={{
-          position: "fixed",
-          top: "50%",
-          left: "50%",
-          transform: "translate(-50%, -50%)",
-          width: 380,
-          maxWidth: "calc(100vw - 32px)",
-          background: "#ffffff",
-          borderRadius: 14,
-          padding: "24px",
-          boxShadow: "0 20px 45px rgba(15, 23, 42, 0.25)",
-          border: "1px solid #e2e8f0",
-          zIndex: 2300,
-          fontFamily: "Inter, Arial, Helvetica, sans-serif",
+    <Dialog
+      open={open}
+      onClose={onCancel}
+      maxWidth="xs"
+      fullWidth
+      dir="rtl"
+      PaperProps={{
+        sx: {
+          backgroundColor: "#1e293b",
+          color: "#f8fafc",
+          borderRadius: 3,
+          border: "1px solid rgba(255, 255, 255, 0.08)",
+          boxShadow: "0 20px 40px rgba(0,0,0,0.5)",
+          overflow: "hidden",
+        },
+      }}
+    >
+      <DialogTitle
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          px: 3,
+          py: 2,
+          borderBottom: "1px solid rgba(148, 163, 184, 0.18)",
         }}
       >
-        <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 14 }}>
-          <div
-            style={{
-              width: 40,
-              height: 40,
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+          <Box
+            sx={{
+              width: 36,
+              height: 36,
               borderRadius: "50%",
-              background: "#fee2e2",
-              color: "#dc2626",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              fontSize: 20,
-              flexShrink: 0,
+              background: "rgba(239, 68, 68, 0.12)",
+              color: "#fca5a5",
             }}
           >
-            ⚠️
-          </div>
-          <div>
-            <h3 style={{ margin: 0, fontSize: 16, color: "#1e293b", fontWeight: 700 }}>
-              {title}
-            </h3>
-          </div>
-        </div>
+            <WarningAmberRoundedIcon fontSize="small" />
+          </Box>
+          <Typography variant="h6" sx={{ fontSize: "1rem", fontWeight: 700, color: "#f8fafc" }}>
+            {title}
+          </Typography>
+        </Box>
 
-        <p style={{ margin: "0 0 20px 0", color: "#64748b", fontSize: 13, lineHeight: 1.5 }}>
+        <IconButton
+          onClick={onCancel}
+          size="small"
+          sx={{
+            color: "#94a3b8",
+            "&:hover": { color: "#f8fafc", backgroundColor: "rgba(148,163,184,0.08)" },
+          }}
+        >
+          <CloseIcon fontSize="small" />
+        </IconButton>
+      </DialogTitle>
+
+      <DialogContent sx={{ px: 3, py: 2.5, textAlign: "right" }}>
+        <Typography
+          variant="body2"
+          sx={{
+            color: "#cbd5e1",
+            lineHeight: 1.7,
+            fontSize: "0.9rem",
+            margin: 0,
+          }}
+        >
           {message}
-        </p>
+        </Typography>
+      </DialogContent>
 
-        <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
-          <button
-            type="button"
-            onClick={onCancel}
-            style={{
-              padding: "9px 16px",
-              borderRadius: 8,
-              border: "1px solid #cbd5e1",
-              background: "#ffffff",
-              color: "#475569",
-              fontSize: 13,
-              fontWeight: 600,
-              cursor: "pointer",
-            }}
-          >
-            ביטול
-          </button>
-          <button
-            type="button"
-            onClick={onConfirm}
-            style={{
-              padding: "9px 18px",
-              borderRadius: 8,
-              border: "none",
-              background: "linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)",
-              color: "#ffffff",
-              fontSize: 13,
-              fontWeight: 700,
-              cursor: "pointer",
-              boxShadow: "0 4px 10px rgba(220, 38, 38, 0.3)",
-            }}
-          >
-            אישור ומחיקה
-          </button>
-        </div>
-      </div>
-    </>
+      <DialogActions
+        sx={{
+          px: 3,
+          pb: 2.5,
+          pt: 1,
+          display: "flex",
+          justifyContent: "space-between",
+          gap: 1.5,
+        }}
+      >
+        <Button
+          onClick={onCancel}
+          sx={{
+            color: "#cbd5e1",
+            border: "1px solid rgba(148, 163, 184, 0.25)",
+            backgroundColor: "rgba(15, 23, 42, 0.2)",
+            minWidth: 110,
+            "&:hover": { backgroundColor: "rgba(148, 163, 184, 0.08)" },
+          }}
+        >
+          ביטול
+        </Button>
+
+        <Button
+          variant="contained"
+          onClick={onConfirm}
+          sx={{
+            minWidth: 140,
+            fontWeight: 700,
+            background: "linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)",
+            color: "#fff",
+            boxShadow: "0 8px 20px rgba(220, 38, 38, 0.25)",
+            "&:hover": { background: "linear-gradient(135deg, #ef4444 0%, #dc2626 100%)" },
+          }}
+        >
+          מחק
+        </Button>
+      </DialogActions>
+    </Dialog>
   );
 };
