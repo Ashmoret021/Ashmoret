@@ -109,12 +109,7 @@ export const DroneSelectionPage: FC<DroneSelectionPageProps> = ({
   onSelectGroup,
 }) => {
   const [attackModalOpen, setAttackModalOpen] = useState(false);
-  const [defenseModalOpen, setDefenseModalOpen] = useState(false);
-  const [currentScenarioId, setCurrentScenarioId] = useState<string | null>(
-    () => {
-      return storageService.getActiveScenarioId();
-    },
-  );
+  
   const [attackName, setAttackName] = useState<string>(() => {
     return storageService.getStoredMetadata()?.attackName || "";
   });
@@ -129,9 +124,6 @@ export const DroneSelectionPage: FC<DroneSelectionPageProps> = ({
     return storageService.getStoredDrones();
   });
   const [placingWaveId, setPlacingWaveId] = useState<number | null>(null);
-  const [highlightedDroneId, setHighlightedDroneId] = useState<string | null>(
-    null,
-  );
   const [internalGroup, setInternalGroup] = useState<number>(1);
   const { dronesGroups } = useGetAllDronesGroups();
 
