@@ -1,34 +1,23 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { CoordinatesControl } from "./components/CoordinatesControl";
-import React from "react";
-import { MainLayout } from "./layouts/MainLayout";
-import {
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-} from "@mui/material";
 import L from "leaflet";
-import "./styles/droneStyles.css";
-import { useSimulation } from "./simulation/useSimulation";
-import { SimulationControls } from "./ui/SimulationControls";
-import { SimulationStats } from "./ui/SimulationStats";
+import "leaflet/dist/leaflet.css";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import "../src/styles/App.css";
+import { CoordinatesControl } from "./components/CoordinatesControl";
+import { MainLayout } from "./layouts/MainLayout";
+
+import axios from "axios";
 import { Drone, DroneType } from "../../types/types";
-import DroneModal from "./components/DroneModal/DroneModal";
-import { DefenseSide } from "./components/DefenseSide/defenseSide";
+import { algorithmClient } from "./algorithm/AlgorithmClient";
+import { WorldSnapshotBuilder } from "./algorithm/WorldSnapshotBuilder";
 import AttackSide from "./components/Attackside";
-import { createWave } from "./constants/droneConstants";
-import { PlacementHUD } from "./components/PlacementHUD";
+import { DefenseSide } from "./components/DefenseSide/defenseSide";
 import { DeleteConfirmModal } from "./components/DeleteConfirmModal";
-import { PlacedDrone, DroneWave, Scenario } from "./types/drone";
+import DroneModal from "./components/DroneModal/DroneModal";
+import { PlacementHUD } from "./components/PlacementHUD";
+import { createWave } from "./constants/droneConstants";
+import { LeafletRenderer } from "./map/LeafletRenderer";
 import { storageService } from "./services/storageService";
-import {
-  createDroneDivIcon,
-  createDronePopupContent,
-} from "./utils/droneMarker";
-import { MapView } from "./ui/MapView";
-import { EventLog } from "./ui/EventLog";
+import { sampleScenario } from "./simulation/sampleScenario";
 import {
   appendLog,
   DroneSimState,
@@ -39,21 +28,30 @@ import {
   setState,
   stopClock,
 } from "./simulation/SimulationContext";
-import { sampleScenario } from "./simulation/sampleScenario";
-import { activateWaitingThreats } from "./simulation/ThreatEngine";
-import { LeafletRenderer } from "./map/LeafletRenderer";
-import { visualEventQueue } from "./visual/VisualEventQueue";
+import {
+  activateWaitingThreats,
+  advanceThreatPositions,
+} from "./simulation/ThreatEngine";
+import { useSimulation } from "./simulation/useSimulation";
+import "./styles/droneStyles.css";
+import { DroneWave, PlacedDrone, Scenario } from "./types/drone";
+import { EventLog } from "./ui/EventLog";
+import { SimulationControls } from "./ui/SimulationControls";
+import { SimulationStats } from "./ui/SimulationStats";
+import {
+  createDroneDivIcon,
+  createDronePopupContent,
+} from "./utils/droneMarker";
 import { processEngagementDecision } from "./visual/VisualEventBuilder";
-import axios from "axios";
-import "leaflet/dist/leaflet.css";
-import { algorithmClient } from "./algorithm/AlgorithmClient";
-import { WorldSnapshotBuilder } from "./algorithm/WorldSnapshotBuilder";
+import { visualEventQueue } from "./visual/VisualEventQueue";
 
 export const App = () => {
+  const mapInstanceRef = useRef<L.Map | null>(null);
+  const markerRef = useRef<L.Marker | null>(null);
+  const [hasMarker, setHasMarker] = useState(false);
   const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(
     null,
   );
-  const mapInstanceRef = useRef<L.Map | null>(null);
   const markersLayerRef = useRef<L.LayerGroup | null>(null);
   const markersMapRef = useRef<Map<string, L.Marker>>(new Map());
   const [isStateDialogOpen, setIsStateDialogOpen] = useState(false);
@@ -73,7 +71,7 @@ export const App = () => {
     useState<boolean>(true);
 
   const tickIdRef = useRef<number>(0);
-  const lastApiTickSimTimeRef = useRef<number>(-1);
+  const lastApiTickSimTimeRef = useRef<number>(0); // Start at 0 so first API call fires at simTime≥1.0 (after threats have moved)
   const pendingApiCallRef = useRef<boolean>(false);
   // Monotonically-increasing counter, incremented every time the simulation
   // is reset. Async algorithm callbacks capture this at call time and skip
@@ -172,33 +170,8 @@ export const App = () => {
         }
       }
 
-      // B. Advance positions using fixed 40s flight duration (matches original behavior)
-      const flightDuration = 40;
-      const next = { ...updatedThreats };
-      for (const [idStr, threat] of Object.entries(updatedThreats)) {
-        if (
-          threat.logicalStatus !== "active" &&
-          threat.logicalStatus !== "interceptPending"
-        )
-          continue;
-        if (!threat.route || threat.route.length < 2) continue;
-
-        const elapsed = simTime - threat.startTime;
-        if (elapsed < 0) continue;
-
-        const progress = Math.min(1, elapsed / flightDuration);
-        const start = threat.route[0];
-        const end = threat.route[threat.route.length - 1];
-        const location = {
-          latitude: start.latitude + (end.latitude - start.latitude) * progress,
-          longitude:
-            start.longitude + (end.longitude - start.longitude) * progress,
-          asl: start.asl + (end.asl - start.asl) * progress,
-          agl: start.agl + (end.agl - start.agl) * progress,
-        };
-        next[Number(idStr)] = { ...threat, progress, location };
-      }
-      updatedThreats = next;
+      // B. Advance threat positions based on velocity and route waypoints
+      updatedThreats = advanceThreatPositions(updatedThreats, simTime);
 
       // C. Detect newly-impacted threats (progress reached 1) and fire impact events
       for (const [idStr, t] of Object.entries(updatedThreats)) {
@@ -382,10 +355,14 @@ export const App = () => {
     (window as any).__resetSimulationRefs = () => {
       simulationGenerationRef.current += 1; // invalidate any in-flight async callbacks
       tickIdRef.current = 0;
-      lastApiTickSimTimeRef.current = -1;
+      lastApiTickSimTimeRef.current = 0;
       pendingApiCallRef.current = false;
       engagedDronesRef.current.clear();
     };
+
+    // Load initial scenario so map isn't empty on page load
+    loadScenario(sampleScenario);
+    renderer.initDefenseSystems();
 
     const markersLayer = L.layerGroup().addTo(mapArg);
     markersLayerRef.current = markersLayer;
@@ -405,7 +382,8 @@ export const App = () => {
       "https://tiles.stadiamaps.com/tiles/stamen_toner_dark/{z}/{x}/{y}{r}.png",
       {
         maxZoom: 20,
-        attribution: "&copy; Stadia Maps &copy; OpenStreetMap",
+        subdomains: "abcd",
+        attribution: "&copy; OpenStreetMap contributors &copy; CARTO",
       },
     );
 
@@ -518,7 +496,7 @@ export const App = () => {
     algorithmClient.reset();
     simulationGenerationRef.current += 1; // invalidate any in-flight async callbacks
     tickIdRef.current = 0;
-    lastApiTickSimTimeRef.current = -1;
+    lastApiTickSimTimeRef.current = 0;
     pendingApiCallRef.current = false;
     engagedDronesRef.current.clear();
     visualEventQueue.clear();
@@ -533,7 +511,8 @@ export const App = () => {
     if (renderer) {
       renderer.initDefenseSystems();
     }
-  }, []);
+    startClock();
+  }, [startClock]);
   // NOTE: App.handleRestart is only used as fallback when no onRestart prop is
   // provided. The actual restart path goes through MainLayout.handleRestart,
   // which uses window.__resetSimulationRefs to reset App-level refs.
@@ -547,6 +526,78 @@ export const App = () => {
       markersLayerRef.current = null;
       mapInstanceRef.current = null;
     };
+  }, []);
+
+  const handleGoToCoordinates = useCallback((lat: number, lng: number) => {
+    const map = mapInstanceRef.current || (window as any).__tacticalMap;
+    if (!map) {
+      console.warn("Tactical map instance not ready yet");
+      return;
+    }
+    try {
+      map.setMaxBounds(null);
+    } catch {
+      // ignore
+    }
+
+    try {
+      map.flyTo([lat, lng], 13, {
+        animate: true,
+        duration: 1.2,
+      });
+    } catch {
+      map.setView([lat, lng], 13);
+    }
+
+    if (markerRef.current) {
+      markerRef.current.remove();
+      markerRef.current = null;
+    }
+
+    const pinIcon = L.divIcon({
+      className: "custom-coordinate-pin",
+      iconSize: [32, 40],
+      iconAnchor: [16, 40],
+      popupAnchor: [0, -38],
+      html: `
+        <div style="
+          filter: drop-shadow(0 3px 6px rgba(0,0,0,0.7));
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          cursor: pointer;
+        ">
+          <svg viewBox="0 0 24 24" width="32" height="32" fill="#ef4444" stroke="#ffffff" stroke-width="1.5">
+            <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/>
+            <circle cx="12" cy="9" r="2.5" fill="#ffffff"/>
+          </svg>
+        </div>
+      `,
+    });
+
+    markerRef.current = L.marker([lat, lng], { icon: pinIcon })
+      .addTo(map)
+      .bindPopup(
+        `<div style="font-family: sans-serif; text-align: center; padding: 4px 6px;">
+          <div style="font-size: 11px; color: #475569; direction: ltr; font-family: monospace;">${lat.toFixed(4)}/${lng.toFixed(4)}</div>
+        </div>`,
+        {
+          maxWidth: 160,
+          minWidth: 100,
+          className: "small-popup",
+        },
+      )
+      .openPopup();
+
+    setHasMarker(true);
+  }, []);
+
+  const handleRemoveMarker = useCallback(() => {
+    if (markerRef.current) {
+      markerRef.current.remove();
+      markerRef.current = null;
+    }
+    setHasMarker(false);
   }, []);
 
   // ── Attack Side (wave placement builder) handlers ─────────────────────────
@@ -1000,6 +1051,9 @@ export const App = () => {
           onStartSimulation={handleStartSimulation}
           handleMapReady={handleMapReady}
           setShowMainAdditionalComponents={setShowMainAdditionalComponents}
+          onGoToCoordinates={handleGoToCoordinates}
+          onRemoveMarker={handleRemoveMarker}
+          hasMarker={hasMarker}
           onAddDroneGroup={() => setAttackModalOpen(true)}
           onAddInterceptorGroup={() => setDefenseModalOpen(true)}
           layersOpen={layersOpen}

@@ -425,9 +425,9 @@ export const DefenseSide: React.FC<DefenseSideProps> = ({
       prev.map((launcher) =>
         launcher.id === id
           ? {
-              ...launcher,
-              [field]: value,
-            }
+            ...launcher,
+            [field]: value,
+          }
           : launcher
       )
     );
@@ -478,8 +478,8 @@ export const DefenseSide: React.FC<DefenseSideProps> = ({
     setLaunchers((prev) =>
       prev.length > 1
         ? prev.filter(
-            (launcher) => launcher.id !== id
-          )
+          (launcher) => launcher.id !== id
+        )
         : prev
     );
 
@@ -573,10 +573,10 @@ export const DefenseSide: React.FC<DefenseSideProps> = ({
       prev.map((launcher) =>
         launcher.id === id
           ? {
-              ...launcher,
-              latitude: lat,
-              longitude: lng,
-            }
+            ...launcher,
+            latitude: lat,
+            longitude: lng,
+          }
           : launcher
       )
     );
@@ -602,10 +602,10 @@ export const DefenseSide: React.FC<DefenseSideProps> = ({
       prev.map((launcher) =>
         launcher.id === id
           ? {
-              ...launcher,
-              latitude: null,
-              longitude: null,
-            }
+            ...launcher,
+            latitude: null,
+            longitude: null,
+          }
           : launcher
       )
     );
@@ -663,10 +663,10 @@ export const DefenseSide: React.FC<DefenseSideProps> = ({
         prev.map((launcher) =>
           launcher.id === launcherId
             ? {
-                ...launcher,
-                latitude: lat,
-                longitude: lng,
-              }
+              ...launcher,
+              latitude: lat,
+              longitude: lng,
+            }
             : launcher
         )
       );
@@ -1449,10 +1449,10 @@ export const DefenseSide: React.FC<DefenseSideProps> = ({
           prev.map((item) =>
             item.id === launcher.id
               ? {
-                  ...item,
-                  launchersGroupId:
-                    groupId,
-                }
+                ...item,
+                launchersGroupId:
+                  groupId,
+              }
               : item
           )
         );
@@ -2065,18 +2065,18 @@ export const DefenseSide: React.FC<DefenseSideProps> = ({
                     ) || {
                       lat:
                         launcher.latitude !==
-                        null
+                          null
                           ? String(
-                              launcher.latitude
-                            )
+                            launcher.latitude
+                          )
                           : "",
 
                       lng:
                         launcher.longitude !==
-                        null
+                          null
                           ? String(
-                              launcher.longitude
-                            )
+                            launcher.longitude
+                          )
                           : "",
                     };
 
@@ -2166,39 +2166,39 @@ export const DefenseSide: React.FC<DefenseSideProps> = ({
 
                         {launchers.length >
                           1 && (
-                          <button
-                            type="button"
-                            onClick={() =>
-                              removeLauncher(
-                                launcher.id
-                              )
-                            }
-                            disabled={
-                              isSaving
-                            }
-                            style={{
-                              width: "30px",
-                              height: "30px",
-                              borderRadius:
-                                "7px",
-                              border:
-                                "1px solid #e1e5eb",
-                              background:
-                                "#fff",
-                              color:
-                                "#8792a3",
-                              cursor:
+                            <button
+                              type="button"
+                              onClick={() =>
+                                removeLauncher(
+                                  launcher.id
+                                )
+                              }
+                              disabled={
                                 isSaving
-                                  ? "not-allowed"
-                                  : "pointer",
-                              fontSize:
-                                "18px",
-                              lineHeight: 1,
-                            }}
-                          >
-                            ×
-                          </button>
-                        )}
+                              }
+                              style={{
+                                width: "30px",
+                                height: "30px",
+                                borderRadius:
+                                  "7px",
+                                border:
+                                  "1px solid #e1e5eb",
+                                background:
+                                  "#fff",
+                                color:
+                                  "#8792a3",
+                                cursor:
+                                  isSaving
+                                    ? "not-allowed"
+                                    : "pointer",
+                                fontSize:
+                                  "18px",
+                                lineHeight: 1,
+                              }}
+                            >
+                              ×
+                            </button>
+                          )}
                       </div>
 
                       {/* TYPE + AMOUNT */}
@@ -2238,8 +2238,8 @@ export const DefenseSide: React.FC<DefenseSideProps> = ({
                                 "type",
                                 e.target.value
                                   ? Number(
-                                      e.target.value
-                                    )
+                                    e.target.value
+                                  )
                                   : null
                               )
                             }
@@ -2569,7 +2569,7 @@ export const DefenseSide: React.FC<DefenseSideProps> = ({
 
                         {launcher.latitude !==
                           null &&
-                        launcher.longitude !==
+                          launcher.longitude !==
                           null ? (
                           <div
                             style={{
@@ -2759,17 +2759,17 @@ export const DefenseSide: React.FC<DefenseSideProps> = ({
                                   "7px",
                                 border:
                                   pickingLauncherId ===
-                                  launcher.id
+                                    launcher.id
                                     ? "1.5px solid #1765b5"
                                     : "1px solid #d5dce7",
                                 background:
                                   pickingLauncherId ===
-                                  launcher.id
+                                    launcher.id
                                     ? "#e8f2fe"
                                     : "#fff",
                                 color:
                                   pickingLauncherId ===
-                                  launcher.id
+                                    launcher.id
                                     ? "#1765b5"
                                     : "#4a5568",
                                 cursor:
@@ -2795,7 +2795,7 @@ export const DefenseSide: React.FC<DefenseSideProps> = ({
 
                               <span>
                                 {pickingLauncherId ===
-                                launcher.id
+                                  launcher.id
                                   ? "לחץ על המפה לשינוי מיקום"
                                   : "שנה מיקום במפה"}
                               </span>
@@ -2819,17 +2819,17 @@ export const DefenseSide: React.FC<DefenseSideProps> = ({
                                 "8px",
                               border:
                                 pickingLauncherId ===
-                                launcher.id
+                                  launcher.id
                                   ? "2px solid #1765b5"
                                   : "1px solid #b8d2ee",
                               background:
                                 pickingLauncherId ===
-                                launcher.id
+                                  launcher.id
                                   ? "#eaf3fd"
                                   : "linear-gradient(180deg, #f7faff 0%, #edf5fd 100%)",
                               color:
                                 pickingLauncherId ===
-                                launcher.id
+                                  launcher.id
                                   ? "#0f4c8a"
                                   : "#175ca8",
                               cursor:
@@ -2859,7 +2859,7 @@ export const DefenseSide: React.FC<DefenseSideProps> = ({
 
                             <span>
                               {pickingLauncherId ===
-                              launcher.id
+                                launcher.id
                                 ? "לחץ על המפה להוספת מיקום"
                                 : "הוסף מיקום במפה"}
                             </span>

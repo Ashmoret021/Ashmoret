@@ -22,6 +22,7 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
+  getAlertTitleUtilityClass,
 } from "@mui/material";
 import L, { Map } from "leaflet";
 import "leaflet/dist/leaflet.css";
@@ -36,6 +37,7 @@ import {
 import { getScenarioById } from "../simulation/sampleScenario";
 import { visualEventQueue } from "../visual/VisualEventQueue";
 import { algorithmClient } from "../algorithm/AlgorithmClient";
+import { useGetAllDronesGroups, useGetAllLaunchersGroups, useGetAllScenarios } from "../api/hooks";
 
 interface MainLayoutProps {
   logoSrc?: string;
@@ -44,9 +46,10 @@ interface MainLayoutProps {
   simId?: string;
   onStartSimulation?: () => void;
   handleMapReady?: (map: Map) => void;
-  setShowMainAdditionalComponents: React.Dispatch<
-    React.SetStateAction<boolean>
-  >;
+  setShowMainAdditionalComponents: React.Dispatch<React.SetStateAction<boolean>>;
+  onGoToCoordinates?: (lat: number, lng: number) => void;
+  onRemoveMarker?: () => void;
+  hasMarker?: boolean;
   onAddDroneGroup?: () => void;
   onAddInterceptorGroup?: () => void;
   layersOpen?: boolean;
@@ -62,20 +65,30 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
   onStartSimulation,
   handleMapReady,
   setShowMainAdditionalComponents,
+  onGoToCoordinates,
+  onRemoveMarker,
+  hasMarker = false,
   onAddDroneGroup,
   onAddInterceptorGroup,
   layersOpen = false,
   onLayersToggle,
   layersMenuRef,
 }) => {
-  const [navView, setNavView] = useState<NavViewMode>("drones");
-  const [selectedScenario, setSelectedScenario] = useState<ScenarioItem | null>(
-    null,
-  );
+
   const [selectedGroup, setSelectedGroup] = useState<
     DroneGroup | LauncherGroup | null
   >(null);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [rulerActive, setRulerActive] = useState(false);
+  const [navView, setNavView] = useState<NavViewMode>("home");
+  const [selectedScenario, setSelectedScenario] = useState<ScenarioItem | null>(null);
+
+  const {dronesGroups, setDronesGroups} = useGetAllDronesGroups();
+  const {launchersGroups, setLaunchersGroups} = useGetAllLaunchersGroups();
+
+
+  //TODO: data doesnt match to INITIAL_SCENARIOS
+  const {scenarios, setScenarios} = useGetAllScenarios();
 
   const [isStateDialogOpen, setIsStateDialogOpen] = useState(false);
   const [isCreateScenarioOpen, setIsCreateScenarioOpen] = useState(false);
@@ -126,6 +139,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
       if (renderer) {
         renderer.initDefenseSystems();
       }
+      startClock();
     }
   };
 
@@ -143,6 +157,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
       if (renderer) {
         renderer.initDefenseSystems();
       }
+      startClock();
     }
   };
 
@@ -162,6 +177,12 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
   const handleViewSimulation = (simulationId: string) => {
     console.log("Viewing simulation:", simulationId);
     setNavView("drones");
+    setIsSidebarOpen(true);
+  };
+
+  const handleViewChange = (view: NavViewMode) => {
+    setNavView(view);
+    setIsSidebarOpen(true);
   };
 
   // ── Hide simulation HUD when Summary view is active ───────────────────────
@@ -188,12 +209,19 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
         onLayersToggle={onLayersToggle}
         layersMenuRef={layersMenuRef}
         logoSrc={logoSrc}
+        onGoToCoordinates={onGoToCoordinates}
+        onRemoveMarker={onRemoveMarker}
+        hasMarker={hasMarker}
       />
 
       {/* Main Workspace */}
       <main className="main-viewport">
         {/* Right-Edge Navigation Drawer */}
-        <SideNavDrawer activeView={navView} onViewChange={setNavView} />
+        <SideNavDrawer
+          activeView={navView}
+          onViewChange={handleViewChange}
+          sidebarOpen={isSidebarOpen}
+        />
 
         {/* View: Simulation Summary (full-screen, no map / HUD) */}
         {navView === "summary" ? (
@@ -257,10 +285,12 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
             </div>
 
             {/* Scenario selection panel (home / drones view) */}
-            {(navView === "drones" || navView === "home") && (
+            {(navView === "home") && (
               <EventsPanel
                 scenarios={INITIAL_SCENARIOS}
                 selectedScenarioId={selectedScenario?.id}
+                isOpen={isSidebarOpen}
+                onToggleOpen={() => setIsSidebarOpen((open) => !open)}
                 onScenarioSelect={handleScenarioSelect}
                 onCreateScenario={handleCreateScenario}
               />
@@ -273,8 +303,10 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
             {/* Scenarios panel (dedicated scenarios view) */}
             {navView === "scenarios" && (
               <EventsPanel
-                scenarios={INITIAL_SCENARIOS}
                 selectedScenarioId={selectedScenario?.id}
+                scenarios={INITIAL_SCENARIOS}
+                isOpen={isSidebarOpen}
+                onToggleOpen={() => setIsSidebarOpen((open) => !open)}
                 onScenarioSelect={handleScenarioSelect}
                 onCreateScenario={handleCreateScenario}
               />
@@ -283,23 +315,24 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
             {/* Interceptors / launcher placement panel */}
             {navView === "interceptors" && (
               <LaunchersDronesPanel
-                groups={INITIAL_LAUNCHER_GROUPS}
+                groups={launchersGroups}
                 selectedGroupId={selectedGroup?.id}
+                isOpen={isSidebarOpen}
+                onToggleOpen={() => setIsSidebarOpen((open) => !open)}
                 onGroupSelect={handleGroupSelect}
                 onCreateGroup={onAddInterceptorGroup ?? handleCreateGroup}
               />
             )}
-
-            {/* Drone groups panel (attack-side placement) */}
-            {navView === "drones" &&
-              false /* handled above by EventsPanel */ && (
-                <LaunchersDronesPanel
-                  groups={INITIAL_DRONE_GROUPS}
-                  selectedGroupId={selectedGroup?.id}
-                  onGroupSelect={handleGroupSelect}
-                  onCreateGroup={onAddDroneGroup ?? handleCreateGroup}
-                />
-              )}
+            {navView === "drones" && (
+              <LaunchersDronesPanel
+                groups={dronesGroups}
+                selectedGroupId={selectedGroup?.id}
+                isOpen={isSidebarOpen}
+                onToggleOpen={() => setIsSidebarOpen((open) => !open)}
+                onGroupSelect={handleGroupSelect}
+                onCreateGroup={onAddDroneGroup ?? handleCreateGroup}
+              />
+            )}
           </>
         )}
       </main>

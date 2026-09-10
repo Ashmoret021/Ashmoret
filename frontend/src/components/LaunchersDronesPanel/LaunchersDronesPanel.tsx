@@ -8,19 +8,21 @@ type EntityGroup = DroneGroup | LauncherGroup;
 type GroupTabFilter = 'all' | 'drones' | 'launchers';
 
 interface LaunchersDronesPanelProps {
-  groups?: EntityGroup[];
+  groups: EntityGroup[];
   selectedGroupId?: number;
   isOpen?: boolean;
   onToggleOpen?: () => void;
+  onOpenStateChange?: (isOpen: boolean) => void;
   onGroupSelect?: (group: EntityGroup) => void;
   onCreateGroup?: () => void;
 }
 
 export const LaunchersDronesPanel: React.FC<LaunchersDronesPanelProps> = ({
-  groups = [],
+  groups,
   selectedGroupId,
   isOpen: controlledIsOpen,
   onToggleOpen,
+  onOpenStateChange,
   onGroupSelect,
   onCreateGroup,
 }) => {
@@ -39,7 +41,11 @@ export const LaunchersDronesPanel: React.FC<LaunchersDronesPanelProps> = ({
     if (onToggleOpen) {
       onToggleOpen();
     } else {
-      setInternalIsOpen(!internalIsOpen);
+      setInternalIsOpen((open) => {
+        const nextOpen = !open;
+        onOpenStateChange?.(nextOpen);
+        return nextOpen;
+      });
     }
   };
 

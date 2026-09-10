@@ -18,6 +18,7 @@ export interface GeneralDetailsData {
 export interface GeneralDetailsPageProps {
   data?: GeneralDetailsData;
   onChange?: (data: Partial<GeneralDetailsData>) => void;
+  setCanMovePage?: (canMovePage: boolean) => void;
 }
 
 const darkInputSx = {
@@ -106,6 +107,7 @@ const menuPropsSx = {
 export const GeneralDetailsPage: FC<GeneralDetailsPageProps> = ({
   data,
   onChange,
+  setCanMovePage
 }) => {
   const [internalName, setInternalName] = useState("");
   const [internalType, setInternalType] = useState("Single");
@@ -117,6 +119,11 @@ export const GeneralDetailsPage: FC<GeneralDetailsPageProps> = ({
     const val = event.target.value;
     setInternalName(val);
     onChange?.({ scenarioName: val });
+    if (val) {
+      setCanMovePage?.(true);
+    } else {
+      setCanMovePage?.(false);
+    }
   };
 
   const handleSelectChange = (event: SelectChangeEvent) => {
