@@ -48,18 +48,26 @@ const onError = (error: NodeJS.ErrnoException): void => {
   }
 };
 
-const onListening = async (): Promise<void> => {
+const onListening = (): void => {
   const addr = server.address();
   const bind = typeof addr === 'string' ? 'pipe ' + addr : 'port ' + addr?.port;
   logger.info(`Server is listening on ${bind}`);
+};
 
+const startServer = async (): Promise<void> => {
   try {
     await initializeDatabase();
-  } catch (err) {
-    logger.warn('Initial database connection check failed', { error: err });
+    server.listen(port);
+    server.on('error', onError);
+    server.on('listening', onListening);
+  } catch (error) {
+    const details = error instanceof Error
+      ? { name: error.name, message: error.message, stack: error.stack }
+      : error;
+    logger.error('Failed to initialize database before server startup', { error: details });
+    console.error('DB init failed:', details);
+    process.exit(1);
   }
 };
 
-server.listen(port);
-server.on('error', onError);
-server.on('listening', onListening);
+void startServer();
