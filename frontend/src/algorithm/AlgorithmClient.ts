@@ -11,7 +11,7 @@ export class AlgorithmClient {
   private timeoutMs: number;
   private latestProcessedTick: number = -1;
   private isAvailable: boolean = true;
-  private mockServer = new MockAlgorithmServer({ successRate: 0.85 });
+  private mockServer = new MockAlgorithmServer({ successRate: 1.0 });
 
   constructor(options?: AlgorithmClientOptions) {
     this.baseUrl = options?.baseUrl || '';

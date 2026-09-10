@@ -40,17 +40,33 @@ export class MockAlgorithmServer {
     );
 
     for (const threat of unengagedThreats) {
-      // Find a launcher with available interceptors
-      const matchingLauncher = availableLaunchers.find((launcher) =>
-        launcher.interceptorInventory.some((item) => item.quantity > 0)
-      );
+      // Find the geographically closest launcher with available ammunition
+      const threatLat = threat.position?.lat ?? 0;
+      const threatLng = threat.position?.lng ?? 0;
+
+      let matchingLauncher: DefenseSystemSnapshot | null = null;
+      let minDistance = Infinity;
+
+      for (const launcher of availableLaunchers) {
+        const hasAmmo = launcher.interceptorInventory.some((item) => item.quantity > 0);
+        if (!hasAmmo) continue;
+
+        const launcherLat = launcher.position?.lat ?? 0;
+        const launcherLng = launcher.position?.lng ?? 0;
+        const dist = Math.hypot(launcherLat - threatLat, launcherLng - threatLng);
+
+        if (dist < minDistance) {
+          minDistance = dist;
+          matchingLauncher = launcher;
+        }
+      }
 
       if (!matchingLauncher) {
         // No available ammo left across systems
         break;
       }
 
-      // Pick the first available interceptor type with quantity > 0
+      // Pick the first available interceptor type with quantity > 0 from this closest launcher
       const ammoItem = matchingLauncher.interceptorInventory.find(
         (item) => item.quantity > 0
       );
