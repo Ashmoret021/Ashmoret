@@ -7,6 +7,7 @@ import {
   ShieldCheck,
   Crosshair,
 } from 'lucide-react';
+import { CoordinateSearch } from './CoordinateSearch';
 import './Header.css';
 
 interface HeaderProps {
@@ -16,6 +17,9 @@ interface HeaderProps {
   isSafeMode?: boolean;
   statusMode?: string;
   logoSrc?: string;
+  onGoToCoordinates?: (lat: number, lng: number) => void;
+  onRemoveMarker?: () => void;
+  hasMarker?: boolean;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -25,6 +29,9 @@ export const Header: React.FC<HeaderProps> = ({
   isSafeMode = true,
   statusMode = 'תכנון תרחיש',
   logoSrc,
+  onGoToCoordinates,
+  onRemoveMarker,
+  hasMarker = false,
 }) => {
   return (
     <header className="tactical-header">
@@ -53,6 +60,15 @@ export const Header: React.FC<HeaderProps> = ({
             {statusMode}
           </span>
         </div>
+
+        {/* Coordinate Search moved to right side */}
+        {onGoToCoordinates && (
+          <CoordinateSearch
+            onGoToCoordinates={onGoToCoordinates}
+            onRemoveMarker={onRemoveMarker}
+            hasMarker={hasMarker}
+          />
+        )}
       </div>
 
       {/* Left section: Controls, scenario tag, and system indicators */}

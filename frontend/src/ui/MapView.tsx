@@ -28,7 +28,6 @@ export const MapView: React.FC<MapViewProps> = React.memo(
     center = DEFAULT_CENTER,
     zoom = DEFAULT_ZOOM,
     onMapReady,
-    handleMapReady,
   }) => {
     const mapRef = useRef<HTMLDivElement | null>(null);
     const mapInstanceRef = useRef<L.Map | null>(null);
@@ -55,7 +54,8 @@ export const MapView: React.FC<MapViewProps> = React.memo(
         "https://tiles.stadiamaps.com/tiles/stamen_toner_dark/{z}/{x}/{y}{r}.png",
         {
           maxZoom: 20,
-          attribution: "&copy; Stadia Maps &copy; OpenStreetMap",
+          subdomains: "abcd",
+          attribution: "&copy; OpenStreetMap contributors &copy; Stadia Maps",
         },
       );
       darkLayer.addTo(map);
