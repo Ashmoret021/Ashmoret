@@ -1,4 +1,4 @@
-import { Drone, Launcher } from "./types";
+import { Drone, Launcher } from "../../../types/types";
 
 export type PlacementMode = 'auto' | 'manual';
 

@@ -264,3 +264,95 @@ export const sampleScenario: Scenario = {
     },
   ],
 };
+
+export const defaultScenario: Scenario = JSON.parse(JSON.stringify(sampleScenario));
+
+export function getScenarioById(id: string): Scenario {
+  const fullCopy: Scenario = JSON.parse(JSON.stringify(sampleScenario));
+  switch (id) {
+    case 'sc-1': // Single north threat
+      return {
+        id: 'sc-1',
+        name: 'חדירה חד-זירתית - צפון',
+        startTime: 0,
+        launchers: [fullCopy.launchers[0]],
+        drones: [fullCopy.drones[0], fullCopy.drones[1]],
+      };
+    case 'sc-2': // Multi north & east
+      return {
+        id: 'sc-2',
+        name: 'רב-זירתי - צפון ומזרח',
+        startTime: 0,
+        launchers: [fullCopy.launchers[0], fullCopy.launchers[1], fullCopy.launchers[2]],
+        drones: [
+          fullCopy.drones[0],
+          fullCopy.drones[1],
+          fullCopy.drones[3],
+          fullCopy.drones[5],
+          fullCopy.drones[6],
+        ],
+      };
+    case 'sc-3': // Massive attack - 14 drones across all wave corridors
+      return fullCopy;
+    case 'sc-4': // Single drone west
+      return {
+        id: 'sc-4',
+        name: 'רחפן בודד - חדירה מערבית',
+        startTime: 0,
+        launchers: [fullCopy.launchers[4]],
+        drones: [fullCopy.drones[12]],
+      };
+    case 'sc-5': // North & South
+      return {
+        id: 'sc-5',
+        name: 'חדירה משולבת - צפון ודרום',
+        startTime: 0,
+        launchers: [fullCopy.launchers[0], fullCopy.launchers[3]],
+        drones: [
+          fullCopy.drones[0],
+          fullCopy.drones[1],
+          fullCopy.drones[8],
+          fullCopy.drones[10],
+        ],
+      };
+    case 'sc-6': // Swarm east
+      return {
+        id: 'sc-6',
+        name: 'נחיל רחפנים - גזרה מזרחית',
+        startTime: 0,
+        launchers: [fullCopy.launchers[1], fullCopy.launchers[2]],
+        drones: [
+          fullCopy.drones[3],
+          fullCopy.drones[4],
+          fullCopy.drones[5],
+          fullCopy.drones[6],
+          fullCopy.drones[7],
+        ],
+      };
+    case 'sc-7': // East & South
+      return {
+        id: 'sc-7',
+        name: 'מתקפה מסונכרנת - מזרח ודרום',
+        startTime: 0,
+        launchers: [fullCopy.launchers[2], fullCopy.launchers[3]],
+        drones: [
+          fullCopy.drones[5],
+          fullCopy.drones[6],
+          fullCopy.drones[7],
+          fullCopy.drones[8],
+          fullCopy.drones[9],
+          fullCopy.drones[10],
+        ],
+      };
+    case 'sc-8': // Recon north
+    default:
+      return {
+        id: 'sc-8',
+        name: 'חדירת סיור - גזרת צפון',
+        startTime: 0,
+        launchers: [fullCopy.launchers[0]],
+        drones: [fullCopy.drones[0], fullCopy.drones[2]],
+      };
+  }
+}
+

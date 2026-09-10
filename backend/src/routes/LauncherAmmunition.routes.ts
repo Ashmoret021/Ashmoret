@@ -20,16 +20,16 @@ router.get('/', async (req, res, next) => {
       interceptorTypeIdParam !== undefined ? Number(interceptorTypeIdParam) : undefined;
 
     if (launcherId !== undefined && Number.isNaN(launcherId)) {
-      res.status(StatusCodes.BAD_REQUEST).json({ status: 'error', message: 'Invalid launcherId' });
+      res.status(StatusCodes.BAD_REQUEST).json('Invalid launcherId');
       return;
     }
     if (interceptorTypeId !== undefined && Number.isNaN(interceptorTypeId)) {
-      res.status(StatusCodes.BAD_REQUEST).json({ status: 'error', message: 'Invalid interceptorTypeId' });
+      res.status(StatusCodes.BAD_REQUEST).json('Invalid interceptorTypeId');
       return;
     }
 
     const ammunitions = await getAllLauncherAmmunition(launcherId, interceptorTypeId);
-    res.status(StatusCodes.OK).json({ status: 'ok', data: ammunitions });
+    res.status(StatusCodes.OK).json(ammunitions);
   } catch (err) {
     next(err);
   }
@@ -41,17 +41,17 @@ router.get('/:launcherId/:interceptorTypeId', async (req, res, next) => {
     const interceptorTypeId = Number(req.params.interceptorTypeId);
 
     if (Number.isNaN(launcherId) || Number.isNaN(interceptorTypeId)) {
-      res.status(StatusCodes.BAD_REQUEST).json({ status: 'error', message: 'Invalid ID parameters' });
+      res.status(StatusCodes.BAD_REQUEST).json('Invalid ID parameters');
       return;
     }
 
     const item = await getLauncherAmmunitionById(launcherId, interceptorTypeId);
     if (!item) {
-      res.status(StatusCodes.NOT_FOUND).json({ status: 'error', message: 'Launcher ammunition record not found' });
+      res.status(StatusCodes.NOT_FOUND).json('Launcher ammunition record not found');
       return;
     }
 
-    res.status(StatusCodes.OK).json({ status: 'ok', data: item });
+    res.status(StatusCodes.OK).json(item);
   } catch (err) {
     next(err);
   }
@@ -60,7 +60,7 @@ router.get('/:launcherId/:interceptorTypeId', async (req, res, next) => {
 router.post('/', async (req, res, next) => {
   try {
     const created = await createLauncherAmmunition(req.body);
-    res.status(StatusCodes.CREATED).json({ status: 'ok', data: created });
+    res.status(StatusCodes.CREATED).json(created);
   } catch (err) {
     next(err);
   }
@@ -72,17 +72,17 @@ router.put('/:launcherId/:interceptorTypeId', async (req, res, next) => {
     const interceptorTypeId = Number(req.params.interceptorTypeId);
 
     if (Number.isNaN(launcherId) || Number.isNaN(interceptorTypeId)) {
-      res.status(StatusCodes.BAD_REQUEST).json({ status: 'error', message: 'Invalid ID parameters' });
+      res.status(StatusCodes.BAD_REQUEST).json('Invalid ID parameters');
       return;
     }
 
     const updated = await updateLauncherAmmunition(launcherId, interceptorTypeId, req.body);
     if (!updated) {
-      res.status(StatusCodes.NOT_FOUND).json({ status: 'error', message: 'Launcher ammunition record not found' });
+      res.status(StatusCodes.NOT_FOUND).json('Launcher ammunition record not found');
       return;
     }
 
-    res.status(StatusCodes.OK).json({ status: 'ok', data: updated });
+    res.status(StatusCodes.OK).json(updated);
   } catch (err) {
     next(err);
   }
@@ -94,17 +94,17 @@ router.delete('/:launcherId/:interceptorTypeId', async (req, res, next) => {
     const interceptorTypeId = Number(req.params.interceptorTypeId);
 
     if (Number.isNaN(launcherId) || Number.isNaN(interceptorTypeId)) {
-      res.status(StatusCodes.BAD_REQUEST).json({ status: 'error', message: 'Invalid ID parameters' });
+      res.status(StatusCodes.BAD_REQUEST).json('Invalid ID parameters');
       return;
     }
 
     const deleted = await deleteLauncherAmmunition(launcherId, interceptorTypeId);
     if (!deleted) {
-      res.status(StatusCodes.NOT_FOUND).json({ status: 'error', message: 'Launcher ammunition record not found' });
+      res.status(StatusCodes.NOT_FOUND).json('Launcher ammunition record not found');
       return;
     }
 
-    res.status(StatusCodes.OK).json({ status: 'ok', message: 'Launcher ammunition record deleted successfully' });
+    res.status(StatusCodes.OK).json('Launcher ammunition record deleted successfully');
   } catch (err) {
     next(err);
   }

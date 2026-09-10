@@ -321,6 +321,7 @@ export function loadScenario(scenario: Scenario) {
 
   historyRecords = [];
   isReplayCompleted = false;
+  _logIdCounter = 0;
 
   state = {
     simulationTime: scenario.startTime,
@@ -334,6 +335,16 @@ export function loadScenario(scenario: Scenario) {
     logHistory: [],
   };
   recordSnapshot();
+  lastTimestamp = null;
+  notifyStateListeners();
+}
+
+export function clearScenario() {
+  stopClock();
+  historyRecords = [];
+  isReplayCompleted = false;
+  _logIdCounter = 0;
+  state = createEmptyState();
   lastTimestamp = null;
   notifyStateListeners();
 }

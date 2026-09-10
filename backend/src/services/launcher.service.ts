@@ -1,19 +1,22 @@
-import { AppDataSource } from '../config/db';
-import { Launcher } from '../Entities';
-import { logger } from '../middleware/logger';
+import { AppDataSource } from "../config/db";
+import { Launcher } from "../Entities";
+import { logger } from "../middleware/logger";
 
-export const getLauncherRepository = () => AppDataSource.getRepository(Launcher);
+export const getLauncherRepository = () =>
+  AppDataSource.getRepository(Launcher);
 
 export type LauncherInput = Partial<Launcher> & {
   launchers_group_id?: number;
 };
 
-export const getAllLaunchers = async (launchersGroupId?: number): Promise<Launcher[]> => {
+export const getAllLaunchers = async (
+  launchersGroupId?: number,
+): Promise<Launcher[]> => {
   const repo = getLauncherRepository();
   return repo.find({
     where: launchersGroupId !== undefined ? { launchersGroupId } : undefined,
     relations: { launchersGroup: true, launcherType: true, ammunition: true },
-    order: { id: 'ASC' },
+    order: { id: "ASC" },
   });
 };
 
@@ -25,10 +28,11 @@ export const getLauncherById = async (id: number): Promise<Launcher | null> => {
   });
 };
 
-export const createLauncher = async (data: LauncherInput): Promise<Launcher> => {
+export const createLauncher = async (
+  data: LauncherInput,
+): Promise<Launcher> => {
   const repo = getLauncherRepository();
   const launcher = repo.create({
-    id: data.id,
     launchersGroupId: data.launchersGroupId ?? data.launchers_group_id,
     longitude: data.longitude,
     latitude: data.latitude,
@@ -45,7 +49,7 @@ export const createLauncher = async (data: LauncherInput): Promise<Launcher> => 
 
 export const updateLauncher = async (
   id: number,
-  data: Partial<LauncherInput>
+  data: Partial<LauncherInput>,
 ): Promise<Launcher | null> => {
   const repo = getLauncherRepository();
   const existing = await repo.findOneBy({ id });
@@ -54,8 +58,12 @@ export const updateLauncher = async (
   }
 
   const updatePayload: Partial<Launcher> = {};
-  if (data.launchersGroupId !== undefined || data.launchers_group_id !== undefined) {
-    updatePayload.launchersGroupId = data.launchersGroupId ?? data.launchers_group_id;
+  if (
+    data.launchersGroupId !== undefined ||
+    data.launchers_group_id !== undefined
+  ) {
+    updatePayload.launchersGroupId =
+      data.launchersGroupId ?? data.launchers_group_id;
   }
   if (data.longitude !== undefined) updatePayload.longitude = data.longitude;
   if (data.latitude !== undefined) updatePayload.latitude = data.latitude;

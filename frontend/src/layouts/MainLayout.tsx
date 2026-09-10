@@ -1,11 +1,19 @@
 import { Header } from "../components/Header/Header";
 import { EventsPanel } from "../components/EventsPanel/EventsPanel";
 import { InterceptorsPanel } from "../components/InterceptorsPanel/InterceptorsPanel";
-import { SideNavDrawer, NavViewMode } from "../components/Navigation/SideNavDrawer";
+import {
+  SideNavDrawer,
+  NavViewMode,
+} from "../components/Navigation/SideNavDrawer";
 import { SimulationSummaryPanel } from "../components/SimulationSummary/SimulationSummaryPanel";
+import { LaunchersDronesPanel } from "../components/LaunchersDronesPanel/LaunchersDronesPanel";
 import { ScenarioItem } from "../types/simulation";
 import { DroneGroup, LauncherGroup } from "../types/types";
-import { INITIAL_DRONE_GROUPS, INITIAL_LAUNCHER_GROUPS, INITIAL_SCENARIOS } from "../mock/events";
+import {
+  INITIAL_DRONE_GROUPS,
+  INITIAL_LAUNCHER_GROUPS,
+  INITIAL_SCENARIOS,
+} from "../mock/events";
 import "./MainLayout.css";
 import React, { useEffect, useRef, useState } from "react";
 import {
@@ -18,9 +26,16 @@ import {
 import L, { Map } from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { useSimulation } from "../simulation/useSimulation";
-import { AddScenerioModal } from '../components';
+import { AddScenerioModal } from "../components";
 import { MapView } from "../ui/MapView";
-import { LaunchersDronesPanel } from "../components/LaunchersDronesPanel/LaunchersDronesPanel";
+import {
+  clearScenario,
+  loadScenario,
+  stopClock,
+} from "../simulation/SimulationContext";
+import { getScenarioById } from "../simulation/sampleScenario";
+import { visualEventQueue } from "../visual/VisualEventQueue";
+import { algorithmClient } from "../algorithm/AlgorithmClient";
 
 interface MainLayoutProps {
   logoSrc?: string;
@@ -30,37 +45,41 @@ interface MainLayoutProps {
   onStartSimulation?: () => void;
   handleMapReady?: (map: Map) => void;
   setShowMainAdditionalComponents: React.Dispatch<React.SetStateAction<boolean>>;
+  onGoToCoordinates?: (lat: number, lng: number) => void;
+  onRemoveMarker?: () => void;
+  hasMarker?: boolean;
   onAddDroneGroup?: () => void;
   onAddInterceptorGroup?: () => void;
+  layersOpen?: boolean;
+  onLayersToggle?: () => void;
+  layersMenuRef?: React.RefObject<HTMLDivElement | null>;
 }
 
 export const MainLayout: React.FC<MainLayoutProps> = ({
   logoSrc,
   scenarioName,
-  defaultScenarioName = "רב-זירתי - צפון ומזרח",
+  defaultScenarioName = "בחר תרחיש להתחלה",
   simId = "SIM-01",
   onStartSimulation,
   handleMapReady,
   setShowMainAdditionalComponents,
+  onGoToCoordinates,
+  onRemoveMarker,
+  hasMarker = false,
   onAddDroneGroup,
   onAddInterceptorGroup,
+  layersOpen = false,
+  onLayersToggle,
+  layersMenuRef,
 }) => {
-  const initialScenarioTitle = scenarioName || defaultScenarioName;
   const [navView, setNavView] = useState<NavViewMode>("drones");
-  const [selectedScenario, setSelectedScenario] = useState<ScenarioItem>(
-    INITIAL_SCENARIOS[1] || {
-      id: "sc-2",
-      title: initialScenarioTitle,
-      severity: "high",
-      type: "multi",
-      typeLabel: "רב-זירתי",
-      droneCount: 5,
-      entryPoints: ["צפון", "מזרח"],
-      droneTypes: ["A", "B", "C"],
-    },
+  const [selectedScenario, setSelectedScenario] = useState<ScenarioItem | null>(
+    null,
   );
-
-  const [selectedGroup, setSelectedGroup] = useState<DroneGroup | LauncherGroup | null>(null);
+  const [selectedGroup, setSelectedGroup] = useState<
+    DroneGroup | LauncherGroup | null
+  >(null);
+  const [rulerActive, setRulerActive] = useState(false);
 
   const [isStateDialogOpen, setIsStateDialogOpen] = useState(false);
   const [isCreateScenarioOpen, setIsCreateScenarioOpen] = useState(false);
@@ -81,10 +100,57 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
     }
   };
 
+  // ── Scenario selection + full reset ──────────────────────────────────────
   const handleScenarioSelect = (scenario: ScenarioItem) => {
-    setSelectedScenario(scenario);
+    const renderer = (window as any).__leafletRenderer;
+
+    if (selectedScenario?.id === scenario.id) {
+      // Toggle off / deselect scenario
+      setSelectedScenario(null);
+      stopClock();
+      clearScenario();
+      visualEventQueue.clear();
+      algorithmClient.reset();
+      (window as any).__resetSimulationRefs?.();
+      if (renderer) {
+        renderer.resetVisuals();
+      }
+    } else {
+      setSelectedScenario(scenario);
+      stopClock();
+      clearScenario();
+      visualEventQueue.clear();
+      algorithmClient.reset();
+      (window as any).__resetSimulationRefs?.();
+      if (renderer) {
+        renderer.resetVisuals();
+      }
+      // Load specific scenario into simulation context
+      loadScenario(getScenarioById(scenario.id));
+      if (renderer) {
+        renderer.initDefenseSystems();
+      }
+    }
   };
 
+  const handleRestart = () => {
+    const renderer = (window as any).__leafletRenderer;
+    stopClock();
+    algorithmClient.reset();
+    visualEventQueue.clear();
+    (window as any).__resetSimulationRefs?.();
+    if (renderer) {
+      renderer.resetVisuals();
+    }
+    if (selectedScenario) {
+      loadScenario(getScenarioById(selectedScenario.id));
+      if (renderer) {
+        renderer.initDefenseSystems();
+      }
+    }
+  };
+
+  // ── Panel action stubs ────────────────────────────────────────────────────
   const handleCreateScenario = () => {
     setIsCreateScenarioOpen(true);
   };
@@ -102,9 +168,10 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
     setNavView("drones");
   };
 
+  // ── Hide simulation HUD when Summary view is active ───────────────────────
   useEffect(() => {
     if (navView === "summary") {
-      setShowMainAdditionalComponents(false); 
+      setShowMainAdditionalComponents(false);
     } else {
       setShowMainAdditionalComponents(true);
     }
@@ -114,27 +181,39 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
     <div className="main-layout-container">
       {/* Top Application Header */}
       <Header
-        scenarioName={selectedScenario.title}
+        scenarioName={selectedScenario?.title || defaultScenarioName}
         simId={simId}
         isConnected={true}
         isSafeMode={true}
-        statusMode="תכנון תרחיש"
+        statusMode={selectedScenario ? "תרחיש פעיל" : "תכנון תרחיש"}
+        rulerActive={rulerActive}
+        onRulerToggle={() => setRulerActive((active) => !active)}
+        layersOpen={layersOpen}
+        onLayersToggle={onLayersToggle}
+        layersMenuRef={layersMenuRef}
         logoSrc={logoSrc}
+        onGoToCoordinates={onGoToCoordinates}
+        onRemoveMarker={onRemoveMarker}
+        hasMarker={hasMarker}
       />
 
       {/* Main Workspace */}
       <main className="main-viewport">
-        {/* Navigation Dropdown Drawer (סיכום סימולציות, פריסת מיירטים, פריסת רחפנים וכו') */}
+        {/* Right-Edge Navigation Drawer */}
         <SideNavDrawer activeView={navView} onViewChange={setNavView} />
 
-        {/* View 1: Simulation Summary Panel (Without additional sidebar buttons) */}
+        {/* View: Simulation Summary (full-screen, no map / HUD) */}
         {navView === "summary" ? (
           <SimulationSummaryPanel onViewSimulation={handleViewSimulation} />
         ) : (
           <>
-            {/* Tactical Map View */}
-            <div style={{ height: "100vh", position: "relative", width: "100vw" }}>
-              <MapView onMapReady={handleMapReady} />
+            {/* Tactical Map */}
+            <div
+              style={{ height: "100%", position: "relative", width: "100%" }}
+            >
+              <MapView onMapReady={handleMapReady} rulerActive={rulerActive} />
+
+              {/* Debug state dialog */}
               <Dialog
                 fullWidth
                 maxWidth="md"
@@ -177,22 +256,38 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
                       </option>
                     ))}
                   </select>
-                  <Button onClick={() => setIsStateDialogOpen(false)}>Close</Button>
+                  <Button onClick={() => setIsStateDialogOpen(false)}>
+                    Close
+                  </Button>
                 </DialogActions>
               </Dialog>
             </div>
 
-            {/* Events Panel (פריסת רחפנים / תרחישים) */}
-            {navView === "home" && (
+            {/* Scenario selection panel (home / drones view) */}
+            {(navView === "drones" || navView === "home") && (
               <EventsPanel
                 scenarios={INITIAL_SCENARIOS}
-                selectedScenarioId={selectedScenario.id}
+                selectedScenarioId={selectedScenario?.id}
                 onScenarioSelect={handleScenarioSelect}
                 onCreateScenario={handleCreateScenario}
               />
             )}
-            <AddScenerioModal open={isCreateScenarioOpen} onClose={() => setIsCreateScenarioOpen(false)}/>
+            <AddScenerioModal
+              open={isCreateScenarioOpen}
+              onClose={() => setIsCreateScenarioOpen(false)}
+            />
 
+            {/* Scenarios panel (dedicated scenarios view) */}
+            {navView === "scenarios" && (
+              <EventsPanel
+                scenarios={INITIAL_SCENARIOS}
+                selectedScenarioId={selectedScenario?.id}
+                onScenarioSelect={handleScenarioSelect}
+                onCreateScenario={handleCreateScenario}
+              />
+            )}
+
+            {/* Interceptors / launcher placement panel */}
             {navView === "interceptors" && (
               <LaunchersDronesPanel
                 groups={INITIAL_LAUNCHER_GROUPS}
@@ -202,24 +297,16 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
               />
             )}
 
-            {navView === "drones" && (
-              <LaunchersDronesPanel
-                groups={INITIAL_DRONE_GROUPS}
-                selectedGroupId={selectedGroup?.id}
-                onGroupSelect={handleGroupSelect}
-                onCreateGroup={onAddDroneGroup ?? handleCreateGroup}
-              />
-            )}
-
-            {/* Events Panel (פריסת רחפנים / תרחישים / מסך בית) */}
-            {navView === "scenarios" && (
-              <EventsPanel
-                scenarios={INITIAL_SCENARIOS}
-                selectedScenarioId={selectedScenario.id}
-                onScenarioSelect={handleScenarioSelect}
-                onCreateScenario={handleCreateScenario}
-              />
-            )}
+            {/* Drone groups panel (attack-side placement) */}
+            {navView === "drones" &&
+              false /* handled above by EventsPanel */ && (
+                <LaunchersDronesPanel
+                  groups={INITIAL_DRONE_GROUPS}
+                  selectedGroupId={selectedGroup?.id}
+                  onGroupSelect={handleGroupSelect}
+                  onCreateGroup={onAddDroneGroup ?? handleCreateGroup}
+                />
+              )}
           </>
         )}
       </main>
