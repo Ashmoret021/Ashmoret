@@ -132,7 +132,8 @@ function getThreatPositionAfter(threat: DroneSimState, dt: number): LatLng {
     return { latitude: threat.location.latitude, longitude: threat.location.longitude };
   }
 
-  const distanceTravelled = threat.velocity * dt;
+  const VISUAL_SPEED_SCALE = 25;
+  const distanceTravelled = threat.velocity * VISUAL_SPEED_SCALE * dt;
   const progressDelta = distanceTravelled / routeLength;
   const futureProgress = Math.min(1, threat.progress + progressDelta);
 
