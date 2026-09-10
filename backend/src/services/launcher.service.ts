@@ -65,7 +65,7 @@ export const updateLauncher = async (
   if (data.amount !== undefined) updatePayload.amount = data.amount;
   if (data.active !== undefined) updatePayload.active = data.active;
 
-  await repo.update(id, updatePayload);
+  await repo.update(id, updatePayload as any);
   const updated = await repo.findOneBy({ id });
   if (updated) {
     logger.info(`Updated launcher with id: ${id}`);

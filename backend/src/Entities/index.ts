@@ -3,6 +3,7 @@ export { DronesGroup } from "./DronesGroup.entity";
 export { LaunchersGroup } from "./LaunchersGroup.entity";
 export { Drone } from "./Drone.entity";
 export { Launcher } from "./Launcher.entity";
+export { AttackSide } from "./AttackSide.entity";
 export { LauncherAmmunition } from "./LauncherAmmunition.entity";
 export { LauncherTypeAmmunition } from "./LauncherTypeAmmunition.entity";
 export { DroneType } from "./DroneType.entity";

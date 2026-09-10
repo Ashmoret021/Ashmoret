@@ -47,7 +47,7 @@ export const updateDronesGroup = async (
   }
 
   if (Object.keys(updatePayload).length > 0) {
-    await repo.update(id, updatePayload);
+    await repo.update(id, updatePayload as any);
   }
 
   const updated = await repo.findOneBy({ id });

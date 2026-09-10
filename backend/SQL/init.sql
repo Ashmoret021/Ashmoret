@@ -95,6 +95,23 @@ CREATE TABLE launcher (
 );
 
 -- ==========================================================================
+-- Attack side / red side
+-- ==========================================================================
+
+DROP TABLE IF EXISTS attack_side CASCADE;
+CREATE TABLE attack_side (
+  id SERIAL PRIMARY KEY,
+  name VARCHAR(255) NOT NULL,
+  description TEXT,
+  scenario_id VARCHAR(255) REFERENCES scenario (id) ON DELETE SET NULL,
+  drones_group_id INTEGER REFERENCES drones_group (id) ON DELETE SET NULL,
+  drone_id INTEGER REFERENCES drone (id) ON DELETE SET NULL,
+  launcher_id INTEGER REFERENCES launcher (id) ON DELETE SET NULL,
+  active BOOLEAN NOT NULL DEFAULT TRUE,
+  config JSONB NOT NULL DEFAULT '{}'::jsonb
+);
+
+-- ==========================================================================
 -- Launcher ammunition (launcher <-> interceptor_type join table)
 -- ==========================================================================
 
