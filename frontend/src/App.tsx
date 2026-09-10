@@ -402,7 +402,12 @@ export const App = () => {
     axios
       .get("/CITIES.geojson")
       .then((response) => {
-        const citiesLayer = L.geoJSON(response.data);
+        const citiesLayer = L.geoJSON(response.data, {
+          style: {
+            color: "red",
+            fillColor: "red",
+          },
+        });
         layerControl.addOverlay(citiesLayer, "🏙️ ערים");
       })
       .catch((error) => {
