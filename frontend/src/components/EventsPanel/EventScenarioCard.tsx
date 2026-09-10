@@ -38,8 +38,14 @@ export const EventScenarioCard: React.FC<EventScenarioCardProps> = ({
         return 'badge-type-c';
       case DroneType.SkyMiteC7:
         return 'badge-type-d';
+      default:
+        return 'badge-type-default';
     }
   };
+
+  const uniqueDroneTypes = Array.from(
+    new Set(scenario.drones?.map((drone) => drone.type) || [])
+  );
 
   return (
     <div
@@ -94,9 +100,9 @@ export const EventScenarioCard: React.FC<EventScenarioCardProps> = ({
         <span className="meta-label">סוגי רחפנים:</span>
 
         <div className="drone-type-badges">
-          {scenario.drones.map((drone) => (
-            <span key={drone.id} className={`drone-type-badge ${getDroneTypeClass(drone.type)}`}>
-              {drone.type}
+          {uniqueDroneTypes.map((droneType) => (
+            <span key={droneType} className={`drone-type-badge ${getDroneTypeClass(droneType)}`}>
+              {droneType}
             </span>
           ))}
         </div>
