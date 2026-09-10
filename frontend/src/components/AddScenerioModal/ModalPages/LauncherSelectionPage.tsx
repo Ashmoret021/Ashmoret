@@ -115,8 +115,8 @@ export const LauncherSelectionPage: FC<LauncherSelectionPageProps> = ({
   selectedGroup: propGroup,
   onSelectGroup,
 }) => {
-  const [internalGroup, setInternalGroup] = useState<string>("battery-1");
   const {launchersGroups} = useGetAllLaunchersGroups();
+  const [internalGroup, setInternalGroup] = useState<string>("");
 
   const currentGroup = propGroup ?? internalGroup;
 
