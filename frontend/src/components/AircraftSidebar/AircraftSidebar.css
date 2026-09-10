@@ -1,4 +1,4 @@
-.drone-sidebar {
+.aircraft-sidebar {
     width: 640px;
     min-width: 640px;
     height: 100vh;
@@ -16,26 +16,26 @@
   }
   
   /* Prevents Flexbox from shrinking cards vertically */
-  .drone-card-item {
+  .aircraft-card-item {
     flex-shrink: 0;
     width: 600px;
     height: 400px;
   }
   
   /* Styled Scrollbar */
-  .drone-sidebar::-webkit-scrollbar {
+  .aircraft-sidebar::-webkit-scrollbar {
     width: 8px;
   }
   
-  .drone-sidebar::-webkit-scrollbar-track {
+  .aircraft-sidebar::-webkit-scrollbar-track {
     background: #e0e0e0;
   }
   
-  .drone-sidebar::-webkit-scrollbar-thumb {
+  .aircraft-sidebar::-webkit-scrollbar-thumb {
     background: #888;
     border-radius: 4px;
   }
   
-  .drone-sidebar::-webkit-scrollbar-thumb:hover {
+  .aircraft-sidebar::-webkit-scrollbar-thumb:hover {
     background: #555;
   }

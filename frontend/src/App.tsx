@@ -47,6 +47,7 @@ import axios from "axios";
 import "leaflet/dist/leaflet.css";
 import { algorithmClient } from "./algorithm/AlgorithmClient";
 import { WorldSnapshotBuilder } from "./algorithm/WorldSnapshotBuilder";
+import AircraftSidebar from "./components/AircraftSidebar/AircraftSidebar";
 export const App = () => {
   const mapRef = useRef<HTMLDivElement | null>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
