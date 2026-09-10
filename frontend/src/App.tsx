@@ -39,7 +39,7 @@ import {
   stopClock,
 } from "./simulation/SimulationContext";
 import { sampleScenario } from "./simulation/sampleScenario";
-import { activateWaitingThreats } from "./simulation/ThreatEngine";
+import { activateWaitingThreats, advanceThreatPositions } from "./simulation/ThreatEngine";
 import { LeafletRenderer } from "./map/LeafletRenderer";
 import { visualEventQueue } from "./visual/VisualEventQueue";
 import { processEngagementDecision } from "./visual/VisualEventBuilder";
@@ -158,28 +158,8 @@ export const App = () => {
         }
       }
 
-      // B. Advance positions using fixed 40s flight duration (matches original behavior)
-      const flightDuration = 40;
-      const next = { ...updatedThreats };
-      for (const [idStr, threat] of Object.entries(updatedThreats)) {
-        if (threat.logicalStatus !== 'active' && threat.logicalStatus !== 'interceptPending') continue;
-        if (!threat.route || threat.route.length < 2) continue;
-
-        const elapsed = simTime - threat.startTime;
-        if (elapsed < 0) continue;
-
-        const progress = Math.min(1, elapsed / flightDuration);
-        const start = threat.route[0];
-        const end = threat.route[threat.route.length - 1];
-        const location = {
-          latitude: start.latitude + (end.latitude - start.latitude) * progress,
-          longitude: start.longitude + (end.longitude - start.longitude) * progress,
-          asl: start.asl + (end.asl - start.asl) * progress,
-          agl: start.agl + (end.agl - start.agl) * progress,
-        };
-        next[Number(idStr)] = { ...threat, progress, location };
-      }
-      updatedThreats = next;
+      // B. Advance threat positions based on velocity and route waypoints
+      updatedThreats = advanceThreatPositions(updatedThreats, simTime);
 
       // C. Detect newly-impacted threats (progress reached 1) and fire impact events
       for (const [idStr, t] of Object.entries(updatedThreats)) {
