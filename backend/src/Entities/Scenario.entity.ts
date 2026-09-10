@@ -34,6 +34,9 @@ export class Scenario {
   @JoinColumn({ name: "launchers_group_id" })
   launchersGroup!: LaunchersGroup;
 
+  // Transient property - not persisted to DB. Populated at runtime by services.
+  locations?: string[];
+
   @OneToMany(() => AttackSide, (attackSide: AttackSide) => attackSide.scenario)
   attackSides!: AttackSide[];
 }

@@ -123,7 +123,6 @@ VALUES
 -- ============================================================
 
 INSERT INTO scenario.scenario (
-    id,
     name,
     drones_group_id,
     launchers_group_id,
@@ -131,7 +130,6 @@ INSERT INTO scenario.scenario (
 )
 VALUES
     (
-        'SCENARIO-001',
         'הגנה צפונית',
         (SELECT id
          FROM scenario.drones_group
@@ -142,7 +140,6 @@ VALUES
         'יחיד'
     ),
     (
-        'SCENARIO-002',
         'הגנה דרומית',
         (SELECT id
          FROM scenario.drones_group
@@ -153,7 +150,6 @@ VALUES
         'רב-מערכתי'
     ),
     (
-        'SCENARIO-003',
         'תצפית מרכזית',
         (SELECT id
          FROM scenario.drones_group
@@ -164,7 +160,6 @@ VALUES
         'יחיד'
     ),
     (
-        'SCENARIO-004',
         'תרגיל אימון',
         (SELECT id
          FROM scenario.drones_group
