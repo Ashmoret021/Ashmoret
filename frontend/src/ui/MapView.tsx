@@ -10,7 +10,7 @@ export interface MapViewProps {
 }
 
 const DEFAULT_CENTER: [number, number] = [31.0461, 34.8516];
-const DEFAULT_ZOOM = 6;
+const DEFAULT_ZOOM = 7;
 
 /**
  * Geographic bounds that constrain the map view to the Middle East region.
@@ -45,11 +45,10 @@ export const MapView: React.FC<MapViewProps> = React.memo(
         zoomControl: false,
         // Hard-lock panning to the Middle East; viscosity=1 creates a solid wall
         maxBounds: MIDDLE_EAST_BOUNDS,
-        maxBoundsViscosity: 1.0,
+        maxBoundsViscosity: 0.5,
         minZoom: MIN_ZOOM,
       }).setView(center, zoom);
 
-      L.control.zoom({ position: "topleft" }).addTo(map);
       mapInstanceRef.current = map;
 
       const darkLayer = L.tileLayer(
