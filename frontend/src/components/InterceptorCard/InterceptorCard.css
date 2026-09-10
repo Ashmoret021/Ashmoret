@@ -1,0 +1,246 @@
+@import url("https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700&display=swap");
+
+* {
+  box-sizing: border-box;
+}
+
+.interceptor-card {
+  position: relative;
+
+  width: 600px;
+  height: 400px;
+
+  overflow: hidden;
+
+  border: 2px solid #62666d;
+  border-radius: 20px;
+
+  background:
+    radial-gradient(
+      ellipse at 50% 78%,
+      rgba(50, 72, 138, 0.3) 0%,
+      rgba(24, 30, 47, 0.12) 35%,
+      transparent 60%
+    ),
+    radial-gradient(
+      ellipse at 100% 50%,
+      rgba(104, 39, 83, 0.12) 0%,
+      transparent 35%
+    ),
+    #10141b;
+
+  color: white;
+
+  font-family: "Heebo", Arial, sans-serif;
+}
+
+
+/* =====================================================
+   RIBBON
+   ===================================================== */
+
+.status-ribbon {
+  position: absolute;
+
+  top: 0;
+  left: 0;
+
+  width: 150px;
+  height: 135px;
+
+  background: #285791;
+
+  clip-path: polygon(
+    0 0,
+    100% 0,
+    0 100%
+  );
+
+  z-index: 2;
+}
+
+.status-ribbon span {
+  position: absolute;
+
+  top: 40px;
+  left: 23px;
+
+  transform: rotate(-45deg);
+
+  font-size: 24px;
+  font-weight: 700;
+
+  white-space: nowrap;
+}
+
+
+/* =====================================================
+   HEADER
+   ===================================================== */
+
+.interceptor-header {
+  position: absolute;
+
+  top: 16px;
+  right: 20px;
+  left: 18px;
+
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+
+/* =====================================================
+   NAME + INTERCEPTOR
+   ===================================================== */
+
+.interceptor-main-info {
+  display: flex;
+
+  align-items: flex-start;
+
+  gap: 9px;
+}
+
+.interceptor-main-info .interceptor-svg {
+  width: 49px;
+  height: 49px;
+
+  flex-shrink: 0;
+}
+
+.interceptor-name-wrapper {
+  padding-top: 5px;
+}
+
+.interceptor-name {
+  font-size: 29px;
+  line-height: 0.95;
+
+  font-weight: 700;
+
+  white-space: nowrap;
+}
+
+.interceptor-id {
+  margin-top: 3px;
+
+  font-size: 27px;
+  line-height: 1;
+
+  font-weight: 700;
+
+  direction: ltr;
+  text-align: right;
+}
+
+
+/* =====================================================
+   INTERCEPTOR INFORMATION
+   ===================================================== */
+
+.interceptor-info {
+  position: absolute;
+
+  top: 105px;
+  left: 35px;
+  right: 35px;
+
+  display: grid;
+
+  grid-template-columns: 1fr 1fr;
+
+  column-gap: 35px;
+  row-gap: 13px;
+
+  direction: rtl;
+}
+
+
+/* כל שדה */
+.info-item {
+  display: flex;
+
+  align-items: flex-start;
+
+  /* מצמיד את הנושא לערך */
+  justify-content: flex-start;
+
+  gap: 6px;
+
+  min-width: 0;
+
+  font-size: 17px;
+  line-height: 1.3;
+
+  /* מאפשר ירידת שורה */
+  white-space: normal;
+
+  direction: rtl;
+}
+
+
+/* שם השדה */
+.info-item span {
+  color: #ffffff;
+
+  font-weight: 400;
+
+  /* הנושא נשאר בשורה אחת */
+  flex-shrink: 0;
+
+  white-space: nowrap;
+}
+
+
+/* הערך */
+.info-item strong {
+  color: #ffffff;
+
+  font-size: 18px;
+  font-weight: 500;
+
+  min-width: 0;
+
+  /* הערך יכול לרדת שורות */
+  white-space: normal;
+
+  overflow: visible;
+
+  text-overflow: unset;
+
+  overflow-wrap: break-word;
+
+  word-break: normal;
+
+  text-align: right;
+}
+
+/* =====================================================
+   STACKED INFORMATION
+   ===================================================== */
+
+.info-item.stacked {
+  display: flex;
+
+  flex-direction: column;
+
+  align-items: flex-start;
+
+  justify-content: flex-start;
+
+  gap: 2px;
+}
+
+.info-item.stacked span {
+  white-space: nowrap;
+}
+
+.info-item.stacked strong {
+  white-space: normal;
+
+  width: 100%;
+
+  text-align: right;
+}

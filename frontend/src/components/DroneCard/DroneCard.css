@@ -359,3 +359,122 @@
   width: 46px;
   height: 46px;
 }
+
+
+/* =====================================================
+   DRONE INFORMATION
+   ===================================================== */
+
+.drone-info {
+  position: absolute;
+
+  top: 105px;
+  left: 35px;
+  right: 35px;
+
+  display: grid;
+
+  grid-template-columns: 1fr 1fr;
+
+  column-gap: 35px;
+  row-gap: 8px;
+
+  direction: rtl;
+}
+
+
+/* כל שדה */
+.info-item {
+  display: flex;
+
+  align-items: flex-start;
+
+  /* הנושא והערך יהיו צמודים */
+  justify-content: flex-start;
+
+  gap: 8px;
+
+  min-width: 0;
+
+  font-size: 17px;
+  line-height: 1.3;
+
+  white-space: normal;
+}
+
+
+/* הנושא */
+.info-item span {
+  color: #ffffff;
+
+  font-weight: 400;
+
+  flex-shrink: 0;
+
+  white-space: nowrap;
+}
+
+
+/* הערך */
+.info-item strong {
+  color: #ffffff;
+
+  font-size: 18px;
+  font-weight: 500;
+
+  min-width: 0;
+
+  /* מאפשר ירידת שורה */
+  white-space: normal;
+
+  overflow: visible;
+
+  text-overflow: unset;
+
+  /* כשהערך יורד שורה - הוא מתחיל מאותה נקודה */
+  overflow-wrap: break-word;
+
+  word-break: normal;
+
+  text-align: right;
+}
+
+
+/* הערכות מודיעיניות */
+.info-item.intelligence {
+  align-items: flex-start;
+}
+
+.info-item.intelligence strong {
+  white-space: normal;
+  overflow: visible;
+  text-overflow: unset;
+}
+
+/* =====================================================
+   STACKED INFORMATION
+   ===================================================== */
+
+.info-item.stacked {
+  display: flex;
+
+  flex-direction: column;
+
+  align-items: flex-start;
+
+  justify-content: flex-start;
+
+  gap: 2px;
+}
+
+.info-item.stacked span {
+  white-space: nowrap;
+}
+
+.info-item.stacked strong {
+  white-space: normal;
+
+  width: 100%;
+
+  text-align: right;
+}
