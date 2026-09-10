@@ -36,13 +36,15 @@ CREATE TABLE launcher_type (
 DROP TABLE IF EXISTS drones_group CASCADE;
 CREATE TABLE drones_group (
   id SERIAL PRIMARY KEY,
-  name VARCHAR(255) NOT NULL
+  name VARCHAR(255) NOT NULL,
+  description TEXT
 );
 
 DROP TABLE IF EXISTS launchers_group CASCADE;
 CREATE TABLE launchers_group (
   id SERIAL PRIMARY KEY,
-  name VARCHAR(255) NOT NULL
+  name VARCHAR(255) NOT NULL,
+  description TEXT
 );
 
 -- ==========================================================================
