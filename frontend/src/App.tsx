@@ -35,7 +35,6 @@ import axios from "axios";
 import "leaflet/dist/leaflet.css";
 import { algorithmClient } from "./algorithm/AlgorithmClient";
 import { WorldSnapshotBuilder } from "./algorithm/WorldSnapshotBuilder";
-
 export const App = () => {
   const mapRef = useRef<HTMLDivElement | null>(null);
   const [isStateDialogOpen, setIsStateDialogOpen] = useState(false);
@@ -386,6 +385,21 @@ export const App = () => {
 
     const baseLayerNames = Object.keys(baseMaps);
 
+    const container = layerControl.getContainer();
+
+    if (container) {
+      map.getContainer().appendChild(container);
+
+      Object.assign(container.style, {
+        position: "absolute",
+        top: "10px",
+        left: "50%",
+        transform: "translateX(-50%)",
+        margin: "0",
+        zIndex: "800",
+      });
+    }
+
     map.on("baselayerchange", (e: L.LayersControlEvent) => {
       setLayers((prev) => [
         ...prev.filter((name) => !baseLayerNames.includes(name)),
@@ -404,11 +418,53 @@ export const App = () => {
     axios
       .get("/CITIES.geojson")
       .then((response) => {
-        const citiesLayer = L.geoJSON(response.data);
+        const citiesLayer = L.geoJSON(response.data, {
+          interactive: false,
+          style: {
+            color: "#4196f8",
+            fillColor: "#4196f8",
+            fillOpacity: 0.35,
+          },
+        });
+
         layerControl.addOverlay(citiesLayer, "🏙️ ערים");
       })
       .catch((error) => {
         console.error("Failed to load cities layer:", error);
+      });
+
+    axios
+      .get("/SENSITIVES.geojson")
+      .then((response) => {
+        const sensitivesLayer = L.geoJSON(response.data, {
+          style: {
+            color: "#e53935",
+            weight: 2,
+            fillColor: "#e53935",
+            fillOpacity: 0.35,
+          },
+          onEachFeature: (feature, layer) => {
+            const name =
+              feature.properties?.HEB_NAME || feature.properties?.CITY_NAME;
+            const category = feature.properties?.HEB_CATEGORY;
+            if (name) {
+              layer.bindPopup(
+                `<strong>${name}</strong>${category ? `<br/>סוג: ${category}` : ""}`,
+              );
+            }
+          },
+        });
+
+        map.on("overlayadd", (e: L.LayersControlEvent) => {
+          if (e.name === "🛡️ מיקומים רגישים") {
+            sensitivesLayer.bringToFront();
+          }
+        });
+
+        layerControl.addOverlay(sensitivesLayer, "🛡️ אתרים רגישים");
+      })
+      .catch((error) => {
+        console.error("Failed to load sensitives layer:", error);
       });
   }, []);
 

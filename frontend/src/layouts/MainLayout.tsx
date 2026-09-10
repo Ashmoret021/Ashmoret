@@ -108,6 +108,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
         {/* Navigation Dropdown Drawer (סיכום סימולציות, פריסת מיירטים, פריסת רחפנים וכו') */}
         <SideNavDrawer activeView={navView} onViewChange={setNavView} />
 
+
         {/* View 1: Simulation Summary Panel (Without additional sidebar buttons) */}
         {navView === "summary" ? (
           <SimulationSummaryPanel onViewSimulation={handleViewSimulation} />
@@ -164,8 +165,18 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
               </Dialog>
             </div>
 
+        {/* Events Panel (פריסת רחפנים / תרחישים) */}
+        {navView === "home" && (
+          <EventsPanel
+            scenarios={INITIAL_SCENARIOS}
+            selectedScenarioId={selectedScenario.id}
+            onScenarioSelect={handleScenarioSelect}
+            onCreateScenario={handleCreateScenario}
+          />
+        )}
+
             {/* Events Panel (פריסת רחפנים / תרחישים / מסך בית) */}
-            {(navView === "drones" || navView === "home" || navView === "scenarios") && (
+            {(navView === "drones" || navView === "scenarios") && (
               <EventsPanel
                 scenarios={INITIAL_SCENARIOS}
                 selectedScenarioId={selectedScenario.id}
