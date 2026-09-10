@@ -10,8 +10,8 @@ export interface MapViewProps {
   rulerActive?: boolean;
 }
 
-const DEFAULT_CENTER: [number, number] = [31.0461, 34.8516];
-const DEFAULT_ZOOM = 6;
+const DEFAULT_CENTER: [number, number] = [31.0961, 35.4516];
+const DEFAULT_ZOOM = 8;
 
 /**
  * Geographic bounds that constrain the map view to the Middle East region.

@@ -66,7 +66,7 @@ export const updateDrone = async (
   if (data.velocity !== undefined) updatePayload.velocity = data.velocity;
   if (data.type !== undefined) updatePayload.type = data.type;
 
-  await repo.update(id, updatePayload);
+  await repo.update(id, updatePayload as any);
   const updated = await repo.findOneBy({ id });
   if (updated) {
     logger.info(`Updated drone with id: ${id}`);
