@@ -14,8 +14,8 @@ export const getAllScenarios = async (): Promise<Scenario[]> => {
   const repo = getScenarioRepository();
   const scenarios = await repo.find({
     relations: {
-      dronesGroup: { drones: true },
-      launchersGroup: { launchers: true },
+      dronesGroup: { drones: { droneType: true } },
+      launchersGroup: { launchers: { launcherType: true } },
     },
     order: { id: "ASC" },
   });
