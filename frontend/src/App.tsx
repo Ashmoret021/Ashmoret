@@ -67,7 +67,7 @@ export const App = () => {
     useState<boolean>(true);
 
   const tickIdRef = useRef<number>(0);
-  const lastApiTickSimTimeRef = useRef<number>(-1);
+  const lastApiTickSimTimeRef = useRef<number>(0); // Start at 0 so first API call fires at simTime≥1.0 (after threats have moved)
   const pendingApiCallRef = useRef<boolean>(false);
   // Monotonically-increasing counter, incremented every time the simulation
   // is reset. Async algorithm callbacks capture this at call time and skip
@@ -339,10 +339,14 @@ export const App = () => {
     (window as any).__resetSimulationRefs = () => {
       simulationGenerationRef.current += 1; // invalidate any in-flight async callbacks
       tickIdRef.current = 0;
-      lastApiTickSimTimeRef.current = -1;
+      lastApiTickSimTimeRef.current = 0;
       pendingApiCallRef.current = false;
       engagedDronesRef.current.clear();
     };
+
+    // Load initial scenario so map isn't empty on page load
+    loadScenario(sampleScenario);
+    renderer.initDefenseSystems();
 
     const markersLayer = L.layerGroup().addTo(map);
     markersLayerRef.current = markersLayer;
@@ -476,7 +480,7 @@ export const App = () => {
     algorithmClient.reset();
     simulationGenerationRef.current += 1; // invalidate any in-flight async callbacks
     tickIdRef.current = 0;
-    lastApiTickSimTimeRef.current = -1;
+    lastApiTickSimTimeRef.current = 0;
     pendingApiCallRef.current = false;
     engagedDronesRef.current.clear();
     visualEventQueue.clear();
@@ -491,7 +495,8 @@ export const App = () => {
     if (renderer) {
       renderer.initDefenseSystems();
     }
-  }, []);
+    startClock();
+  }, [startClock]);
   // NOTE: App.handleRestart is only used as fallback when no onRestart prop is
   // provided. The actual restart path goes through MainLayout.handleRestart,
   // which uses window.__resetSimulationRefs to reset App-level refs.
