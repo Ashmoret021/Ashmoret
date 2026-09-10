@@ -13,7 +13,7 @@ import {
   import StorefrontRoundedIcon from "@mui/icons-material/StorefrontRounded";
   import LanguageRoundedIcon from "@mui/icons-material/LanguageRounded";
   
-  import { Drone, DroneType } from "../../types/types";
+  import { Drone, DroneType } from "../../../../types/types";
   import "./DroneModal.css";
   
   type DroneModalProps = {
@@ -23,13 +23,6 @@ import {
     hebrewName: string;
     flightDistance: string | number;
     estimatedDamage: string;
-  };
-  
-  const droneTypeNames: Record<DroneType, string> = {
-    [DroneType.SkyMiteC7]: "SkyMite C7",
-    [DroneType.LoadBeeM2]: "LoadBee M2",
-    [DroneType.FalconLongX4]: "Falcon Long X4",
-    [DroneType.NanoSwarmQ9]: "NanoSwarm Q9",
   };
 
   
@@ -41,16 +34,11 @@ import {
     flightDistance,
     estimatedDamage,
   }: DroneModalProps) {
-    const commercialName = droneTypeNames[drone.type] || "לא ידוע";
-  
     return (
       <Dialog
         open={true}
         onClose={onClose}
         hideBackdrop
-        PaperProps={{
-          className: "drone-dialog-glass",
-        }}
       >
         <DialogContent className="drone-dialog-content">
           {/* Header with status pulse indicator */}
@@ -89,7 +77,7 @@ import {
                   <StorefrontRoundedIcon className="row-icon" />
                   <Typography className="info-label">שם מסחרי</Typography>
                 </Box>
-                <Typography className="info-value">{commercialName}</Typography>
+                <Typography className="info-value">{drone.type}</Typography>
               </Box>
   
               <Box className="info-row">
