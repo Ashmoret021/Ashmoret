@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { calculateProgress, calculatePositionAlongRoute, activateWaitingThreats, advanceThreatPositions } from './ThreatEngine';
-import { DroneType } from '../../../types/types';
+import { DroneType } from '../types/types';
 
 const loc = (lat: number, lng: number) => ({ latitude: lat, longitude: lng, asl: 0, agl: 0 });
 const route = [loc(32.0, 35.0), loc(32.5, 35.0), loc(33.0, 35.0)];

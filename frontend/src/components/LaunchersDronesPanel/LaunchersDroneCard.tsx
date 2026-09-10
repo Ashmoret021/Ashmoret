@@ -134,8 +134,13 @@ export const LaunchersDroneCard: React.FC<LaunchersDroneCardProps> = ({
                   className={`drone-type-badge ${getDroneTypeClass(droneType)}`}
                   style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '2px 6px' }}
                 >
-                  <img src={getDroneIconUrl(droneType)} width="14" height="14" alt={droneType} />
-                  {droneType}
+                  <img
+                    src={getDroneIconUrl(DroneType[droneType])}
+                    width="14"
+                    height="14"
+                    alt={DroneType[droneType]}
+                  />
+                  {DroneType[droneType]}
                 </span>
               ))
             : uniqueLauncherTypes.map((launcherType) => (
