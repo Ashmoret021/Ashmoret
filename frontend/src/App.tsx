@@ -1,30 +1,23 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { CoordinatesControl } from "./components/CoordinatesControl";
-import React from "react";
-import { MainLayout } from "./layouts/MainLayout";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import "../src/styles/App.css";
+import { CoordinatesControl } from "./components/CoordinatesControl";
+import { MainLayout } from "./layouts/MainLayout";
 
-import "./styles/droneStyles.css";
-import { useSimulation } from "./simulation/useSimulation";
-import { SimulationControls } from "./ui/SimulationControls";
-import { SimulationStats } from "./ui/SimulationStats";
+import axios from "axios";
 import { Drone, DroneType } from "../../types/types";
-import DroneModal from "./components/DroneModal/DroneModal";
-import { DefenseSide } from "./components/DefenseSide/defenseSide";
+import { algorithmClient } from "./algorithm/AlgorithmClient";
+import { WorldSnapshotBuilder } from "./algorithm/WorldSnapshotBuilder";
 import AttackSide from "./components/Attackside";
-import { createWave } from "./constants/droneConstants";
-import { PlacementHUD } from "./components/PlacementHUD";
+import { DefenseSide } from "./components/DefenseSide/defenseSide";
 import { DeleteConfirmModal } from "./components/DeleteConfirmModal";
-import { PlacedDrone, DroneWave, Scenario } from "./types/drone";
+import DroneModal from "./components/DroneModal/DroneModal";
+import { PlacementHUD } from "./components/PlacementHUD";
+import { createWave } from "./constants/droneConstants";
+import { LeafletRenderer } from "./map/LeafletRenderer";
 import { storageService } from "./services/storageService";
-import {
-  createDroneDivIcon,
-  createDronePopupContent,
-} from "./utils/droneMarker";
-import { MapView } from "./ui/MapView";
-import { EventLog } from "./ui/EventLog";
+import { sampleScenario } from "./simulation/sampleScenario";
 import {
   appendLog,
   DroneSimState,
@@ -35,14 +28,22 @@ import {
   setState,
   stopClock,
 } from "./simulation/SimulationContext";
-import { sampleScenario } from "./simulation/sampleScenario";
-import { activateWaitingThreats } from "./simulation/ThreatEngine";
-import { LeafletRenderer } from "./map/LeafletRenderer";
-import { visualEventQueue } from "./visual/VisualEventQueue";
+import {
+  activateWaitingThreats,
+  advanceThreatPositions,
+} from "./simulation/ThreatEngine";
+import { useSimulation } from "./simulation/useSimulation";
+import "./styles/droneStyles.css";
+import { DroneWave, PlacedDrone, Scenario } from "./types/drone";
+import { EventLog } from "./ui/EventLog";
+import { SimulationControls } from "./ui/SimulationControls";
+import { SimulationStats } from "./ui/SimulationStats";
+import {
+  createDroneDivIcon,
+  createDronePopupContent,
+} from "./utils/droneMarker";
 import { processEngagementDecision } from "./visual/VisualEventBuilder";
-import axios from "axios";
-import { algorithmClient } from "./algorithm/AlgorithmClient";
-import { WorldSnapshotBuilder } from "./algorithm/WorldSnapshotBuilder";
+import { visualEventQueue } from "./visual/VisualEventQueue";
 
 export const App = () => {
   const mapInstanceRef = useRef<L.Map | null>(null);
@@ -169,33 +170,8 @@ export const App = () => {
         }
       }
 
-      // B. Advance positions using fixed 40s flight duration (matches original behavior)
-      const flightDuration = 40;
-      const next = { ...updatedThreats };
-      for (const [idStr, threat] of Object.entries(updatedThreats)) {
-        if (
-          threat.logicalStatus !== "active" &&
-          threat.logicalStatus !== "interceptPending"
-        )
-          continue;
-        if (!threat.route || threat.route.length < 2) continue;
-
-        const elapsed = simTime - threat.startTime;
-        if (elapsed < 0) continue;
-
-        const progress = Math.min(1, elapsed / flightDuration);
-        const start = threat.route[0];
-        const end = threat.route[threat.route.length - 1];
-        const location = {
-          latitude: start.latitude + (end.latitude - start.latitude) * progress,
-          longitude:
-            start.longitude + (end.longitude - start.longitude) * progress,
-          asl: start.asl + (end.asl - start.asl) * progress,
-          agl: start.agl + (end.agl - start.agl) * progress,
-        };
-        next[Number(idStr)] = { ...threat, progress, location };
-      }
-      updatedThreats = next;
+      // B. Advance threat positions based on velocity and route waypoints
+      updatedThreats = advanceThreatPositions(updatedThreats, simTime);
 
       // C. Detect newly-impacted threats (progress reached 1) and fire impact events
       for (const [idStr, t] of Object.entries(updatedThreats)) {
