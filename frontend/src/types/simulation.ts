@@ -1,4 +1,18 @@
+import { Drone, Launcher } from "./types";
+
 export type PlacementMode = 'auto' | 'manual';
+
+export enum Direction {
+  NORTH = 'צפון',
+  EAST = 'מזרח',
+  SOUTH = 'דרום',
+  WEST = 'מערב',
+}
+
+export enum EventType {
+  SINGLE_AREA = 'חד-זירתי',
+  MULTIPLE_AREAS = 'רב-זירתי',
+}
 
 export interface InterceptorItem {
   id: string;
