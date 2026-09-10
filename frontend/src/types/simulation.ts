@@ -55,3 +55,20 @@ export interface ScenarioDetails {
   connected: boolean;
   safeMode: boolean;
 }
+
+/**
+ * EventSimulation data model fitted to backend Scenario API and Simulation records
+ */
+export interface EventSimulation {
+  id: string;
+  scenario_id: string;
+  scenario_name: string;
+  drones_count: number;
+  drones_group_id?: number;
+  launchers_group_id?: number;
+  scenario_type?: 'חד-זירתי' | 'רב-זירתי' | string;
+  execution_date: string; // e.g. "9.9.2026 16:43"
+  duration: string; // e.g. "00:13:45"
+  score: number; // e.g. 85
+}
+

@@ -69,6 +69,7 @@ export const AddScenerioModal: FC<AddScenerioModalProps> = ({ open, onClose }) =
         dronesGroupId: +selectedDroneGroup,
         launchersGroupId: +selectedLauncherGroup,
       });
+      console.log("Scenario created!");
       handleClose();
     }
   };

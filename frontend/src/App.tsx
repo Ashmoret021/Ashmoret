@@ -44,6 +44,8 @@ export const App = () => {
   const engagedDronesRef = useRef<Set<number>>(new Set());
   const [layers, setLayers] = useState<string[]>(["🗺️ מפה רגילה"]);
   const [selectedDrone, setSelectedDrone] = useState<Drone | null>(null);
+  const [showMainAdditionalComponents, setShowMainAdditionalComponents] =
+    useState<boolean>(true);
 
   const tickIdRef = useRef<number>(0);
   const lastApiTickSimTimeRef = useRef<number>(-1);
@@ -553,6 +555,7 @@ export const App = () => {
           simId="SIM-01"
           onStartSimulation={handleStartSimulation}
           handleMapReady={handleMapReady}
+          setShowMainAdditionalComponents={setShowMainAdditionalComponents}
         />
         {selectedDrone && (
           <DroneModal
@@ -564,64 +567,14 @@ export const App = () => {
             onClose={() => setSelectedDrone(null)}
           />
         )}
-        <EventLog />
-        <SimulationStats />
-        <SimulationControls onRestart={handleRestart} />
 
-        <div ref={mapRef} style={{ height: "100%", width: "100%" }} />
-        <Button
-          onClick={() => setIsStateDialogOpen(true)}
-          style={{ left: 16, position: "absolute", top: 16, zIndex: 1000 }}
-          variant="contained"
-        >
-          View simulation state
-        </Button>
-
-        <Dialog
-          fullWidth
-          maxWidth="md"
-          onClose={() => setIsStateDialogOpen(false)}
-          open={isStateDialogOpen}
-        >
-          <DialogTitle>Simulation state</DialogTitle>
-          <DialogContent>
-            <pre
-              style={{
-                backgroundColor: "#f5f5f5",
-                borderRadius: 4,
-                fontFamily: "monospace",
-                fontSize: 13,
-                margin: 0,
-                maxHeight: "60vh",
-                overflow: "auto",
-                padding: 16,
-                whiteSpace: "pre-wrap",
-                wordBreak: "break-word",
-              }}
-            >
-              {stateJson}
-            </pre>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={toggleClock}>
-              {isRunning ? "Pause clock" : "Run clock"}
-            </Button>
-            <select
-              aria-label="Simulation speed"
-              value={state.speedMultiplier}
-              onChange={(event) =>
-                setSpeed(Number(event.target.value) as 1 | 2 | 5 | 10)
-              }
-            >
-              {[1, 2, 5, 10].map((speed) => (
-                <option key={speed} value={speed}>
-                  x{speed}
-                </option>
-              ))}
-            </select>
-            <Button onClick={() => setIsStateDialogOpen(false)}>Close</Button>
-          </DialogActions>
-        </Dialog>
+        {showMainAdditionalComponents && (
+          <>
+            <EventLog />
+            <SimulationStats />
+            <SimulationControls onRestart={handleRestart} />
+          </>
+        )}
       </div>
     </>
   );
