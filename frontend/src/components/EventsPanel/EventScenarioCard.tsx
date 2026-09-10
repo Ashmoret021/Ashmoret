@@ -26,6 +26,8 @@ export const EventScenarioCard: React.FC<EventScenarioCardProps> = ({
         return 'רגילה';
     }
   };
+  
+  //
 
   const getDroneTypeClass = (type: string): string => {
     switch (type.toUpperCase()) {
