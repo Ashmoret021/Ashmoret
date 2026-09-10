@@ -67,7 +67,7 @@ App.tsx component body
 
 #### משימות לביצוע:
 
-- [ ] **1.1 יצירת `src/simulation/ThreatEngine.ts`**
+- [x] **1.1 יצירת `src/simulation/ThreatEngine.ts`**
 
   ```ts
   import type { DroneSimState } from './SimulationContext';
