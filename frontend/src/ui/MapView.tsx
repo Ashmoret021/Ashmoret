@@ -1,13 +1,13 @@
 import React, { useEffect, useRef, useState } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import { Button } from "@mui/material";
 
 export interface MapViewProps {
   center?: [number, number];
   zoom?: number;
   onMapReady?: (map: L.Map) => void;
   handleMapReady?: (map: L.Map) => void;
+  rulerActive?: boolean;
 }
 
 const DEFAULT_CENTER: [number, number] = [31.0461, 34.8516];
@@ -30,12 +30,12 @@ export const MapView: React.FC<MapViewProps> = React.memo(
     zoom = DEFAULT_ZOOM,
     onMapReady,
     handleMapReady,
+    rulerActive = false,
   }) => {
     const mapRef = useRef<HTMLDivElement | null>(null);
     const mapInstanceRef = useRef<L.Map | null>(null);
     const onMapReadyRef = useRef(onMapReady);
     onMapReadyRef.current = onMapReady;
-    const [rulerActive, setRulerActive] = useState(false);
     const rulerStateRef = useRef<{
       points: L.LatLng[];
       markers: L.Marker[];
@@ -62,7 +62,8 @@ export const MapView: React.FC<MapViewProps> = React.memo(
         "https://tiles.stadiamaps.com/tiles/stamen_toner_dark/{z}/{x}/{y}{r}.png",
         {
           maxZoom: 20,
-          attribution: "&copy; Stadia Maps &copy; OpenStreetMap",
+          subdomains: "abcd",
+          attribution: "&copy; OpenStreetMap contributors &copy; Stadia Maps",
         },
       );
       darkLayer.addTo(map);
@@ -157,28 +158,6 @@ export const MapView: React.FC<MapViewProps> = React.memo(
             zIndex: 0,
           }}
         />
-        <Button
-          title={rulerActive ? "בטל מדידה (ESC)" : "מדוד מרחק"}
-          onClick={() => setRulerActive((a) => !a)}
-          sx={{
-            position: "absolute",
-            right: "880px",
-            top: "12px",
-            minWidth: "44px",
-            width: "44px",
-            height: "44px",
-            border: "2px solid",
-            borderColor: rulerActive ? "#388e3c" : "rgba(0,0,0,.2)",
-            backgroundColor: "white",
-            fontSize: "22px",
-            transition: "background 0.15s",
-            "&:hover": {
-              backgroundColor: rulerActive ? "#e8f5e9" : "#f4f4f4",
-            },
-          }}
-        >
-          📏
-        </Button>
       </>
     );
   },

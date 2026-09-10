@@ -10,7 +10,7 @@ export const useGetAllDronesGroups = () => {
         .dronesGroup()
         .getAllDronesGroups()
         .then((response) => {
-          setDronesGroups(response.data);
+          setDronesGroups(response.data.data);
         })
         .catch((error) => {
           console.log(error);
@@ -31,7 +31,7 @@ export const useGetAllLaunchersGroups = () => {
         .launchersGroup()
         .getAllLaunchersGroups()
         .then((response) => {
-          setLaunchersGroups(response.data);
+          setLaunchersGroups(response.data.data);
         })
         .catch((error) => {
           console.log(error);
