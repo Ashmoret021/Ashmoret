@@ -49,7 +49,6 @@ import axios from "axios";
 import "leaflet/dist/leaflet.css";
 import { algorithmClient } from "./algorithm/AlgorithmClient";
 import { WorldSnapshotBuilder } from "./algorithm/WorldSnapshotBuilder";
-
 export const App = () => {
   const mapRef = useRef<HTMLDivElement | null>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
@@ -63,6 +62,8 @@ export const App = () => {
   const [layers, setLayers] = useState<string[]>(["🗺️ מפה רגילה"]);
   const [selectedDrone, setSelectedDrone] = useState<Drone | null>(null);
   const [map, setMap] = useState<L.Map | null>(null);
+  const [showMainAdditionalComponents, setShowMainAdditionalComponents] =
+    useState<boolean>(true);
 
   const tickIdRef = useRef<number>(0);
   const lastApiTickSimTimeRef = useRef<number>(-1);
@@ -510,15 +511,52 @@ export const App = () => {
       .get("/CITIES.geojson")
       .then((response) => {
         const citiesLayer = L.geoJSON(response.data, {
+          interactive: false,
           style: {
-            color: "red",
-            fillColor: "red",
+            color: "#4196f8",
+            fillColor: "#4196f8",
+            fillOpacity: 0.35,
           },
         });
+
         layerControl.addOverlay(citiesLayer, "🏙️ ערים");
       })
       .catch((error) => {
         console.error("Failed to load cities layer:", error);
+      });
+
+    axios
+      .get("/SENSITIVES.geojson")
+      .then((response) => {
+        const sensitivesLayer = L.geoJSON(response.data, {
+          style: {
+            color: "#e53935",
+            weight: 2,
+            fillColor: "#e53935",
+            fillOpacity: 0.35,
+          },
+          onEachFeature: (feature, layer) => {
+            const name =
+              feature.properties?.HEB_NAME || feature.properties?.CITY_NAME;
+            const category = feature.properties?.HEB_CATEGORY;
+            if (name) {
+              layer.bindPopup(
+                `<strong>${name}</strong>${category ? `<br/>סוג: ${category}` : ""}`,
+              );
+            }
+          },
+        });
+
+        map.on("overlayadd", (e: L.LayersControlEvent) => {
+          if (e.name === "🛡️ מיקומים רגישים") {
+            sensitivesLayer.bringToFront();
+          }
+        });
+
+        layerControl.addOverlay(sensitivesLayer, "🛡️ אתרים רגישים");
+      })
+      .catch((error) => {
+        console.error("Failed to load sensitives layer:", error);
       });
   }, []);
 
@@ -830,6 +868,7 @@ export const App = () => {
           simId="SIM-01"
           onStartSimulation={handleStartSimulation}
           handleMapReady={handleMapReady}
+          setShowMainAdditionalComponents={setShowMainAdditionalComponents}
         />
         {selectedDrone && (
           <DroneModal
@@ -841,33 +880,37 @@ export const App = () => {
             onClose={() => setSelectedDrone(null)}
           />
         )}
-        <EventLog />
-        <SimulationStats />
-        <SimulationControls onRestart={handleRestart} />
-        <DefenseSide map={map} />
+        {showMainAdditionalComponents && (
+          <>
+            <EventLog />
+            <SimulationStats />
+            <SimulationControls onRestart={handleRestart} />
+            <DefenseSide map={map} />
 
-        {/* Floating Placement HUD for attack-side drone placement */}
-        {activePlacingWave && (
-          <PlacementHUD
-            activeWave={activePlacingWave}
-            placedCount={activePlacedCount}
-            remainingCount={activeRemainingCount}
-            totalRequired={activeRequiredCount}
-            onFinish={() => setPlacingWaveId(null)}
-            onOpenForm={() => {
-              setPlacingWaveId(null);
-              setAttackModalOpen(true);
-            }}
-          />
+            {/* Floating Placement HUD for attack-side drone placement */}
+            {activePlacingWave && (
+              <PlacementHUD
+                activeWave={activePlacingWave}
+                placedCount={activePlacedCount}
+                remainingCount={activeRemainingCount}
+                totalRequired={activeRequiredCount}
+                onFinish={() => setPlacingWaveId(null)}
+                onOpenForm={() => {
+                  setPlacingWaveId(null);
+                  setAttackModalOpen(true);
+                }}
+              />
+            )}
+
+            {/* Render Add Button into Leaflet Control via Portal to ensure side-by-side positioning */}
+            {!activePlacingWave &&
+              buttonContainer &&
+              createPortal(
+                <TemporaryAddButton onClick={() => setAttackModalOpen(true)} />,
+                buttonContainer,
+              )}
+          </>
         )}
-
-        {/* Render Add Button into Leaflet Control via Portal to ensure side-by-side positioning */}
-        {!activePlacingWave &&
-          buttonContainer &&
-          createPortal(
-            <TemporaryAddButton onClick={() => setAttackModalOpen(true)} />,
-            buttonContainer,
-          )}
 
         {/* Attack Waves Configuration Modal */}
         <AttackSide
