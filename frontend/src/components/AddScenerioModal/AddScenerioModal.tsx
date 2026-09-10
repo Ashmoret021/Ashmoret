@@ -19,6 +19,8 @@ import {
   LauncherSelectionPage,
 } from "./ModalPages";
 
+import api from "../../api";
+
 export interface ModalPage {
   label: string;
   component: React.ReactNode;
@@ -61,6 +63,12 @@ export const AddScenerioModal: FC<AddScenerioModalProps> = ({ open, onClose }) =
     if (page < STEP_LABELS.length - 1) {
       setPage((curr) => curr + 1);
     } else {
+      api.scenerios().createScenerio({
+        name: generalData.scenarioName,
+        type: generalData.scenarioType,
+        dronesGroupId: +selectedDroneGroup,
+        launchersGroupId: +selectedLauncherGroup,
+      });
       handleClose();
     }
   };
