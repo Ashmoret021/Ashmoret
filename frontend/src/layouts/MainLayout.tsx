@@ -87,6 +87,8 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
   useEffect(() => {
   if (navView === "summary") {
     setShowMainAdditionalComponents(false); 
+  } else {
+    setShowMainAdditionalComponents(true);
   }
 }, [navView]);
   return (
