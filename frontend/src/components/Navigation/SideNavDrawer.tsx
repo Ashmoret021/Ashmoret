@@ -1,14 +1,14 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { ChevronDown, ChevronUp } from 'lucide-react';
-import './SideNavDrawer.css';
+import React, { useState, useRef, useEffect } from "react";
+import { ChevronDown, ChevronUp } from "lucide-react";
+import "./SideNavDrawer.css";
 export type NavViewMode =
-  | 'home'
-  | 'scenarios'
-  | 'aircraft_dict'
-  | 'summary'
-  | 'interceptors'
-  | 'drones'
-  | 'summary_scenarios';
+  | "home"
+  | "scenarios"
+  | "aircraft_dict"
+  | "summary"
+  | "interceptors"
+  | "drones"
+  | "summary_scenarios";
 
 interface NavOption {
   id: NavViewMode;
@@ -16,13 +16,11 @@ interface NavOption {
 }
 
 const NAV_OPTIONS: NavOption[] = [
-  { id: 'home', label: 'מסך בית' },
-  { id: 'scenarios', label: 'מאגר תרחישים' },
-  { id: 'aircraft_dict', label: 'מילון כלי תעופה' },
-  { id: 'summary', label: 'סיכום סימולציות' },
-  { id: 'interceptors', label: 'פריסת מיירטים' },
-  { id: 'drones', label: 'פריסת רחפנים' },
-  { id : 'summary_scenarios', label : 'סיכום תרחישים'}
+  { id: "home", label: "מסך בית" },
+  { id: "interceptors", label: "פריסת מיירטים" },
+  { id: "drones", label: "פריסת רחפנים" },
+  { id: "summary_scenarios", label: "סיכום תרחישים" },
+  { id: "summary", label: "סיכום סימולציות" },
 ];
 
 interface SideNavDrawerProps {
@@ -51,10 +49,10 @@ export const SideNavDrawer: React.FC<SideNavDrawerProps> = ({
     };
 
     if (isOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener("mousedown", handleClickOutside);
     }
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [isOpen]);
 
@@ -66,7 +64,7 @@ export const SideNavDrawer: React.FC<SideNavDrawerProps> = ({
   return (
     <div
       ref={containerRef}
-      className={`side-nav-container ${isOpen ? 'expanded' : ''} ${sidebarOpen ? 'sidebar-open' : 'sidebar-collapsed'}`}
+      className={`side-nav-container ${isOpen ? "expanded" : ""} ${sidebarOpen ? "sidebar-open" : "sidebar-collapsed"}`}
     >
       {/* When closed: Top-right tab with ChevronDown */}
       {!isOpen && (
@@ -91,7 +89,7 @@ export const SideNavDrawer: React.FC<SideNavDrawerProps> = ({
                 <li key={option.id} className="side-nav-item">
                   <button
                     type="button"
-                    className={`side-nav-item-btn ${isActive ? 'active' : ''}`}
+                    className={`side-nav-item-btn ${isActive ? "active" : ""}`}
                     onClick={() => handleSelect(option.id)}
                   >
                     <span className="nav-item-text">{option.label}</span>
