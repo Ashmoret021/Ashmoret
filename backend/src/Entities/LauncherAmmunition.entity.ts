@@ -4,10 +4,10 @@ import { InterceptorType } from "./InterceptorType.entity";
 
 @Entity("launcher_ammunition")
 export class LauncherAmmunition {
-  @PrimaryColumn({ name: "launcher_id", type: "int" })
+  @PrimaryColumn({ type: "int", name: "launcher_id" })
   launcherId!: number;
 
-  @PrimaryColumn({ name: "interceptor_type_id", type: "int" })
+  @PrimaryColumn({ type: "int", name: "interceptor_type_id" })
   interceptorTypeId!: number;
 
   @Column({ type: "int" })

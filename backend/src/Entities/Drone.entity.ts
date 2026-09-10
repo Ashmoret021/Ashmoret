@@ -13,7 +13,7 @@ export class Drone {
   @PrimaryGeneratedColumn()
   id!: number;
 
-  @Column({ name: "drones_group_id", type: "int" })
+  @Column({ type: "int", name: "drones_group_id" })
   dronesGroupId!: number;
 
   @Column({ type: "float" })

@@ -55,6 +55,11 @@
             "type": "string",
             "nullable": false,
             "description": "שם קבוצת הרחפנים"
+          },
+          "description": {
+            "type": "string",
+            "nullable": true,
+            "description": "תיאור קבוצת הרחפנים"
           }
         }
       },
@@ -72,6 +77,11 @@
             "type": "string",
             "nullable": false,
             "description": "שם קבוצת המשגרים"
+          },
+          "description": {
+            "type": "string",
+            "nullable": true,
+            "description": "תיאור קבוצת המשגרים"
           }
         }
       },

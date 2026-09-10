@@ -38,8 +38,16 @@ export const updateDronesGroup = async (
     return null;
   }
 
+  const updatePayload: Partial<DronesGroup> = {};
   if (data.name !== undefined) {
-    await repo.update(id, { name: data.name });
+    updatePayload.name = data.name;
+  }
+  if (data.description !== undefined) {
+    updatePayload.description = data.description;
+  }
+
+  if (Object.keys(updatePayload).length > 0) {
+    await repo.update(id, updatePayload);
   }
 
   const updated = await repo.findOneBy({ id });

@@ -10,10 +10,10 @@ export class Scenario {
   @Column({ type: "varchar" })
   name!: string;
 
-  @Column({ name: "drones_group_id", type: "int" })
+  @Column({ type: "int", name: "drones_group_id" })
   dronesGroupId!: number;
 
-  @Column({ name: "launchers_group_id", type: "int" })
+  @Column({ type: "int", name: "launchers_group_id" })
   launchersGroupId!: number;
 
   @Column({ type: "varchar" })

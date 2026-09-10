@@ -15,7 +15,7 @@ export class Launcher {
   @PrimaryGeneratedColumn()
   id!: number;
 
-  @Column({ name: "launchers_group_id", type: "int" })
+  @Column({ type: "int", name: "launchers_group_id" })
   launchersGroupId!: number;
 
   @Column({ type: "float" })

@@ -5,6 +5,7 @@ import {
   onTick,
   pauseClock,
   resumeClock,
+  seekToTime,
   setSpeed,
   setState,
   startClock,
@@ -23,6 +24,7 @@ export interface SimulationContextValue {
   resumeClock: typeof resumeClock;
   stopClock: typeof stopClock;
   setSpeed: typeof setSpeed;
+  seekToTime: typeof seekToTime;
   onTick: typeof onTick;
   subscribe: typeof subscribe;
 }
