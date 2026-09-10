@@ -52,7 +52,7 @@ export enum InterceptorType {
   FalconClipH,
   SwarmMist5,
   MicroNetR,
-}
+}  
 
 export const InterceptorRange: Record<InterceptorType, number> = {
   [InterceptorType.BuzzStop15]: 10000,
