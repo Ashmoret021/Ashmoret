@@ -80,6 +80,7 @@ export type Drone = {
   agl: number;
   heading: number;
   velocity: number;
+  startTime?: number;
   /** FK to drone_type.id */
   type: number;
 };

@@ -6,6 +6,7 @@ export const getDroneRepository = () => AppDataSource.getRepository(Drone);
 
 export type DroneInput = Partial<Drone> & {
   drones_group_id?: number;
+  start_time?: number;
 };
 
 export const getAllDrones = async (
@@ -37,6 +38,7 @@ export const createDrone = async (data: DroneInput): Promise<Drone> => {
     agl: data.agl,
     heading: data.heading,
     velocity: data.velocity,
+    startTime: data.startTime ?? data.start_time ?? 0,
     type: data.type,
   });
   const saved = await repo.save(drone);
@@ -64,6 +66,9 @@ export const updateDrone = async (
   if (data.agl !== undefined) updatePayload.agl = data.agl;
   if (data.heading !== undefined) updatePayload.heading = data.heading;
   if (data.velocity !== undefined) updatePayload.velocity = data.velocity;
+  if (data.startTime !== undefined || data.start_time !== undefined) {
+    updatePayload.startTime = data.startTime ?? data.start_time;
+  }
   if (data.type !== undefined) updatePayload.type = data.type;
 
   await repo.update(id, updatePayload as any);
