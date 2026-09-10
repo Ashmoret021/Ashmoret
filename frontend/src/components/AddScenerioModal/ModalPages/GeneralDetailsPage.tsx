@@ -110,7 +110,7 @@ export const GeneralDetailsPage: FC<GeneralDetailsPageProps> = ({
   setCanMovePage
 }) => {
   const [internalName, setInternalName] = useState("");
-  const [internalType, setInternalType] = useState("Single");
+  const [internalType, setInternalType] = useState("יחיד");
 
   const scenarioName = data?.scenarioName ?? internalName;
   const scenarioType = data?.scenarioType ?? internalType;
@@ -159,8 +159,8 @@ export const GeneralDetailsPage: FC<GeneralDetailsPageProps> = ({
             onChange={handleSelectChange}
             MenuProps={menuPropsSx}
           >
-            <MenuItem value="Single">חד זירתי</MenuItem>
-            <MenuItem value="Multi">רב-זירתי</MenuItem>
+            <MenuItem value="יחיד">יחיד</MenuItem>
+            <MenuItem value="רב-מערכתי">רב מערכתי</MenuItem>
           </Select>
         </FormControl>
       </Stack>
