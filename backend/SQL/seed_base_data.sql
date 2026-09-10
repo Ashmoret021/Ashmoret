@@ -5,7 +5,8 @@
 --
 -- Run AFTER the supplied init.sql, against the same PostgreSQL database:
 --   psql -d ashmoret -v ON_ERROR_STOP=1 -f seed_base_data.sql
--- This file uses the public schema. Change the search_path below if needed.
+-- This file uses the scenario_management schema (matching init.sql / the app's
+-- DataSource config). Change the search_path below if needed.
 --
 -- SCHEMA CHANGES INCLUDED:
 --   Adds workbook attributes to the three type tables and creates two
@@ -38,7 +39,7 @@
 --   matching the source rows rather than inferring model-wide values.
 
 BEGIN;
-SET LOCAL search_path = public, pg_catalog;
+SET LOCAL search_path = scenario_management, pg_catalog;
 SET LOCAL standard_conforming_strings = on;
 
 DO $preflight$

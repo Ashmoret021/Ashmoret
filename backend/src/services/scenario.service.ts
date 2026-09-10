@@ -1,6 +1,6 @@
 import { AppDataSource } from '../config/db';
 import { Scenario } from '../Entities';
-import { logger } from '../utils/logger';
+import { logger } from '../middleware/logger';
 
 export const getScenarioRepository = () => AppDataSource.getRepository(Scenario);
 

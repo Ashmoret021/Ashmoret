@@ -7,7 +7,7 @@ export class LaunchersGroup {
   @PrimaryGeneratedColumn()
   id!: number;
 
-  @Column()
+  @Column({ type: "varchar" })
   name!: string;
 
   @OneToMany(() => Launcher, (launcher: Launcher) => launcher.launchersGroup)

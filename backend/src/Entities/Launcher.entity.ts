@@ -15,7 +15,7 @@ export class Launcher {
   @PrimaryGeneratedColumn()
   id!: number;
 
-  @Column({ name: "launchers_group_id" })
+  @Column({ name: "launchers_group_id", type: "int" })
   launchersGroupId!: number;
 
   @Column({ type: "float" })
@@ -30,10 +30,10 @@ export class Launcher {
   @Column({ type: "float" })
   agl!: number;
 
-  @Column()
+  @Column({ type: "int" })
   type!: number;
 
-  @Column()
+  @Column({ type: "int" })
   amount!: number;
 
   @Column({ type: "boolean" })

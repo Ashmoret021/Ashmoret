@@ -3,6 +3,9 @@
 -- in backend/src/Entities. Safe to re-run: each table is dropped (if it exists) before
 -- being recreated.
 
+CREATE SCHEMA IF NOT EXISTS scenario_management;
+SET search_path TO scenario_management;
+
 -- ==========================================================================
 -- Lookup / reference tables
 -- ==========================================================================

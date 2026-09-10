@@ -13,7 +13,7 @@ export class Drone {
   @PrimaryGeneratedColumn()
   id!: number;
 
-  @Column({ name: "drones_group_id" })
+  @Column({ name: "drones_group_id", type: "int" })
   dronesGroupId!: number;
 
   @Column({ type: "float" })
@@ -34,7 +34,7 @@ export class Drone {
   @Column({ type: "float" })
   velocity!: number;
 
-  @Column()
+  @Column({ type: "int" })
   type!: number;
 
   @ManyToOne(
