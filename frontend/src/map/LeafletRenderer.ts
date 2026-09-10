@@ -407,7 +407,7 @@ export class LeafletRenderer {
           this.interceptorMarkers.delete(id);
         }
 
-        // Show flash explosion icon
+        // Show flash explosion icon at the exact intercept point (created once per explosion)
         if (!this.flashMarkers.has(id)) {
           const flash = L.marker(toLeaflet(ivs.interceptPoint), {
             icon: createInterceptionFlashIcon(),

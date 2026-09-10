@@ -55,6 +55,7 @@ interface MainLayoutProps {
   layersOpen?: boolean;
   onLayersToggle?: () => void;
   layersMenuRef?: React.RefObject<HTMLDivElement | null>;
+  onSimControlsVisibilityChange?: (show: boolean) => void;
 }
 
 export const MainLayout: React.FC<MainLayoutProps> = ({
@@ -73,6 +74,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
   layersOpen = false,
   onLayersToggle,
   layersMenuRef,
+  onSimControlsVisibilityChange,
 }) => {
 
   const [selectedGroup, setSelectedGroup] = useState<
@@ -81,6 +83,15 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
   const [rulerActive, setRulerActive] = useState(false);
   const [navView, setNavView] = useState<NavViewMode>("home");
   const [selectedScenario, setSelectedScenario] = useState<ScenarioItem | null>(null);
+  const [showSimControls, setShowSimControls] = useState(false);
+
+  const handleShowControlsChange = (show: boolean) => {
+    setShowSimControls(show);
+    onSimControlsVisibilityChange?.(show);
+    if (show) {
+      startClock();
+    }
+  };
 
   const {dronesGroups, setDronesGroups} = useGetAllDronesGroups();
   const {launchersGroups, setLaunchersGroups} = useGetAllLaunchersGroups();
@@ -278,6 +289,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
                 selectedScenarioId={selectedScenario?.id}
                 onScenarioSelect={handleScenarioSelect}
                 onCreateScenario={handleCreateScenario}
+                onShowControlsChange={handleShowControlsChange}
               />
             )}
             <AddScenerioModal
@@ -292,6 +304,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
                 scenarios={INITIAL_SCENARIOS}
                 onScenarioSelect={handleScenarioSelect}
                 onCreateScenario={handleCreateScenario}
+                onShowControlsChange={handleShowControlsChange}
               />
             )}
 
