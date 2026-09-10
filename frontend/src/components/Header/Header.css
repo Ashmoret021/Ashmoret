@@ -1,0 +1,229 @@
+.tactical-header {
+  height: 58px;
+  width: 100%;
+  background: linear-gradient(180deg, #0d1424 0%, #090e1b 100%);
+  border-bottom: 1px solid #16243b;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 18px;
+  z-index: 1000;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.45);
+  font-family: 'Assistant', 'Heebo', sans-serif;
+  direction: rtl;
+  user-select: none;
+}
+
+/* Right Section */
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+}
+
+.system-branding {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.brand-logo-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.brand-logo-img {
+  height: 36px;
+  width: 36px;
+  object-fit: contain;
+  border-radius: 50%;
+  border: 1px solid #2563eb;
+}
+
+.brand-logo-badge {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #1d4ed8 0%, #0f2766 80%);
+  border: 1.5px solid #38bdf8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 10px rgba(56, 189, 248, 0.35);
+}
+
+.brand-crosshair-icon {
+  color: #f0f6fc;
+}
+
+.brand-titles {
+  display: flex;
+  flex-direction: column;
+}
+
+.system-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #f1f5f9;
+  letter-spacing: 0.3px;
+  line-height: 1.2;
+}
+
+.system-subtitle {
+  font-size: 9.5px;
+  font-weight: 600;
+  color: #64748b;
+  letter-spacing: 1.5px;
+  font-family: 'Segoe UI', Tahoma, sans-serif;
+}
+
+.header-mode-indicator {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.5px;
+  color: #94a3b8;
+  border-right: 1px solid #1a2942;
+  padding-right: 20px;
+}
+
+.mode-label {
+  color: #64748b;
+}
+
+.mode-value {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #38bdf8;
+  font-weight: 500;
+}
+
+.mode-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: #38bdf8;
+  box-shadow: 0 0 6px #38bdf8;
+}
+
+/* Left Section */
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.scenario-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.5px;
+  margin-left: 10px;
+}
+
+.scenario-label {
+  color: #64748b;
+}
+
+.scenario-name {
+  color: #e2e8f0;
+  font-weight: 600;
+}
+
+.status-pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.safe-mode-pill {
+  background: rgba(30, 41, 59, 0.6);
+  border: 1px solid #1e293b;
+  color: #94a3b8;
+}
+
+.safe-icon {
+  color: #38bdf8;
+}
+
+.connection-pill {
+  background: rgba(16, 32, 28, 0.7);
+  border: 1px solid rgba(34, 197, 94, 0.25);
+  color: #4ade80;
+}
+
+.pulse-indicator {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: #22c55e;
+  box-shadow: 0 0 8px #22c55e;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7);
+  }
+  70% {
+    transform: scale(1.05);
+    box-shadow: 0 0 0 6px rgba(34, 197, 94, 0);
+  }
+  100% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(34, 197, 94, 0);
+  }
+}
+
+.wifi-icon {
+  color: #22c55e;
+}
+
+.sim-id-pill {
+  background: #111a2e;
+  border: 1px solid #1e2d4d;
+  color: #94a3b8;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+}
+
+.sim-icon {
+  color: #64748b;
+}
+
+.header-action-btn {
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+.header-action-btn:hover {
+  background: #16243d;
+  color: #f1f5f9;
+}
+
+.notification-dot {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  width: 5px;
+  height: 5px;
+  background-color: #ef4444;
+  border-radius: 50%;
+  box-shadow: 0 0 4px #ef4444;
+}

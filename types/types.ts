@@ -14,10 +14,10 @@ export type Drone = {
 };
 
 export enum DroneType {
-  SkyMiteC7,
-  LoadBeeM2,
-  FalconLongX4,
-  NanoSwarmQ9,
+  SkyMiteC7 = 'SkyMiteC7',
+  LoadBeeM2 = 'LoadBeeM2',
+  FalconLongX4 = 'FalconLongX4',
+  NanoSwarmQ9 = 'NanoSwarmQ9',
 }
 
 export type Launcher = {
@@ -52,7 +52,7 @@ export enum InterceptorType {
   FalconClipH,
   SwarmMist5,
   MicroNetR,
-}
+}  
 
 export const InterceptorRange: Record<InterceptorType, number> = {
   [InterceptorType.BuzzStop15]: 10000,
