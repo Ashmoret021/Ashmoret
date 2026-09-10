@@ -9,6 +9,8 @@ import {
   Stack,
 } from "@mui/material";
 import { FC, useState } from "react";
+import { useGetAllDronesGroups } from "../../../api/hooks";
+import { DroneGroup } from "../../../types/types";
 
 export interface DroneSelectionPageProps {
   selectedGroup?: string;
@@ -98,31 +100,20 @@ const menuPropsSx = {
   },
 };
 
-interface GroupItem {
-  id: string;
-  label: string;
-}
-
-const DEFAULT_GROUPS: GroupItem[] = [
-  { id: "group-1", label: "קבוצה 1 - נחיל סיור ותצפית" },
-  { id: "group-2", label: "קבוצה 2 - נחיל תקיפה" },
-  { id: "group-3", label: "קבוצה 3 - נחיל שיבוש וחסימה" },
-];
-
 export const DroneSelectionPage: FC<DroneSelectionPageProps> = ({
   selectedGroup: propGroup,
   onSelectGroup,
 }) => {
   const [internalGroup, setInternalGroup] = useState<string>("group-1");
-  const [groups] = useState<GroupItem[]>(DEFAULT_GROUPS);
+  const {dronesGroups} = useGetAllDronesGroups();
 
   const currentGroup = propGroup ?? internalGroup;
 
   const handleSelectChange = (event: SelectChangeEvent) => {
     const val = event.target.value;
     setInternalGroup(val);
-    const chosen = groups.find((g) => g.id === val);
-    onSelectGroup?.(val, chosen?.label);
+    const chosen = dronesGroups?.data?.find((g: DroneGroup) => g.id === val);
+    onSelectGroup?.(val, chosen?.name);
   };
 
   return (
@@ -138,9 +129,9 @@ export const DroneSelectionPage: FC<DroneSelectionPageProps> = ({
             onChange={handleSelectChange}
             MenuProps={menuPropsSx}
           >
-            {groups.map((g) => (
+            {dronesGroups?.data?.map((g: DroneGroup) => (
               <MenuItem key={g.id} value={g.id}>
-                {g.label}
+                {g.name}
               </MenuItem>
             ))}
           </Select>

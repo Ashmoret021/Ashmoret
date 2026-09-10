@@ -1,3 +1,5 @@
+import type { Scenario } from '../simulation/SimulationContext';
+
 export type Location = {
   longitude: number;
   latitude: number;
@@ -28,6 +30,22 @@ export type Launcher = {
   active: boolean;
   ammunition: [InterceptorType, number][];
 };
+
+export type LauncherGroup = {
+  id: string;
+  name: string;
+  description?: string;
+  launchers: Launcher[];
+  scenerios: Scenario[];
+}
+
+export type DroneGroup = {
+  id: string;
+  name: string;
+  description?: string;
+  drones: Drone[];
+  scenerios: Scenario[];
+}
 
 export enum LauncherType {
   ShieldNestLite,

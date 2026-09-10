@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import api from "../index";
 
-const useGetAllDronesGroups = () => {
+export const useGetAllDronesGroups = () => {
   const [dronesGroups, setDronesGroups] = useState<any>([]);
 
   useEffect(() => {
@@ -22,7 +22,7 @@ const useGetAllDronesGroups = () => {
   return { dronesGroups, setDronesGroups };
 };
 
-const useGetAllLaunchersGroups = () => {
+export const useGetAllLaunchersGroups = () => {
   const [launchersGroups, setLaunchersGroups] = useState<any>([]);
 
   useEffect(() => {

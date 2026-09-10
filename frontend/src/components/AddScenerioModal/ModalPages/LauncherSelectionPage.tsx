@@ -9,6 +9,8 @@ import {
   Stack,
 } from "@mui/material";
 import { FC, useState } from "react";
+import { useGetAllLaunchersGroups } from "../../../api/hooks";
+import { LauncherGroup } from "../../../types/types";
 
 export interface LauncherSelectionPageProps {
   selectedGroup?: string;
@@ -114,15 +116,15 @@ export const LauncherSelectionPage: FC<LauncherSelectionPageProps> = ({
   onSelectGroup,
 }) => {
   const [internalGroup, setInternalGroup] = useState<string>("battery-1");
-  const [batteries] = useState<BatteryItem[]>(DEFAULT_BATTERIES);
+  const {launchersGroups} = useGetAllLaunchersGroups();
 
   const currentGroup = propGroup ?? internalGroup;
 
   const handleSelectChange = (event: SelectChangeEvent) => {
     const val = event.target.value;
     setInternalGroup(val);
-    const chosen = batteries.find((b) => b.id === val);
-    onSelectGroup?.(val, chosen?.label);
+    const chosen = launchersGroups?.data?.find((b: LauncherGroup) => b.id === val);
+    onSelectGroup?.(val, chosen?.name);
   };
 
   return (
@@ -138,9 +140,9 @@ export const LauncherSelectionPage: FC<LauncherSelectionPageProps> = ({
             onChange={handleSelectChange}
             MenuProps={menuPropsSx}
           >
-            {batteries.map((b) => (
+            {launchersGroups?.data?.map((b: LauncherGroup) => (
               <MenuItem key={b.id} value={b.id}>
-                {b.label}
+                {b.name}
               </MenuItem>
             ))}
           </Select>
