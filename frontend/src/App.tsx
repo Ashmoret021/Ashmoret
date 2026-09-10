@@ -1,55 +1,155 @@
-import { useEffect, useRef, useState } from 'react';
-import L from 'leaflet';
-import 'leaflet/dist/leaflet.css';
-import { DefenseSide } from './components/DefenseSide/defenseSide';
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
-import { useSimulation } from './simulation/useSimulation';
-import { SimulationControls } from './ui/SimulationControls';
-import { SimulationStats } from './ui/SimulationStats';
+import { useEffect, useRef, useState } from "react";
+import L from "leaflet";
+import "leaflet/dist/leaflet.css";
+import {
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+} from "@mui/material";
+import { useSimulation } from "./simulation/useSimulation";
+import { SimulationControls } from "./ui/SimulationControls";
+import { SimulationStats } from "./ui/SimulationStats";
+import { DefenseSide } from "./components/DefenseSide/defenseSide";
+import { Drone, DroneType } from "./types/types";
+import DroneModal from "./components/DroneModal/DroneModal";
+import axios from "axios";
 
 export default function App() {
   const mapRef = useRef<HTMLDivElement | null>(null);
-  const [isStateDialogOpen, setIsStateDialogOpen] = useState(false);
-  const { state, pauseClock, resumeClock, setSpeed, startClock } = useSimulation();
+
+  const [isStateDialogOpen, setIsStateDialogOpen] =
+    useState(false);
+
+  const {
+    state,
+    pauseClock,
+    resumeClock,
+    setSpeed,
+    startClock,
+  } = useSimulation();
+
   const [map, setMap] = useState<L.Map | null>(null);
+
+  const [layers, setLayers] = useState<string[]>([
+    "🗺️ מפה רגילה",
+  ]);
+
+  useEffect(() => {
+    console.log("Active layers:", layers);
+  }, [layers]);
 
   useEffect(() => {
     if (!mapRef.current) {
       return;
     }
 
-    const mapInstance = L.map(mapRef.current).setView([31.0461, 34.8516], 6);
+    const mapInstance = L.map(mapRef.current).setView(
+      [31.0461, 34.8516],
+      6,
+    );
 
     const streetLayer = L.tileLayer(
       "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
       {
-        attribution: "&copy; OpenStreetMap contributors",
+        attribution:
+          "&copy; OpenStreetMap contributors",
       },
     );
 
     const satelliteLayer = L.tileLayer(
       "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
       {
-        attribution: "Tiles &copy; Esri",
+        attribution:
+          "Tiles &copy; Esri",
       },
     );
 
-    streetLayer.addTo(mapInstance);
+    const darkLayer = L.tileLayer(
+      "https://tiles.stadiamaps.com/tiles/stamen_toner_dark/{z}/{x}/{y}{r}.png",
+      {
+        maxZoom: 20,
+        attribution:
+          '&copy; <a href="https://stadiamaps.com/">Stadia Maps</a> ' +
+          '&copy; <a href="https://stamen.com/">Stamen Design</a> ' +
+          '&copy; <a href="https://openstreetmap.org/">OpenStreetMap</a>',
+      },
+    );
+
+    darkLayer.addTo(mapInstance);
 
     const baseMaps = {
+      "🌙 מפה כהה": darkLayer,
       "🗺️ מפה רגילה": streetLayer,
       "🛰️ צילום לווייני": satelliteLayer,
     };
 
-    L.control.layers(baseMaps).addTo(mapInstance);
+    const layerControl = L.control
+      .layers(baseMaps)
+      .addTo(mapInstance);
 
-    fetch("/CITIES.geojson")
-      .then((response) => response.json())
-      .then((data) => {
-        L.geoJSON(data).addTo(mapInstance);
+    layerControl
+      .getContainer()
+      ?.classList.add(
+        "top-center-layer-control",
+      );
+
+    const baseLayerNames =
+      Object.keys(baseMaps);
+
+    mapInstance.on(
+      "baselayerchange",
+      (e: L.LayersControlEvent) => {
+        setLayers((prev) => [
+          ...prev.filter(
+            (name) =>
+              !baseLayerNames.includes(name),
+          ),
+          e.name,
+        ]);
+      },
+    );
+
+    mapInstance.on(
+      "overlayadd",
+      (e: L.LayersControlEvent) => {
+        setLayers((prev) => [
+          ...prev.filter(
+            (name) => name !== e.name,
+          ),
+          e.name,
+        ]);
+      },
+    );
+
+    mapInstance.on(
+      "overlayremove",
+      (e: L.LayersControlEvent) => {
+        setLayers((prev) =>
+          prev.filter(
+            (name) => name !== e.name,
+          ),
+        );
+      },
+    );
+
+    axios
+      .get("/CITIES.geojson")
+      .then((response) => {
+        const citiesLayer =
+          L.geoJSON(response.data);
+
+        layerControl.addOverlay(
+          citiesLayer,
+          "🏙️ ערים",
+        );
       })
-      .catch((err) => {
-        console.error("Error loading CITIES.geojson:", err);
+      .catch((error) => {
+        console.error(
+          "Failed to load cities layer:",
+          error,
+        );
       });
 
     setMap(mapInstance);
@@ -60,9 +160,17 @@ export default function App() {
     };
   }, []);
 
-  const stateJson = JSON.stringify(state, null, 2);
-  const isRunning = state.status === 'running';
-  const isPaused = state.status === 'paused';
+  const stateJson = JSON.stringify(
+    state,
+    null,
+    2,
+  );
+
+  const isRunning =
+    state.status === "running";
+
+  const isPaused =
+    state.status === "paused";
 
   const toggleClock = () => {
     if (isRunning) {
@@ -74,70 +182,164 @@ export default function App() {
     }
   };
 
+  const drone: Drone = {
+    id: 1,
+
+    location: {
+      agl: 1,
+      asl: 1,
+      latitude: 31,
+      longitude: 34,
+    },
+
+    type: DroneType.FalconLongX4,
+
+    velocity: 67,
+
+    heading: 3,
+  };
+
+  const [selectedDrone, setSelectedDrone] =
+    useState<Drone | null>(drone);
+
   return (
-    <div style={{ height: '100vh', position: 'relative', width: '100vw', overflow: 'hidden' }}>
-      <div ref={mapRef} style={{ height: '100%', width: '100%' }} />
-      <Button
-        onClick={() => setIsStateDialogOpen(true)}
-        style={{ left: 16, position: 'absolute', top: 16, zIndex: 1000 }}
-        variant="contained"
+    <>
+      <style>
+        {`
+          .top-center-layer-control {
+            position: fixed !important;
+            top: 20px !important;
+            left: 50% !important;
+          }
+        `}
+      </style>
+
+      <div
+        style={{
+          height: "100vh",
+          position: "relative",
+          width: "100vw",
+          overflow: "hidden",
+        }}
       >
-        View simulation state
-      </Button>
+        {selectedDrone && (
+          <DroneModal
+            drone={selectedDrone}
+            estimatedDamage="1"
+            flightDistance={300}
+            droneName="meofefi"
+            hebrewName="מעופפי"
+            onClose={() =>
+              setSelectedDrone(null)
+            }
+          />
+        )}
 
-      {/* Mission 4.2: Simulation Stats HUD */}
-      <SimulationStats />
+        <div
+          ref={mapRef}
+          style={{
+            height: "100%",
+            width: "100%",
+          }}
+        />
 
-      {/* Mission 4.1: Simulation Control Bar */}
-      <SimulationControls />
+        <Button
+          onClick={() =>
+            setIsStateDialogOpen(true)
+          }
+          style={{
+            left: 16,
+            position: "absolute",
+            top: 16,
+            zIndex: 1000,
+          }}
+          variant="contained"
+        >
+          View simulation state
+        </Button>
 
-      {/* Defense Side Panel & Trigger */}
-      <DefenseSide map={map} />
+        {/* Mission 4.2: Simulation Stats HUD */}
+        <SimulationStats />
 
-      <Dialog
-        fullWidth
-        maxWidth="md"
-        onClose={() => setIsStateDialogOpen(false)}
-        open={isStateDialogOpen}
-      >
-        <DialogTitle>Simulation state</DialogTitle>
-        <DialogContent>
-          <pre
-            style={{
-              backgroundColor: '#f5f5f5',
-              borderRadius: 4,
-              fontFamily: 'monospace',
-              fontSize: 13,
-              margin: 0,
-              maxHeight: '60vh',
-              overflow: 'auto',
-              padding: 16,
-              whiteSpace: 'pre-wrap',
-              wordBreak: 'break-word',
-            }}
-          >
-            {stateJson}
-          </pre>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={toggleClock}>
-            {isRunning ? 'Pause clock' : 'Run clock'}
-          </Button>
-          <select
-            aria-label="Simulation speed"
-            value={state.speedMultiplier}
-            onChange={(event) => setSpeed(Number(event.target.value) as 1 | 2 | 5 | 10)}
-          >
-            {[1, 2, 5, 10].map((speed) => (
-              <option key={speed} value={speed}>
-                x{speed}
-              </option>
-            ))}
-          </select>
-          <Button onClick={() => setIsStateDialogOpen(false)}>Close</Button>
-        </DialogActions>
-      </Dialog>
-    </div>
+        {/* Mission 4.1: Simulation Control Bar */}
+        <SimulationControls />
+
+        {/* Defense Side Panel & Trigger */}
+        <DefenseSide map={map} />
+
+        <Dialog
+          fullWidth
+          maxWidth="md"
+          onClose={() =>
+            setIsStateDialogOpen(false)
+          }
+          open={isStateDialogOpen}
+        >
+          <DialogTitle>
+            Simulation state
+          </DialogTitle>
+
+          <DialogContent>
+            <pre
+              style={{
+                backgroundColor: "#f5f5f5",
+                borderRadius: 4,
+                fontFamily: "monospace",
+                fontSize: 13,
+                margin: 0,
+                maxHeight: "60vh",
+                overflow: "auto",
+                padding: 16,
+                whiteSpace: "pre-wrap",
+                wordBreak: "break-word",
+              }}
+            >
+              {stateJson}
+            </pre>
+          </DialogContent>
+
+          <DialogActions>
+            <Button onClick={toggleClock}>
+              {isRunning
+                ? "Pause clock"
+                : "Run clock"}
+            </Button>
+
+            <select
+              aria-label="Simulation speed"
+              value={
+                state.speedMultiplier
+              }
+              onChange={(event) =>
+                setSpeed(
+                  Number(
+                    event.target.value,
+                  ) as 1 | 2 | 5 | 10,
+                )
+              }
+            >
+              {[1, 2, 5, 10].map(
+                (speed) => (
+                  <option
+                    key={speed}
+                    value={speed}
+                  >
+                    x{speed}
+                  </option>
+                ),
+              )}
+            </select>
+
+            <Button
+              onClick={() =>
+                setIsStateDialogOpen(false)
+              }
+            >
+              Close
+            </Button>
+          </DialogActions>
+        </Dialog>
+      </div>
+    </>
   );
 }
-
