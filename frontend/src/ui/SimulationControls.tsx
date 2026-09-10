@@ -56,8 +56,15 @@ export const SimulationControls: React.FC<{ onRestart?: () => void }> = ({ onRes
     if (isRunning) {
       pauseClock();
     } else if (isFinished) {
-      onRestart?.();
-      startClock();
+      if (state.simulationTime >= state.maxSimulationTime) {
+        // Scrubber is at the end — full restart then run from scratch.
+        onRestart?.();
+        startClock();
+      } else {
+        // User seeked to an earlier position — resume replay from there.
+        // Do NOT call onRestart: it would wipe the history and seeked position.
+        startClock();
+      }
     } else if (isPaused) {
       resumeClock();
     } else {
