@@ -1,7 +1,6 @@
 /**
  * map/icons.ts
  *
- * Developer 3 – Mission 3.5
  * Custom SVG icons for Leaflet simulation entities.
  *
  * Entities:
@@ -128,19 +127,25 @@ export function createInterceptionFlashIcon(): L.DivIcon {
     iconSize: [36, 36],
     iconAnchor: [18, 18],
     html: `
-      <div style="
-        width: 36px;
-        height: 36px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        animation: pulseFlash 0.8s ease-out forwards;
-      ">
-        <svg viewBox="0 0 24 24" width="34" height="34" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <!-- Multi-point starburst explosion -->
-          <path d="M12 0L14 8L22 4L17 12L24 15L16 17L18 24L12 18L6 24L8 17L0 15L7 12L2 4L10 8L12 0Z" fill="#facc15" stroke="#f59e0b" stroke-width="1" />
-          <circle cx="12" cy="12" r="4" fill="#ffffff" />
-        </svg>
+      <div class="explosion-container">
+        <!-- Bright Flashbang Core -->
+        <div class="explosion-flash-core"></div>
+        <!-- Fireball Smoke & Flame Expansion -->
+        <div class="explosion-fireball"></div>
+        <!-- High-Speed Shockwave Ring -->
+        <div class="explosion-shockwave-fast"></div>
+        <!-- Outer Atmospheric Pressure Shockwave -->
+        <div class="explosion-shockwave-slow"></div>
+        <!-- Flying Debris Sparks SVG -->
+        <div class="explosion-sparks">
+          <svg viewBox="0 0 100 100" width="100%" height="100%" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="20" cy="25" r="2" fill="#fef08a"/>
+            <circle cx="80" cy="30" r="1.5" fill="#f97316"/>
+            <circle cx="75" cy="75" r="2.5" fill="#fbbf24"/>
+            <circle cx="25" cy="80" r="1.8" fill="#ef4444"/>
+            <path d="M50 50 L20 15 M50 50 L85 20 M50 50 L80 80 M50 50 L15 75" stroke="#fde047" stroke-width="1.2" stroke-linecap="round" stroke-dasharray="3 4"/>
+          </svg>
+        </div>
       </div>
     `,
   });
@@ -152,25 +157,41 @@ export function createInterceptionFlashIcon(): L.DivIcon {
 export function createImpactIcon(label?: string): L.DivIcon {
   return L.divIcon({
     className: 'ashmoret-marker-impact',
-    iconSize: [32, 32],
-    iconAnchor: [16, 16],
+    iconSize: [36, 36],
+    iconAnchor: [18, 18],
     html: `
       <div style="
-        width: 32px;
-        height: 32px;
+        position: relative;
+        width: 36px;
+        height: 36px;
         display: flex;
         align-items: center;
         justify-content: center;
-        filter: drop-shadow(0 2px 6px rgba(249, 115, 22, 0.8));
+        filter: drop-shadow(0 2px 8px rgba(239, 68, 68, 0.85));
       ">
-        <svg viewBox="0 0 24 24" width="28" height="28" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <!-- Impact blast with concentric crater shockwaves -->
-          <circle cx="12" cy="12" r="10" stroke="#f97316" stroke-width="1.5" stroke-dasharray="3 2" fill="rgba(249,115,22,0.2)"/>
-          <path d="M12 2L15 9L22 9L17 14L19 21L12 17L5 21L7 14L2 9L9 9L12 2Z" fill="#ea580c" stroke="#fed7aa" stroke-width="1"/>
-          <circle cx="12" cy="12" r="3" fill="#ffffff" />
+        <svg viewBox="0 0 60 60" width="36" height="36" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Expanding Ground Blast Wave -->
+          <circle cx="30" cy="30" r="24" stroke="#f97316" stroke-width="2" stroke-dasharray="6 4" fill="rgba(239, 68, 68, 0.25)">
+            <animate attributeName="r" values="10;24;20" dur="1.5s" repeatCount="indefinite"/>
+            <animate attributeName="opacity" values="1;0.4;0.8" dur="1.5s" repeatCount="indefinite"/>
+          </circle>
+          <!-- Crater Burst Star -->
+          <path d="M30 5 L35 22 L52 22 L38 33 L44 50 L30 40 L16 50 L22 33 L8 22 L25 22 Z" fill="url(#impactGrad)" stroke="#fee2e2" stroke-width="1.5"/>
+          <circle cx="30" cy="30" r="5" fill="#ffffff"/>
+          <defs>
+            <radialGradient id="impactGrad" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stop-color="#ffffff"/>
+              <stop offset="40%" stop-color="#f97316"/>
+              <stop offset="100%" stop-color="#991b1b"/>
+            </radialGradient>
+          </defs>
         </svg>
+        ${
+          label
+            ? `<div style="position: absolute; bottom: -12px; left: 50%; transform: translateX(-50%); white-space: nowrap; font-size: 9px; font-weight: 800; color: #fca5a5; background: rgba(15,23,42,0.92); padding: 1px 5px; border-radius: 4px; border: 1px solid rgba(239, 68, 68, 0.5); pointer-events: none; letter-spacing: 0.3px;">${label}</div>`
+            : ''
+        }
       </div>
-      ${label ? `<div style="position: absolute; bottom: -12px; left: 50%; transform: translateX(-50%); white-space: nowrap; font-size: 10px; font-weight: 700; color: #fdba74; background: rgba(15,23,42,0.85); padding: 1px 4px; border-radius: 4px; border: 1px solid rgba(249,115,22,0.4); pointer-events: none;">${label}</div>` : ''}
     `,
   });
 }
