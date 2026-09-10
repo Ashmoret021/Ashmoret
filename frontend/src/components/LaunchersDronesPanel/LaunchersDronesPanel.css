@@ -1,7 +1,8 @@
-/* Events Panel Layout */
-.events-panel-wrapper {
+/* LaunchersDrones Panel Layout */
+.launchers-drones-panel-wrapper {
   position: absolute;
   top: 0;
+  /* below header */
   right: 0;
   bottom: 0;
   width: 385px;
@@ -17,7 +18,7 @@
   box-shadow: -4px 0 20px rgba(0, 0, 0, 0.5);
 }
 
-.events-panel-wrapper.collapsed {
+.launchers-drones-panel-wrapper.collapsed {
   transform: translateX(100%);
 }
 
@@ -49,7 +50,7 @@
 }
 
 /* Inner scrollable content */
-.events-panel-content {
+.launchers-drones-panel-content {
   display: flex;
   flex-direction: column;
   height: 100%;
@@ -58,7 +59,7 @@
 }
 
 /* Top Header */
-.events-top-header {
+.launchers-drones-top-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -104,7 +105,7 @@
 }
 
 /* Filter Section */
-.events-filter-container {
+.launchers-drones-filter-container {
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -202,6 +203,8 @@
   gap: 8px;
   cursor: pointer;
   transition: all 0.2s ease;
+  direction: rtl;
+  text-align: right;
 }
 
 .scenario-card:hover {
@@ -233,7 +236,7 @@
 }
 
 .scenario-title {
-  font-size: 13.5px;
+  font-size: 14.5px;
   font-weight: 700;
   color: #f1f5f9;
   margin: 0;
@@ -249,19 +252,19 @@
 
 .severity-low {
   background: rgba(34, 197, 94, 0.12);
-  border: 1px solid rgba(34, 197, 94, 0.35);
+  border: 1px solid rgba(34, 197, 94, 0.25);
   color: #4ade80;
 }
 
 .severity-high {
   background: rgba(245, 158, 11, 0.12);
-  border: 1px solid rgba(245, 158, 11, 0.35);
+  border: 1px solid rgba(245, 158, 11, 0.25);
   color: #fbbf24;
 }
 
 .severity-extreme {
-  background: rgba(239, 68, 68, 0.14);
-  border: 1px solid rgba(239, 68, 68, 0.35);
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid rgba(239, 68, 68, 0.25);
   color: #f87171;
 }
 
@@ -269,7 +272,8 @@
 .card-meta-row {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;
+  gap: 16px;
   font-size: 12px;
 }
 
@@ -298,21 +302,23 @@
 }
 
 .meta-icon {
-  color: #38bdf8;
+  color: #64748b;
+  flex-shrink: 0;
 }
 
 /* Locations Row */
 .card-locations-row {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;
+  gap: 8px;
   font-size: 11.5px;
 }
 
 .entry-point-label-wrap {
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 4px;
 }
 
 .entry-point-tags {
@@ -322,9 +328,9 @@
 }
 
 .location-tag {
-  background: rgba(239, 68, 68, 0.18);
-  border: 1px solid rgba(239, 68, 68, 0.45);
-  color: #fca5a5;
+  background: rgba(239, 68, 68, 0.12);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  color: #f87171;
   font-size: 11px;
   font-weight: 600;
   padding: 1px 7px;
@@ -335,49 +341,59 @@
 .card-drone-types-row {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 
 .drone-type-badges {
   display: flex;
   align-items: center;
   gap: 5px;
+  flex-wrap: wrap;
 }
 
 .drone-type-badge {
-  width: 19px;
-  height: 19px;
+  min-width: 20px;
+  width: auto;
+  height: 20px;
+  padding: 0 6px;
   border-radius: 4px;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
   font-size: 10.5px;
   font-weight: 700;
-  color: #ffffff;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+  white-space: nowrap;
+  box-sizing: border-box;
 }
 
 .badge-type-a {
-  background: #ea580c; /* Orange */
-  border: 1px solid #f97316;
+  background: rgba(234, 179, 8, 0.12);
+  border: 1px solid rgba(234, 179, 8, 0.25);
+  color: #fbbf24;
 }
 
 .badge-type-b {
-  background: #dc2626; /* Red */
-  border: 1px solid #ef4444;
+  background: rgba(239, 68, 68, 0.12);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  color: #f87171;
 }
 
 .badge-type-c {
-  background: #9333ea; /* Purple */
-  border: 1px solid #a855f7;
+  background: rgba(168, 85, 247, 0.14);
+  border: 1px solid rgba(168, 85, 247, 0.25);
+  color: #c084fc;
 }
 
 .badge-type-d {
-  background: #db2777; /* Pink */
-  border: 1px solid #ec4899;
+  background: rgba(236, 72, 153, 0.14);
+  border: 1px solid rgba(236, 72, 153, 0.25);
+  color: #f472b6;
 }
 
 .badge-type-default {
-  background: #475569;
-  border: 1px solid #64748b;
+  background: rgba(100, 116, 139, 0.15);
+  border: 1px solid rgba(100, 116, 139, 0.3);
+  color: #94a3b8;
 }
