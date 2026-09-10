@@ -91,7 +91,7 @@ export const SimulationStats: React.FC<SimulationStatsProps> = () => {
       dir="rtl"
       sx={{
         position: 'absolute',
-        top: 86,
+        top: 150,
         left: 16,
         zIndex: 1100,
         width: 252,
