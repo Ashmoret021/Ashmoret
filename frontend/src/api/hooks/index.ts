@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import api from "../index";
+import { DroneGroup, LauncherGroup } from "../../types";
 
 export const useGetAllDronesGroups = () => {
-  const [dronesGroups, setDronesGroups] = useState<any>([]);
+  const [dronesGroups, setDronesGroups] = useState<DroneGroup[]>([]);
 
   useEffect(() => {
     const fetchDronesGroups = async () => {
@@ -17,13 +18,14 @@ export const useGetAllDronesGroups = () => {
         });
     };
     fetchDronesGroups();
+    console.log(dronesGroups)
   }, []);
 
   return { dronesGroups, setDronesGroups };
 };
 
 export const useGetAllLaunchersGroups = () => {
-  const [launchersGroups, setLaunchersGroups] = useState<any>([]);
+  const [launchersGroups, setLaunchersGroups] = useState<LauncherGroup[]>([]);
 
   useEffect(() => {
     const fetchLaunchersGroups = async () => {
