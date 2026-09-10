@@ -13,8 +13,8 @@ import { useGetAllDronesGroups } from "../../../api/hooks";
 import { DroneGroup } from "../../../types/types";
 
 export interface DroneSelectionPageProps {
-  selectedGroup?: string;
-  onSelectGroup?: (groupId: string, groupName?: string) => void;
+  selectedGroup?: number;
+  onSelectGroup?: (groupId: number, groupName?: string) => void;
 }
 
 const darkInputSx = {
@@ -104,13 +104,13 @@ export const DroneSelectionPage: FC<DroneSelectionPageProps> = ({
   selectedGroup: propGroup,
   onSelectGroup,
 }) => {
-  const [internalGroup, setInternalGroup] = useState<string>("");
+  const [internalGroup, setInternalGroup] = useState<number>(0);
   const {dronesGroups} = useGetAllDronesGroups();
 
   const currentGroup = propGroup ?? internalGroup;
 
   const handleSelectChange = (event: SelectChangeEvent) => {
-    const val = event.target.value;
+    const val = +event.target.value;
     setInternalGroup(val);
     const chosen = dronesGroups?.data?.find((g: DroneGroup) => g.id === val);
     onSelectGroup?.(val, chosen?.name);
@@ -124,7 +124,7 @@ export const DroneSelectionPage: FC<DroneSelectionPageProps> = ({
           <Select
             labelId="drone-select-label"
             id="drone-select-option"
-            value={currentGroup}
+            value={currentGroup.toString()}
             label="בחר קבוצת רחפנים"
             onChange={handleSelectChange}
             MenuProps={menuPropsSx}

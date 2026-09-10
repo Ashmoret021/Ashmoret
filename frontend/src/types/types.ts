@@ -31,22 +31,6 @@ export type Launcher = {
   ammunition: [InterceptorType, number][];
 };
 
-export type LauncherGroup = {
-  id: string;
-  name: string;
-  description?: string;
-  launchers: Launcher[];
-  scenerios: Scenario[];
-}
-
-export type DroneGroup = {
-  id: string;
-  name: string;
-  description?: string;
-  drones: Drone[];
-  scenerios: Scenario[];
-}
-
 export enum LauncherType {
   ShieldNestLite,
   IronHookSR,
@@ -89,3 +73,16 @@ export type ScenerioCreationType = {
   dronesGroupId: number;
   launchersGroupId: number;
 }
+export type LauncherGroup = {
+  id: number;
+  name: string;
+  description?: string;
+  launchers: Launcher[];
+};
+
+export type DroneGroup = {
+  id: number;
+  name: string;
+  description?: string;
+  drones: Drone[];
+};

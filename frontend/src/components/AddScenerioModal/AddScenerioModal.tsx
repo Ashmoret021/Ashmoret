@@ -56,8 +56,8 @@ export const AddScenerioModal: FC<AddScenerioModalProps> = ({ open, onClose }) =
     scenarioName: "",
     scenarioType: "Single",
   });
-  const [selectedDroneGroup, setSelectedDroneGroup] = useState("group-1");
-  const [selectedLauncherGroup, setSelectedLauncherGroup] = useState("battery-1");
+  const [selectedDroneGroup, setSelectedDroneGroup] = useState(0);
+  const [selectedLauncherGroup, setSelectedLauncherGroup] = useState(0);
 
   const handleNext = () => {
     if (page < STEP_LABELS.length - 1) {
@@ -66,8 +66,8 @@ export const AddScenerioModal: FC<AddScenerioModalProps> = ({ open, onClose }) =
       api.scenerios().createScenerio({
         name: generalData.scenarioName,
         type: generalData.scenarioType,
-        dronesGroupId: +selectedDroneGroup,
-        launchersGroupId: +selectedLauncherGroup,
+        dronesGroupId: selectedDroneGroup,
+        launchersGroupId: selectedLauncherGroup,
       });
       console.log("Scenario created!");
       handleClose();
@@ -206,7 +206,7 @@ export const AddScenerioModal: FC<AddScenerioModalProps> = ({ open, onClose }) =
 
           {page === 2 && (
             <LauncherSelectionPage
-              selectedGroup={selectedLauncherGroup}
+              selectedGroup={+selectedLauncherGroup}
               onSelectGroup={(id) => setSelectedLauncherGroup(id)}
             />
           )}

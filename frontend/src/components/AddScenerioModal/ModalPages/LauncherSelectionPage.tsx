@@ -13,8 +13,8 @@ import { useGetAllLaunchersGroups } from "../../../api/hooks";
 import { LauncherGroup } from "../../../types/types";
 
 export interface LauncherSelectionPageProps {
-  selectedGroup?: string;
-  onSelectGroup?: (groupId: string, groupName?: string) => void;
+  selectedGroup?: number;
+  onSelectGroup?: (groupId: number, groupName?: string) => void;
 }
 
 const darkInputSx = {
@@ -100,30 +100,19 @@ const menuPropsSx = {
   },
 };
 
-interface BatteryItem {
-  id: string;
-  label: string;
-}
-
-const DEFAULT_BATTERIES: BatteryItem[] = [
-  { id: "battery-1", label: "סוללה אלפא - כיפת ברזל" },
-  { id: "battery-2", label: "סוללה בטא - קלע דוד" },
-  { id: "battery-3", label: "סוללה גמא - מערכת חץ" },
-];
-
 export const LauncherSelectionPage: FC<LauncherSelectionPageProps> = ({
   selectedGroup: propGroup,
   onSelectGroup,
 }) => {
-  const [internalGroup, setInternalGroup] = useState<string>("");
+  const [internalGroup, setInternalGroup] = useState<number>(0);
   const {launchersGroups} = useGetAllLaunchersGroups();
 
   const currentGroup = propGroup ?? internalGroup;
 
   const handleSelectChange = (event: SelectChangeEvent) => {
-    const val = event.target.value;
+    const val = +event.target.value;
     setInternalGroup(val);
-    const chosen = launchersGroups?.data?.find((b: LauncherGroup) => b.id === val);
+    const chosen = launchersGroups?.data?.find((b: LauncherGroup) => b.id === +val);
     onSelectGroup?.(val, chosen?.name);
   };
 
@@ -135,7 +124,7 @@ export const LauncherSelectionPage: FC<LauncherSelectionPageProps> = ({
           <Select
             labelId="launcher-select-label"
             id="launcher-select-option"
-            value={currentGroup}
+            value={currentGroup.toString()}
             label="בחר קבוצת משגרים"
             onChange={handleSelectChange}
             MenuProps={menuPropsSx}
