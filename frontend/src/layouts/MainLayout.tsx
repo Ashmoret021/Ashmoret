@@ -304,17 +304,6 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
                 onCreateGroup={onAddInterceptorGroup ?? handleCreateGroup}
               />
             )}
-
-            {/* Drone groups panel (attack-side placement) */}
-            {navView === "drones" &&
-              false /* handled above by EventsPanel */ && (
-                <LaunchersDronesPanel
-                  groups={INITIAL_DRONE_GROUPS}
-                  selectedGroupId={selectedGroup?.id}
-                  onGroupSelect={handleGroupSelect}
-                  onCreateGroup={onAddDroneGroup ?? handleCreateGroup}
-                />
-              )}
             {navView === "drones" && (
               <LaunchersDronesPanel
                 groups={dronesGroups}
