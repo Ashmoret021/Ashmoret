@@ -11,6 +11,7 @@ interface EventsPanelProps {
   selectedScenarioId?: string;
   isOpen?: boolean;
   onToggleOpen?: () => void;
+  onOpenStateChange?: (isOpen: boolean) => void;
   onScenarioSelect?: (scenario: ScenarioItem) => void;
   onCreateScenario?: () => void;
 }
@@ -20,6 +21,7 @@ export const EventsPanel: React.FC<EventsPanelProps> = ({
   selectedScenarioId = 'sc-2',
   isOpen: controlledIsOpen,
   onToggleOpen,
+  onOpenStateChange,
   onScenarioSelect,
   onCreateScenario,
 }) => {
@@ -34,7 +36,11 @@ export const EventsPanel: React.FC<EventsPanelProps> = ({
     if (onToggleOpen) {
       onToggleOpen();
     } else {
-      setInternalIsOpen(!internalIsOpen);
+      setInternalIsOpen((open) => {
+        const nextOpen = !open;
+        onOpenStateChange?.(nextOpen);
+        return nextOpen;
+      });
     }
   };
 

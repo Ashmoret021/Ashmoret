@@ -2,7 +2,7 @@ import React from 'react';
 import { ChevronLeft, Target, Crosshair, Drone, MapPin } from 'lucide-react';
 import { ScenarioItem, SeverityLevel } from '../../types/simulation';
 import './EventsPanel.css';
-import { DroneType } from '../../../../types/types';
+import { DroneType } from '../../types/types';
 
 interface EventScenarioCardProps {
   scenario: ScenarioItem;

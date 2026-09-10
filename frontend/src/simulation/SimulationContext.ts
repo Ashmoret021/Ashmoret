@@ -3,7 +3,7 @@ import type {
   InterceptorType,
   Launcher,
   Location,
-} from '../../../types/types';
+} from '../types/types';
 
 export type SimulationStatus = 'idle' | 'running' | 'paused' | 'finished';
 export type SpeedMultiplier = 1 | 2 | 5 | 10;

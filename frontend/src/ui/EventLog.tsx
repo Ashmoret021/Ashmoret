@@ -24,7 +24,7 @@ import RadarIcon from '@mui/icons-material/Radar';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import { useSimulation } from '../simulation/useSimulation';
 import type { LogEntry } from '../simulation/SimulationContext';
-import type { Location } from '../../../types/types';
+import type { Location } from '../types/types';
 
 export type EventCategory = 'all' | 'launch' | 'interception' | 'impact' | 'detection';
 

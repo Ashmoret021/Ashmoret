@@ -14,7 +14,7 @@
  *     → LeafletRenderer   (Dev 3)
  */
 
-import type { Location } from '../../../types/types';
+import type { Location } from '../types/types';
 
 // ---------------------------------------------------------------------------
 // Coordinate alias

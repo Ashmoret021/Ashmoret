@@ -5,7 +5,7 @@ import {
   LauncherGroup,
   LauncherType,
   Scenario,
-} from "../../../types/types";
+} from "../types/types";
 import { Direction, ScenarioItem, ScenarioType } from "../types/simulation";
 
 /*

@@ -1,5 +1,5 @@
 import type { SimulationState, DroneSimState, LauncherSimState, InterceptorSimState } from '../simulation/SimulationContext';
-import type { Location } from '../../../types/types';
+import type { Location } from '../types/types';
 import type {
   WorldSnapshot,
   ThreatSnapshot,

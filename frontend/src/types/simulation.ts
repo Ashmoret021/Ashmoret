@@ -1,4 +1,4 @@
-import { Scenario } from "../../../types/types";
+import { Scenario } from "./types";
 
 export type PlacementMode = 'auto' | 'manual';
 

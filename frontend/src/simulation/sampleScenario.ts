@@ -2,7 +2,7 @@ import {
   DroneType,
   InterceptorType,
   LauncherType,
-} from '../../../types/types';
+} from '../types/types';
 import type { SimulationScenario } from './SimulationContext';
 
 /**
