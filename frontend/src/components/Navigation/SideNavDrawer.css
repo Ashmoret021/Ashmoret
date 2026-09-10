@@ -1,0 +1,120 @@
+/* Right-Edge Side Navigation Drawer */
+.side-nav-container {
+  position: absolute;
+  top: 175px;
+  right: 0;
+  z-index: 1200;
+  direction: rtl;
+  user-select: none;
+}
+
+/* Floating Trigger Tab */
+.side-nav-trigger-tab {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 32px;
+  height: 60px;
+  background: linear-gradient(135deg, #1d4ed8 0%, #1e3a8a 100%);
+  border: 1.5px solid #3b82f6;
+  border-right: none;
+  border-radius: 14px 0 0 14px;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: -4px 4px 18px rgba(0, 0, 0, 0.5), 0 0 12px rgba(37, 99, 235, 0.4);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 1201;
+}
+
+.side-nav-trigger-tab:hover {
+  background: #2563eb;
+  width: 36px;
+  box-shadow: -6px 6px 22px rgba(37, 99, 235, 0.5);
+}
+
+.trigger-chevron {
+  transition: transform 0.25s ease;
+  color: #f1f5f9;
+}
+
+.trigger-chevron.rotate {
+  transform: rotate(180deg);
+}
+
+/* Flyout Navigation Menu */
+.side-nav-flyout-menu {
+  position: absolute;
+  top: -10px;
+  right: 0;
+  width: 205px;
+  background: linear-gradient(180deg, #1e3a8a 0%, #172d69 100%);
+  border: 1.5px solid #3b82f6;
+  border-right: none;
+  border-radius: 16px 0 0 16px;
+  box-shadow: -8px 8px 30px rgba(0, 0, 0, 0.7), 0 0 20px rgba(37, 99, 235, 0.4);
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(20px);
+  transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 1202;
+}
+
+.side-nav-flyout-menu.visible {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateX(0);
+}
+
+.side-nav-list {
+  list-style: none;
+  margin: 0;
+  padding: 8px 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.side-nav-item-wrap {
+  width: 100%;
+}
+
+.side-nav-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 13px 20px;
+  background: transparent;
+  border: none;
+  color: #f1f5f9;
+  font-size: 14.5px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  text-align: right;
+  direction: rtl;
+}
+
+.nav-btn-label {
+  letter-spacing: 0.2px;
+}
+
+.side-nav-btn:hover {
+  background: rgba(59, 130, 246, 0.3);
+  color: #ffffff;
+}
+
+.side-nav-btn.active {
+  background: rgba(37, 99, 235, 0.45);
+  color: #ffffff;
+  font-weight: 700;
+}
+
+.active-nav-chevron {
+  color: #38bdf8;
+  margin-right: auto;
+}
