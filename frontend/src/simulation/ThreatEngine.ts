@@ -28,7 +28,9 @@ export function calculateProgress(route: Location[], velocity: number, elapsedTi
   if (route.length < 2 || velocity <= 0) return 0;
   const total = routeLength(route);
   if (total === 0) return 1;
-  return Math.min(1, (velocity * elapsedTime) / total);
+  // Simulation visual speed scale factor (~25x speedup so real-world km routes traverse in ~20-60s UI simulation time)
+  const VISUAL_SPEED_SCALE = 25;
+  return Math.min(1, (velocity * VISUAL_SPEED_SCALE * elapsedTime) / total);
 }
 
 export function calculatePositionAlongRoute(route: Location[], progress: number): Location {
