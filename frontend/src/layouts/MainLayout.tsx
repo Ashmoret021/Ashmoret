@@ -191,7 +191,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
     <div className="main-layout-container">
       {/* Top Application Header */}
       <Header
-        scenarioName={selectedScenario?.title || defaultScenarioName}
+        scenarioName={selectedScenario?.name || defaultScenarioName}
         simId={simId}
         isConnected={true}
         isSafeMode={true}

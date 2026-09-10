@@ -52,11 +52,12 @@ export const EventsPanel: React.FC<EventsPanelProps> = ({
       if (eventTypeFilter === 'single' && sc.type !== 'single') return false;
       if (eventTypeFilter === 'multi' && sc.type !== 'multi') return false;
 
-      // Filter by drone count
-      if (droneCountFilter === '1' && sc.droneCount !== 1) return false;
-      if (droneCountFilter === '2-5' && (sc.droneCount < 2 || sc.droneCount > 5)) return false;
-      if (droneCountFilter === '6-10' && (sc.droneCount < 6 || sc.droneCount > 10)) return false;
-      if (droneCountFilter === '10+' && sc.droneCount < 10) return false;
+      // Drone count comes from the populated dronesGroup on the DB-shaped scenario.
+      const droneCount = sc.dronesGroup?.drones.length ?? 0;
+      if (droneCountFilter === '1' && droneCount !== 1) return false;
+      if (droneCountFilter === '2-5' && (droneCount < 2 || droneCount > 5)) return false;
+      if (droneCountFilter === '6-10' && (droneCount < 6 || droneCount > 10)) return false;
+      if (droneCountFilter === '10+' && droneCount < 10) return false;
 
       return true;
     });

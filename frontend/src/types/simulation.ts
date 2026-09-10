@@ -1,4 +1,4 @@
-import { Drone, Launcher } from "../../../types/types";
+import { Scenario } from "../../../types/types";
 
 export type PlacementMode = 'auto' | 'manual';
 
@@ -26,14 +26,16 @@ export interface InterceptorItem {
 
 export type SeverityLevel = 'low' | 'high' | 'extreme';
 
-export interface ScenarioItem {
-  id: string;
-  title: string;
-  severity: SeverityLevel;
-  type: ScenarioType;
-  drones: Drone[];
-  entryPoints: Direction[]; // e.g. ['צפון'], ['צפון', 'מזרח']
-  launchers: Launcher[];
+/**
+ * UI-facing scenario shape. It IS the DB scenario (see `Scenario` in
+ * types/types.ts) plus a few UI-only optional extras (`severity`,
+ * `entryPoints`) that don't come from the backend. Components that read
+ * those extras must handle them being undefined when the data comes from
+ * the real API.
+ */
+export interface ScenarioItem extends Scenario {
+  severity?: SeverityLevel;
+  entryPoints?: Direction[];
 }
 
 

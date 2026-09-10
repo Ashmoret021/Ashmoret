@@ -28,10 +28,17 @@ export interface DroneSimState extends Drone {
   progress: number;
   route: Location[];
   startTime: number;
+  /** Live position, updated by the simulation each tick. Drone rows in the
+   *  DB carry only the initial flat lon/lat/asl/agl — this Location object
+   *  is a runtime-only convenience. */
+  location: Location;
 }
 
 export interface LauncherSimState extends Launcher {
   lastFiredAt: number;
+  /** Static launcher position, lifted from the flat DB columns for easy
+   *  consumption by rendering / algorithm code. */
+  location: Location;
 }
 
 export interface InterceptorSimState {
@@ -83,7 +90,13 @@ export interface SimulationState {
   logHistory: LogEntry[];
 }
 
-export interface Scenario {
+/**
+ * Runtime input to the simulation engine. This is NOT the same as the DB
+ * `Scenario` type (see types/types.ts) — it carries extra per-entity runtime
+ * fields (`startTime`, `route`) that don't live in the DB, and it flattens
+ * drones/launchers directly instead of nesting them inside groups.
+ */
+export interface SimulationScenario {
   id: number | string;
   name: string;
   startTime: number;
@@ -302,21 +315,36 @@ export function onTick(callback: TickCallback): () => void {
   return () => tickCallbacks.delete(callback);
 }
 
-export function loadScenario(scenario: Scenario) {
+export function loadScenario(scenario: SimulationScenario) {
   const threats: Record<number, DroneSimState> = {};
   for (const drone of scenario.drones) {
+    const initialLocation: Location = drone.route[0] ?? {
+      longitude: drone.longitude,
+      latitude: drone.latitude,
+      asl: drone.asl,
+      agl: drone.agl,
+    };
     threats[drone.id] = {
       ...drone,
       logicalStatus: 'waiting',
       visualStatus: 'hidden',
       progress: 0,
-      location: drone.route[0] ?? drone.location,
+      location: initialLocation,
     };
   }
 
   const launchers: Record<number, LauncherSimState> = {};
   for (const launcher of scenario.launchers) {
-    launchers[launcher.id] = { ...launcher, lastFiredAt: -Infinity };
+    launchers[launcher.id] = {
+      ...launcher,
+      lastFiredAt: -Infinity,
+      location: {
+        longitude: launcher.longitude,
+        latitude: launcher.latitude,
+        asl: launcher.asl,
+        agl: launcher.agl,
+      },
+    };
   }
 
   historyRecords = [];
