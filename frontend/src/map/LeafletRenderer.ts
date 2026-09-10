@@ -214,25 +214,19 @@ export class LeafletRenderer {
     // Only advance simulation visuals when running or paused (not idle)
     if (state.status === 'idle') return;
 
-    // 1. Advance VisualEventQueue lifecycle
+    // 1. Advance VisualEventQueue lifecycle (status updates bidirectionally based on simulationTime)
     visualEventQueue.tick(t);
 
-    // 2. Periodic prune
-    if (t - this.lastPruneTime >= this.PRUNE_INTERVAL_S) {
-      visualEventQueue.pruneFinished();
-      this.lastPruneTime = t;
-    }
-
-    // 3. Render threats and threat routes
+    // 2. Render threats and threat routes
     this.renderThreats(state.threats, t);
 
-    // 4. Animate interceptors
+    // 3. Animate interceptors
     this.renderInterceptors(t);
 
-    // 5. Render visual events
+    // 4. Render visual events
     this.renderVisualEvents(t);
 
-    // 6. Cleanup inactive entities
+    // 5. Cleanup inactive entities
     this.removeInactiveEntities(state.threats);
   }
 
@@ -244,7 +238,6 @@ export class LeafletRenderer {
     // Build a set of threat IDs currently in their explosion boom window
     const boomingThreatIds = new Set<string>();
     const flightDuration = VISUAL_INTERCEPT_DURATION_S;
-    const explosionDuration = 1.2;
     for (const [, ivs] of this.interceptorStates) {
       if (ivs.outcome === 'success') {
         const elapsed = simulationTime - ivs.launchTime;
@@ -361,7 +354,7 @@ export class LeafletRenderer {
     for (const [id, ivs] of this.interceptorStates) {
       const elapsed = simulationTime - ivs.launchTime;
 
-      // 1. Before launch: hide missile and explosion
+      // 1. Before launch: hide missile, explosion, and trajectory route
       if (elapsed < 0) {
         if (this.interceptorMarkers.has(id)) {
           this.interceptorMarkers.get(id)!.remove();
@@ -371,7 +364,17 @@ export class LeafletRenderer {
           this.flashMarkers.get(id)!.remove();
           this.flashMarkers.delete(id);
         }
+        const poly = this.interceptorPolylines.get(id);
+        if (poly && this.map.hasLayer(poly)) {
+          poly.remove();
+        }
         continue;
+      }
+
+      // Ensure trajectory route is restored when elapsed >= 0
+      const poly = this.interceptorPolylines.get(id);
+      if (poly && this.showInterceptorRoutes && !this.map.hasLayer(poly)) {
+        poly.addTo(this.map);
       }
 
       // 2. Flying phase: (0 <= elapsed < 3s)
@@ -436,6 +439,15 @@ export class LeafletRenderer {
 
   private renderVisualEvents(simulationTime: number): void {
     const activeEvents = visualEventQueue.getActiveEvents();
+    const activeIds = new Set(activeEvents.map((e) => e.id));
+
+    // Remove impact markers that are no longer active (e.g. scrubbed back before the impact occurred)
+    for (const [id, marker] of this.impactMarkers) {
+      if (!activeIds.has(id)) {
+        marker.remove();
+        this.impactMarkers.delete(id);
+      }
+    }
 
     for (const event of activeEvents) {
       if (event.type !== 'impact' || !event.position) continue;

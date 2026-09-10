@@ -56,8 +56,8 @@ export const SimulationControls: React.FC<{ onRestart?: () => void }> = ({ onRes
     if (isRunning) {
       pauseClock();
     } else if (isFinished) {
-      seekToTime(0, true);
-      resumeClock();
+      onRestart?.();
+      startClock();
     } else if (isPaused) {
       resumeClock();
     } else {
@@ -113,7 +113,7 @@ export const SimulationControls: React.FC<{ onRestart?: () => void }> = ({ onRes
             max={Math.max(state.maxSimulationTime, 0.1)}
             step={0.1}
             value={Math.min(state.simulationTime, Math.max(state.maxSimulationTime, 0.1))}
-            onChange={(_, val) => seekToTime(val as number)}
+            onChange={(_, val) => seekToTime(val as number, true)}
             sx={{
               color: '#38bdf8',
               '& .MuiSlider-thumb': {
