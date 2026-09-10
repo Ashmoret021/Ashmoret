@@ -13,7 +13,7 @@ const router = Router();
 router.get('/', async (_req, res, next) => {
   try {
     const types = await getAllInterceptorTypes();
-    res.status(StatusCodes.OK).json({ status: 'ok', data: types });
+    res.status(StatusCodes.OK).json(types);
   } catch (err) {
     next(err);
   }
@@ -23,16 +23,16 @@ router.get('/:id', async (req, res, next) => {
   try {
     const id = Number(req.params.id);
     if (Number.isNaN(id)) {
-      res.status(StatusCodes.BAD_REQUEST).json({ status: 'error', message: 'Invalid ID format' });
+      res.status(StatusCodes.BAD_REQUEST).json('Invalid ID format');
       return;
     }
 
     const item = await getInterceptorTypeById(id);
     if (!item) {
-      res.status(StatusCodes.NOT_FOUND).json({ status: 'error', message: 'Interceptor type not found' });
+      res.status(StatusCodes.NOT_FOUND).json('Interceptor type not found');
       return;
     }
-    res.status(StatusCodes.OK).json({ status: 'ok', data: item });
+    res.status(StatusCodes.OK).json(item);
   } catch (err) {
     next(err);
   }
@@ -41,7 +41,7 @@ router.get('/:id', async (req, res, next) => {
 router.post('/', async (req, res, next) => {
   try {
     const created = await createInterceptorType(req.body);
-    res.status(StatusCodes.CREATED).json({ status: 'ok', data: created });
+    res.status(StatusCodes.CREATED).json(created);
   } catch (err) {
     next(err);
   }
@@ -51,16 +51,16 @@ router.put('/:id', async (req, res, next) => {
   try {
     const id = Number(req.params.id);
     if (Number.isNaN(id)) {
-      res.status(StatusCodes.BAD_REQUEST).json({ status: 'error', message: 'Invalid ID format' });
+      res.status(StatusCodes.BAD_REQUEST).json('Invalid ID format');
       return;
     }
 
     const updated = await updateInterceptorType(id, req.body);
     if (!updated) {
-      res.status(StatusCodes.NOT_FOUND).json({ status: 'error', message: 'Interceptor type not found' });
+      res.status(StatusCodes.NOT_FOUND).json('Interceptor type not found');
       return;
     }
-    res.status(StatusCodes.OK).json({ status: 'ok', data: updated });
+    res.status(StatusCodes.OK).json(updated);
   } catch (err) {
     next(err);
   }
@@ -70,16 +70,16 @@ router.delete('/:id', async (req, res, next) => {
   try {
     const id = Number(req.params.id);
     if (Number.isNaN(id)) {
-      res.status(StatusCodes.BAD_REQUEST).json({ status: 'error', message: 'Invalid ID format' });
+      res.status(StatusCodes.BAD_REQUEST).json('Invalid ID format');
       return;
     }
 
     const deleted = await deleteInterceptorType(id);
     if (!deleted) {
-      res.status(StatusCodes.NOT_FOUND).json({ status: 'error', message: 'Interceptor type not found' });
+      res.status(StatusCodes.NOT_FOUND).json('Interceptor type not found');
       return;
     }
-    res.status(StatusCodes.OK).json({ status: 'ok', message: 'Interceptor type deleted successfully' });
+    res.status(StatusCodes.OK).json('Interceptor type deleted successfully');
   } catch (err) {
     next(err);
   }
