@@ -91,7 +91,7 @@ router.delete("/:id", async (req, res, next) => {
     if (Number.isNaN(id)) {
       res
         .status(StatusCodes.BAD_REQUEST)
-        .json({ status: "error", message: "Invalid ID format" });
+        .json("Invalid ID format");
       return;
     }
 

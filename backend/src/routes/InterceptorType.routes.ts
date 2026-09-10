@@ -12,6 +12,7 @@ const router = Router();
 
 router.get('/', async (_req, res, next) => {
   try {
+    console.log('Fetching all interceptor types...');
     const types = await getAllInterceptorTypes();
     res.status(StatusCodes.OK).json(types);
   } catch (err) {

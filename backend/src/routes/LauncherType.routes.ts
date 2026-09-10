@@ -59,7 +59,7 @@ router.put("/:id", async (req, res, next) => {
     if (!updated) {
       res
         .status(StatusCodes.NOT_FOUND)
-        .json({ status: "error", message: "Launcher type not found" });
+        .json("Launcher type not found");
       return;
     }
     res.status(StatusCodes.OK).json(updated);
