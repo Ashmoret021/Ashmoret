@@ -17,13 +17,11 @@ import { PlacementHUD } from "./components/PlacementHUD";
 import { createWave } from "./constants/droneConstants";
 import { LeafletRenderer } from "./map/LeafletRenderer";
 import { storageService } from "./services/storageService";
-import { sampleScenario } from "./simulation/sampleScenario";
 import {
   appendLog,
   DroneSimState,
   finishClock,
   getState,
-  loadScenario,
   onTick,
   setState,
   stopClock,
@@ -397,8 +395,6 @@ export const App = () => {
       }
     };
 
-    // Load initial scenario so map isn't empty on page load
-    loadScenario(sampleScenario);
     renderer.initDefenseSystems();
 
     const markersLayer = L.layerGroup().addTo(mapArg);
@@ -547,8 +543,6 @@ export const App = () => {
     if (renderer) {
       renderer.resetVisuals();
     }
-
-    loadScenario(sampleScenario);
 
     if (renderer) {
       renderer.initDefenseSystems();
