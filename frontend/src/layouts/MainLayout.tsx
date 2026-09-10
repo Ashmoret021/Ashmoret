@@ -22,6 +22,7 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
+  getAlertTitleUtilityClass,
 } from "@mui/material";
 import L, { Map } from "leaflet";
 import "leaflet/dist/leaflet.css";
@@ -36,6 +37,7 @@ import {
 import { getScenarioById } from "../simulation/sampleScenario";
 import { visualEventQueue } from "../visual/VisualEventQueue";
 import { algorithmClient } from "../algorithm/AlgorithmClient";
+import { useGetAllDronesGroups, useGetAllLaunchersGroups, useGetAllScenarios } from "../api/hooks";
 
 interface MainLayoutProps {
   logoSrc?: string;
@@ -72,14 +74,20 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
   onLayersToggle,
   layersMenuRef,
 }) => {
-  const [navView, setNavView] = useState<NavViewMode>("drones");
-  const [selectedScenario, setSelectedScenario] = useState<ScenarioItem | null>(
-    null,
-  );
+
   const [selectedGroup, setSelectedGroup] = useState<
     DroneGroup | LauncherGroup | null
   >(null);
   const [rulerActive, setRulerActive] = useState(false);
+  const [navView, setNavView] = useState<NavViewMode>("home");
+  const [selectedScenario, setSelectedScenario] = useState<ScenarioItem | null>(null);
+
+  const {dronesGroups, setDronesGroups} = useGetAllDronesGroups();
+  const {launchersGroups, setLaunchersGroups} = useGetAllLaunchersGroups();
+
+
+  //TODO: data doesnt match to INITIAL_SCENARIOS
+  const {scenarios, setScenarios} = useGetAllScenarios();
 
   const [isStateDialogOpen, setIsStateDialogOpen] = useState(false);
   const [isCreateScenarioOpen, setIsCreateScenarioOpen] = useState(false);
@@ -264,7 +272,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
             </div>
 
             {/* Scenario selection panel (home / drones view) */}
-            {(navView === "drones" || navView === "home") && (
+            {(navView === "home") && (
               <EventsPanel
                 scenarios={INITIAL_SCENARIOS}
                 selectedScenarioId={selectedScenario?.id}
@@ -280,8 +288,8 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
             {/* Scenarios panel (dedicated scenarios view) */}
             {navView === "scenarios" && (
               <EventsPanel
-                scenarios={INITIAL_SCENARIOS}
                 selectedScenarioId={selectedScenario?.id}
+                scenarios={INITIAL_SCENARIOS}
                 onScenarioSelect={handleScenarioSelect}
                 onCreateScenario={handleCreateScenario}
               />
@@ -290,23 +298,20 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
             {/* Interceptors / launcher placement panel */}
             {navView === "interceptors" && (
               <LaunchersDronesPanel
-                groups={INITIAL_LAUNCHER_GROUPS}
+                groups={launchersGroups}
                 selectedGroupId={selectedGroup?.id}
                 onGroupSelect={handleGroupSelect}
                 onCreateGroup={onAddInterceptorGroup ?? handleCreateGroup}
               />
             )}
-
-            {/* Drone groups panel (attack-side placement) */}
-            {navView === "drones" &&
-              false /* handled above by EventsPanel */ && (
-                <LaunchersDronesPanel
-                  groups={INITIAL_DRONE_GROUPS}
-                  selectedGroupId={selectedGroup?.id}
-                  onGroupSelect={handleGroupSelect}
-                  onCreateGroup={onAddDroneGroup ?? handleCreateGroup}
-                />
-              )}
+            {navView === "drones" && (
+              <LaunchersDronesPanel
+                groups={dronesGroups}
+                selectedGroupId={selectedGroup?.id}
+                onGroupSelect={handleGroupSelect}
+                onCreateGroup={onAddDroneGroup ?? handleCreateGroup}
+              />
+            )}
           </>
         )}
       </main>

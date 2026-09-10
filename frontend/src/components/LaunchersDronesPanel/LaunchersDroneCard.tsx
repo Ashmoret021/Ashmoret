@@ -21,6 +21,7 @@ export const LaunchersDroneCard: React.FC<LaunchersDroneCardProps> = ({
     return 'drones' in item;
   };
 
+
   const getDroneTypeClass = (droneType: DroneType): string => {
     switch (droneType) {
       case DroneType.FalconLongX4:
