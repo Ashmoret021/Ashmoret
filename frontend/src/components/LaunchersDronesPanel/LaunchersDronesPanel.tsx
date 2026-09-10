@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Layers, Plus, ChevronRight, ChevronLeft } from 'lucide-react';
 import { LaunchersDroneCard } from './LaunchersDroneCard';
 import { DroneGroup, LauncherGroup } from '../../types/types';
@@ -28,6 +28,11 @@ export const LaunchersDronesPanel: React.FC<LaunchersDronesPanelProps> = ({
   const isOpen = controlledIsOpen !== undefined ? controlledIsOpen : internalIsOpen;
 
   const [activeGroupId, setActiveGroupId] = useState<number | undefined>(selectedGroupId);
+
+  useEffect(() => {
+    setActiveGroupId(selectedGroupId);
+  }, [selectedGroupId]);
+
   const [tabFilter, setTabFilter] = useState<GroupTabFilter>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
 
