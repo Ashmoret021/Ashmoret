@@ -1,6 +1,5 @@
 import { Header } from "../components/Header/Header";
 import { EventsPanel } from "../components/EventsPanel/EventsPanel";
-import { InterceptorsPanel } from "../components/InterceptorsPanel/InterceptorsPanel";
 import {
   SideNavDrawer,
   NavViewMode,
@@ -9,22 +8,17 @@ import { SimulationSummaryPanel } from "../components/SimulationSummary/Simulati
 import { LaunchersDronesPanel } from "../components/LaunchersDronesPanel/LaunchersDronesPanel";
 import { ScenarioItem } from "../types/simulation";
 import { DroneGroup, LauncherGroup } from "../types/types";
-import {
-  INITIAL_DRONE_GROUPS,
-  INITIAL_LAUNCHER_GROUPS,
-  INITIAL_SCENARIOS,
-} from "../mock/events";
+import { INITIAL_SCENARIOS } from "../mock/events";
 import "./MainLayout.css";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Button,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
-  getAlertTitleUtilityClass,
 } from "@mui/material";
-import L, { Map } from "leaflet";
+import { Map } from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { useSimulation } from "../simulation/useSimulation";
 import { AddScenerioModal } from "../components";
@@ -37,14 +31,12 @@ import {
 import { getScenarioById } from "../simulation/sampleScenario";
 import { visualEventQueue } from "../visual/VisualEventQueue";
 import { algorithmClient } from "../algorithm/AlgorithmClient";
-import { useGetAllDronesGroups, useGetAllLaunchersGroups, useGetAllScenarios } from "../api/hooks";
+import { useGetAllDronesGroups, useGetAllLaunchersGroups } from "../api/hooks";
 
 interface MainLayoutProps {
   logoSrc?: string;
-  scenarioName?: string;
   defaultScenarioName?: string;
   simId?: string;
-  onStartSimulation?: () => void;
   handleMapReady?: (map: Map) => void;
   setShowMainAdditionalComponents: React.Dispatch<React.SetStateAction<boolean>>;
   onGoToCoordinates?: (lat: number, lng: number) => void;
@@ -54,15 +46,14 @@ interface MainLayoutProps {
   onAddInterceptorGroup?: () => void;
   layersOpen?: boolean;
   onLayersToggle?: () => void;
-  layersMenuRef?: React.RefObject<HTMLDivElement | null>;
+  layersMenuRef?: React.RefObject<HTMLDivElement>;
+  useDefaultMapLayer?: boolean;
 }
 
 export const MainLayout: React.FC<MainLayoutProps> = ({
   logoSrc,
-  scenarioName,
   defaultScenarioName = "בחר תרחיש להתחלה",
   simId = "SIM-01",
-  onStartSimulation,
   handleMapReady,
   setShowMainAdditionalComponents,
   onGoToCoordinates,
@@ -73,6 +64,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
   layersOpen = false,
   onLayersToggle,
   layersMenuRef,
+  useDefaultMapLayer = true,
 }) => {
 
   const [selectedGroup, setSelectedGroup] = useState<
@@ -82,12 +74,8 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
   const [navView, setNavView] = useState<NavViewMode>("home");
   const [selectedScenario, setSelectedScenario] = useState<ScenarioItem | null>(null);
 
-  const {dronesGroups, setDronesGroups} = useGetAllDronesGroups();
-  const {launchersGroups, setLaunchersGroups} = useGetAllLaunchersGroups();
-
-
-  //TODO: data doesnt match to INITIAL_SCENARIOS
-  const {scenarios, setScenarios} = useGetAllScenarios();
+  const {dronesGroups} = useGetAllDronesGroups();
+  const {launchersGroups} = useGetAllLaunchersGroups();
 
   const [isStateDialogOpen, setIsStateDialogOpen] = useState(false);
   const [isCreateScenarioOpen, setIsCreateScenarioOpen] = useState(false);
@@ -110,7 +98,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
 
   // ── Scenario selection + full reset ──────────────────────────────────────
   const handleScenarioSelect = (scenario: ScenarioItem) => {
-    const renderer = (window as any).__leafletRenderer;
+    const renderer = window.__leafletRenderer;
 
     if (selectedScenario?.id === scenario.id) {
       // Toggle off / deselect scenario
@@ -119,7 +107,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
       clearScenario();
       visualEventQueue.clear();
       algorithmClient.reset();
-      (window as any).__resetSimulationRefs?.();
+      window.__resetSimulationRefs?.();
       if (renderer) {
         renderer.resetVisuals();
       }
@@ -129,30 +117,12 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
       clearScenario();
       visualEventQueue.clear();
       algorithmClient.reset();
-      (window as any).__resetSimulationRefs?.();
+      window.__resetSimulationRefs?.();
       if (renderer) {
         renderer.resetVisuals();
       }
       // Load specific scenario into simulation context
       loadScenario(getScenarioById(scenario.id));
-      if (renderer) {
-        renderer.initDefenseSystems();
-      }
-      startClock();
-    }
-  };
-
-  const handleRestart = () => {
-    const renderer = (window as any).__leafletRenderer;
-    stopClock();
-    algorithmClient.reset();
-    visualEventQueue.clear();
-    (window as any).__resetSimulationRefs?.();
-    if (renderer) {
-      renderer.resetVisuals();
-    }
-    if (selectedScenario) {
-      loadScenario(getScenarioById(selectedScenario.id));
       if (renderer) {
         renderer.initDefenseSystems();
       }
@@ -185,7 +155,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
     } else {
       setShowMainAdditionalComponents(true);
     }
-  }, [navView]);
+  }, [navView, setShowMainAdditionalComponents]);
 
   return (
     <div className="main-layout-container">
@@ -221,7 +191,11 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
             <div
               style={{ height: "100%", position: "relative", width: "100%" }}
             >
-              <MapView onMapReady={handleMapReady} rulerActive={rulerActive} />
+              <MapView
+                onMapReady={handleMapReady}
+                rulerActive={rulerActive}
+                useDefaultMapLayer={useDefaultMapLayer}
+              />
 
               {/* Debug state dialog */}
               <Dialog

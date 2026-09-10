@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
@@ -8,6 +8,7 @@ export interface MapViewProps {
   onMapReady?: (map: L.Map) => void;
   handleMapReady?: (map: L.Map) => void;
   rulerActive?: boolean;
+  useDefaultMapLayer?: boolean;
 }
 
 const DEFAULT_CENTER: [number, number] = [31.0461, 34.8516];
@@ -31,11 +32,12 @@ export const MapView: React.FC<MapViewProps> = React.memo(
     onMapReady,
     handleMapReady,
     rulerActive = false,
+    useDefaultMapLayer = true,
   }) => {
     const mapRef = useRef<HTMLDivElement | null>(null);
     const mapInstanceRef = useRef<L.Map | null>(null);
-    const onMapReadyRef = useRef(onMapReady);
-    onMapReadyRef.current = onMapReady;
+    const onMapReadyRef = useRef(onMapReady ?? handleMapReady);
+    onMapReadyRef.current = onMapReady ?? handleMapReady;
     const rulerStateRef = useRef<{
       points: L.LatLng[];
       markers: L.Marker[];
@@ -58,15 +60,16 @@ export const MapView: React.FC<MapViewProps> = React.memo(
 
       mapInstanceRef.current = map;
 
-      const darkLayer = L.tileLayer(
-        "https://tiles.stadiamaps.com/tiles/stamen_toner_dark/{z}/{x}/{y}{r}.png",
-        {
-          maxZoom: 20,
-          subdomains: "abcd",
-          attribution: "&copy; OpenStreetMap contributors &copy; Stadia Maps",
-        },
-      );
-      darkLayer.addTo(map);
+      if (useDefaultMapLayer) {
+        L.tileLayer(
+          "https://tiles.stadiamaps.com/tiles/stamen_toner_dark/{z}/{x}/{y}{r}.png",
+          {
+            maxZoom: 20,
+            subdomains: "abcd",
+            attribution: "&copy; OpenStreetMap contributors &copy; Stadia Maps",
+          },
+        ).addTo(map);
+      }
 
       onMapReadyRef.current?.(map);
 
@@ -74,7 +77,7 @@ export const MapView: React.FC<MapViewProps> = React.memo(
         map.remove();
         mapInstanceRef.current = null;
       };
-    }, []);
+    }, [center, useDefaultMapLayer, zoom]);
 
     // --- Ruler helpers ---
     const clearRuler = () => {

@@ -25,7 +25,7 @@ interface HeaderProps {
   onRulerToggle?: () => void;
   layersOpen?: boolean;
   onLayersToggle?: () => void;
-  layersMenuRef?: React.RefObject<HTMLDivElement | null>;
+  layersMenuRef?: React.RefObject<HTMLDivElement>;
 }
 
 export const Header: React.FC<HeaderProps> = ({
