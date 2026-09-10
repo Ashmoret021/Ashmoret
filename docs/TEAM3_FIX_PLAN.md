@@ -646,89 +646,17 @@ App.tsx component body
 
 ---
 
-## 👤 Developer 4 — חיבור לאלגוריתם האמיתי + תיקון פגיעות (Algorithm API + Impact Fix)
-> **במה זה עוסק?** האלגוריתם האמיתי לא עובד כי אין קובץ `.env.local` ו-`VITE_USE_MOCK_ALGORITHM` תמיד `true`. אתה מוסיף הגדרת סביבה, ממשק הגדרות קטן לעבור בין mock לאלגוריתם אמיתי, ומתקן את דליפת ה-listener בזיהוי פגיעות.
+## 👤 Developer 4 — תיקון פגיעות (Impact Fix)
+> **במה זה עוסק?** תיקון דליפת ה-listener בזיהוי פגיעות ותיקון finish detection. האלגוריתם ממשיך לרוץ ב-Mock — חיבור ל-API האמיתי יתווסף בעתיד כשה-API יהיה מוכן.
 
 **קבצים:**
-- יצירה: `frontend/.env.local`
-- יצירה: `frontend/src/ui/AlgorithmSettings.tsx`
-- עריכה: `frontend/src/App.tsx` — **סקציות: impact/finish + handleRestart + JSX**
+- עריכה: `frontend/src/App.tsx` — **סקציות: impact/finish + handleRestart**
 
 **פערים:** G7 (חלקית), G8
 
 #### משימות לביצוע:
 
-- [ ] **4.1 יצירת `frontend/.env.local`**
-
-  ```
-  # Algorithm API — set to real server URL to disable mock mode
-  VITE_ALGORITHM_URL=http://localhost:3001
-  VITE_USE_MOCK_ALGORITHM=false
-  ```
-
-  > **הערה:** קובץ זה לא מתועד ב-git (`.gitignore` כבר מכיל `*.local`). כל מפתח מגדיר אותו בהתאם לסביבתו.
-
-- [ ] **4.2 יצירת `src/ui/AlgorithmSettings.tsx` — כפתור מעבר Mock / Real**
-
-  ```tsx
-  import React, { useCallback, useState } from 'react';
-  import { Box, Chip, Tooltip, Typography } from '@mui/material';
-  import SettingsIcon from '@mui/icons-material/Settings';
-  import { algorithmClient } from '../algorithm/AlgorithmClient';
-
-  export const AlgorithmSettings: React.FC = () => {
-    const [useMock, setUseMock] = useState<boolean>(
-      import.meta.env.VITE_USE_MOCK_ALGORITHM === 'true' || !import.meta.env.VITE_ALGORITHM_URL,
-    );
-
-    const toggle = useCallback(() => {
-      const next = !useMock;
-      setUseMock(next);
-      // Override at runtime — AlgorithmClient checks this flag on each step() call
-      (import.meta.env as Record<string, string>).VITE_USE_MOCK_ALGORITHM = next ? 'true' : 'false';
-      algorithmClient.reset();
-    }, [useMock]);
-
-    return (
-      <Box
-        dir="rtl"
-        sx={{
-          position: 'absolute',
-          top: 86,
-          left: 284,
-          zIndex: 1100,
-          display: 'flex',
-          alignItems: 'center',
-          gap: 1,
-          backgroundColor: 'rgba(15, 23, 42, 0.88)',
-          backdropFilter: 'blur(12px)',
-          border: '1px solid rgba(255, 255, 255, 0.13)',
-          borderRadius: 3,
-          px: 1.5,
-          py: 0.75,
-          boxShadow: '0 8px 24px rgba(0,0,0,0.45)',
-          cursor: 'pointer',
-        }}
-        onClick={toggle}
-      >
-        <SettingsIcon sx={{ color: '#94a3b8', fontSize: 16 }} />
-        <Typography sx={{ fontSize: '0.7rem', color: '#94a3b8', whiteSpace: 'nowrap' }}>
-          אלגוריתם:
-        </Typography>
-        <Tooltip title={useMock ? 'לחץ לחיבור לאלגוריתם האמיתי' : 'לחץ למעבר ל-Mock'} placement="bottom">
-          <Chip
-            label={useMock ? 'Mock' : 'שרת אמיתי'}
-            size="small"
-            color={useMock ? 'warning' : 'success'}
-            sx={{ fontWeight: 700, fontSize: '0.65rem', height: 20 }}
-          />
-        </Tooltip>
-      </Box>
-    );
-  };
-  ```
-
-- [ ] **4.3 תיקון impact detection ב-`App.tsx`**
+- [ ] **4.1 תיקון impact detection ב-`App.tsx`**
 
   מצא בתוך הלולאה `for (const [idStr, threat] of Object.entries(updatedThreats))` את הבלוק שמטפל ב-`isImpacted` (מכיל `checkFinish`). **החלף אותו** ב:
   ```ts
@@ -746,7 +674,7 @@ App.tsx component body
   ```
   (**מחק** את כל בלוק `checkFinish` הישן עם ה-`onTick` הפנימי — זו הדליפה.)
 
-- [ ] **4.4 תיקון finish detection**
+- [ ] **4.2 תיקון finish detection**
 
   מצא בסוף ה-`onTick`:
   ```ts
@@ -765,7 +693,7 @@ App.tsx component body
   }
   ```
 
-- [ ] **4.5 תיקון `handleRestart` — ניקוי refs**
+- [ ] **4.3 תיקון `handleRestart` — ניקוי refs**
 
   בתוך `handleRestart`, הוסף:
   ```ts
@@ -773,30 +701,17 @@ App.tsx component body
   ```
   > אם Dev 2 עוד לא מוזג, הוסף `// @ts-ignore` זמני.
 
-- [ ] **4.6 הוסף `<AlgorithmSettings />` ל-JSX**
-
-  ```ts
-  import { AlgorithmSettings } from './ui/AlgorithmSettings';
-  ```
-  בתוך ה-`return`:
-  ```tsx
-  <AlgorithmSettings />
-  ```
-
-- [ ] **4.7 בדיקה**
+- [ ] **4.4 בדיקה**
   ```bash
   cd frontend && npm run dev
   ```
-  - [ ] ווידוא שכפתור "אלגוריתם: Mock / שרת אמיתי" מופיע
-  - [ ] לחיצה על Mock ← שרת אמיתי: בדוק ב-Network tab שקריאות נשלחות ל-`localhost:3001`
-  - [ ] לחיצה חזרה ל-Mock: קריאות נעצרות
   - [ ] Restart מאפס לחלוטין ומחזיר סוללות למפה
   - [ ] הסימולציה מסתיימת אוטומטית כשכל האיומים נפלו / יורטו
 
-- [ ] **4.8 Commit**
+- [ ] **4.5 Commit**
   ```bash
-  git add frontend/.env.local frontend/src/ui/AlgorithmSettings.tsx frontend/src/App.tsx
-  git commit -m "feat(api): add AlgorithmSettings toggle, .env.local config, fix impact detection leak"
+  git add frontend/src/App.tsx
+  git commit -m "fix(simulation): fix impact detection listener leak and finish detection logic"
   ```
 
 ---
