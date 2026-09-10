@@ -7,7 +7,7 @@ import { INITIAL_SCENARIOS } from '../../mock/events';
 import './EventsPanel.css';
 
 interface EventsPanelProps {
-  scenarios?: ScenarioItem[];
+  scenarios: ScenarioItem[];
   selectedScenarioId?: string;
   isOpen?: boolean;
   onToggleOpen?: () => void;
@@ -16,7 +16,7 @@ interface EventsPanelProps {
 }
 
 export const EventsPanel: React.FC<EventsPanelProps> = ({
-  scenarios = INITIAL_SCENARIOS,
+  scenarios,
   selectedScenarioId = 'sc-2',
   isOpen: controlledIsOpen,
   onToggleOpen,

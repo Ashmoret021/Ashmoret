@@ -77,7 +77,7 @@ export const Header: React.FC<HeaderProps> = ({
             )}
           </div>
           <div className="brand-titles">
-            <h1 className="system-title">מערכת סימולציית יירוט</h1>
+            <h1 className="system-title">אשמורת</h1>
             <span className="system-subtitle">SIMULATION CONTROL CENTER</span>
           </div>
         </div>

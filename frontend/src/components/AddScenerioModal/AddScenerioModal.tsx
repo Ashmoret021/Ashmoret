@@ -50,6 +50,7 @@ const STEP_LABELS = ["פרטים כלליים", "בחירת רחפנים", "בח
 
 export const AddScenerioModal: FC<AddScenerioModalProps> = ({ open, onClose }) => {
   const [page, setPage] = useState(0);
+  const [canMovePage, setCanMovePage] = useState(false);
 
   // Scenario Wizard State
   const [generalData, setGeneralData] = useState({
@@ -194,6 +195,7 @@ export const AddScenerioModal: FC<AddScenerioModalProps> = ({ open, onClose }) =
               onChange={(updated) =>
                 setGeneralData((prev) => ({ ...prev, ...updated }))
               }
+              setCanMovePage={setCanMovePage}
             />
           )}
 
@@ -244,6 +246,7 @@ export const AddScenerioModal: FC<AddScenerioModalProps> = ({ open, onClose }) =
                 px: 3,
                 fontWeight: 600,
               }}
+              disabled={!canMovePage}
             >
               {page === STEP_LABELS.length - 1 ? "יצירה" : "הבא"}
             </Button>
