@@ -13,3 +13,4 @@ jobs:
     with:
       TAG: "1.0.0"
     secrets: inherit
+    
