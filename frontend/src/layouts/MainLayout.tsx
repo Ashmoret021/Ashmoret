@@ -39,7 +39,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
   handleMapReady,
 }) => {
   const initialScenarioTitle = scenarioName || defaultScenarioName;
-  const [navView, setNavView] = useState<NavViewMode>("drones");
+  const [navView, setNavView] = useState<NavViewMode>("home");
   const [selectedScenario, setSelectedScenario] = useState<ScenarioItem>(
     INITIAL_SCENARIOS[1] || {
       id: "sc-2",

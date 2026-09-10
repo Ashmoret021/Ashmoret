@@ -9,7 +9,6 @@ import './EventsPanel.css';
 interface EventsPanelProps {
   scenarios?: ScenarioItem[];
   selectedScenarioId?: string;
-  isOpen?: boolean;
   onToggleOpen?: () => void;
   onScenarioSelect?: (scenario: ScenarioItem) => void;
   onCreateScenario?: () => void;
@@ -18,13 +17,11 @@ interface EventsPanelProps {
 export const EventsPanel: React.FC<EventsPanelProps> = ({
   scenarios = INITIAL_SCENARIOS,
   selectedScenarioId = 'sc-2',
-  isOpen: controlledIsOpen,
   onToggleOpen,
   onScenarioSelect,
   onCreateScenario,
 }) => {
   const [internalIsOpen, setInternalIsOpen] = useState(true);
-  const isOpen = controlledIsOpen !== undefined ? controlledIsOpen : internalIsOpen;
 
   const [activeScenarioId, setActiveScenarioId] = useState<string>(selectedScenarioId);
   const [eventTypeFilter, setEventTypeFilter] = useState<EventTypeFilter>('all');
@@ -63,18 +60,7 @@ export const EventsPanel: React.FC<EventsPanelProps> = ({
   }, [scenarios, eventTypeFilter, droneCountFilter]);
 
   return (
-    <aside className={`events-panel-wrapper ${isOpen ? 'open' : 'collapsed'}`}>
-      {/* Edge toggle tab for collapsing/expanding panel */}
-      <button
-        type="button"
-        className="panel-collapse-tab"
-        onClick={handleToggle}
-        aria-label={isOpen ? 'סגור תפריט' : 'פתח תפריט'}
-        title={isOpen ? 'סגור תפריט' : 'פתח תפריט'}
-      >
-        {isOpen ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
-      </button>
-
+    <aside className={`events-panel-wrapper ${'open'}`}>
       <div className="events-panel-content">
         {/* Top Header: Action Button and Scenarios Count */}
         <div className="events-top-header">

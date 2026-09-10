@@ -10,7 +10,7 @@ interface InterceptorsPanelProps {
   items?: InterceptorItem[];
   scenarioName?: string;
   isSafeMode?: boolean;
-  isOpen?: boolean;
+  //isOpen?: boolean;
   onToggleOpen?: () => void;
   onItemSelect?: (item: InterceptorItem) => void;
   onStartSimulation?: () => void;
@@ -20,13 +20,11 @@ export const InterceptorsPanel: React.FC<InterceptorsPanelProps> = ({
   items = INITIAL_INTERCEPTORS,
   scenarioName = 'רב-זירתי - צפון ומזרח',
   isSafeMode = true,
-  isOpen: controlledIsOpen,
   onToggleOpen,
   onItemSelect,
   onStartSimulation,
 }) => {
   const [internalIsOpen, setInternalIsOpen] = useState(true);
-  const isOpen = controlledIsOpen !== undefined ? controlledIsOpen : internalIsOpen;
 
   const [selectedId, setSelectedId] = useState<string>('alpha');
   const [placementMode, setPlacementMode] = useState<PlacementMode>('auto');
@@ -56,18 +54,8 @@ export const InterceptorsPanel: React.FC<InterceptorsPanelProps> = ({
   };
 
   return (
-    <aside className={`interceptors-panel-wrapper ${isOpen ? 'open' : 'collapsed'}`}>
-      {/* Edge toggle tab for collapsing/expanding panel */}
-      <button
-        type="button"
-        className="panel-collapse-tab"
-        onClick={handleToggle}
-        aria-label={isOpen ? 'סגור תפריט' : 'פתח תפריט'}
-        title={isOpen ? 'סגור תפריט' : 'פתח תפריט'}
-      >
-        {isOpen ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
-      </button>
-
+    <aside className={`interceptors-panel-wrapper ${ 'open' }`}>
+    
       <div className="interceptors-panel-content">
         {/* Panel top scenario header */}
         <div className="panel-header-banner">
