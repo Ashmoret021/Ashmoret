@@ -58,6 +58,10 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
   const {launchersGroups, setLaunchersGroups} = useGetAllLaunchersGroups();
   const {scenarios, setScenarios} = useGetAllScenarios();
 
+  console.log("FGEWG")
+  console.log(launchersGroups)
+  console.log(dronesGroups)
+
   const [selectedGroup, setSelectedGroup] = useState<DroneGroup | LauncherGroup | null>(null);
 
   const [isStateDialogOpen, setIsStateDialogOpen] = useState(false);
