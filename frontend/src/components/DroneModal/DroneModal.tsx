@@ -13,7 +13,7 @@ import {
   import StorefrontRoundedIcon from "@mui/icons-material/StorefrontRounded";
   import LanguageRoundedIcon from "@mui/icons-material/LanguageRounded";
   
-  import { Drone, DroneType } from "../../types/types";
+  import { Drone, DroneType } from "../../../../types/types";
   import "./DroneModal.css";
   
   type DroneModalProps = {
