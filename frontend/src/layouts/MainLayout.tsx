@@ -78,6 +78,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
   const [selectedGroup, setSelectedGroup] = useState<
     DroneGroup | LauncherGroup | null
   >(null);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [rulerActive, setRulerActive] = useState(false);
   const [navView, setNavView] = useState<NavViewMode>("home");
   const [selectedScenario, setSelectedScenario] = useState<ScenarioItem | null>(null);
@@ -176,6 +177,12 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
   const handleViewSimulation = (simulationId: string) => {
     console.log("Viewing simulation:", simulationId);
     setNavView("drones");
+    setIsSidebarOpen(true);
+  };
+
+  const handleViewChange = (view: NavViewMode) => {
+    setNavView(view);
+    setIsSidebarOpen(true);
   };
 
   // ── Hide simulation HUD when Summary view is active ───────────────────────
@@ -210,7 +217,11 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
       {/* Main Workspace */}
       <main className="main-viewport">
         {/* Right-Edge Navigation Drawer */}
-        <SideNavDrawer activeView={navView} onViewChange={setNavView} />
+        <SideNavDrawer
+          activeView={navView}
+          onViewChange={handleViewChange}
+          sidebarOpen={isSidebarOpen}
+        />
 
         {/* View: Simulation Summary (full-screen, no map / HUD) */}
         {navView === "summary" ? (
@@ -278,6 +289,8 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
               <EventsPanel
                 scenarios={INITIAL_SCENARIOS}
                 selectedScenarioId={selectedScenario?.id}
+                isOpen={isSidebarOpen}
+                onToggleOpen={() => setIsSidebarOpen((open) => !open)}
                 onScenarioSelect={handleScenarioSelect}
                 onCreateScenario={handleCreateScenario}
               />
@@ -292,6 +305,8 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
               <EventsPanel
                 selectedScenarioId={selectedScenario?.id}
                 scenarios={INITIAL_SCENARIOS}
+                isOpen={isSidebarOpen}
+                onToggleOpen={() => setIsSidebarOpen((open) => !open)}
                 onScenarioSelect={handleScenarioSelect}
                 onCreateScenario={handleCreateScenario}
               />
@@ -302,6 +317,8 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
               <LaunchersDronesPanel
                 groups={launchersGroups}
                 selectedGroupId={selectedGroup?.id}
+                isOpen={isSidebarOpen}
+                onToggleOpen={() => setIsSidebarOpen((open) => !open)}
                 onGroupSelect={handleGroupSelect}
                 onCreateGroup={onAddInterceptorGroup ?? handleCreateGroup}
               />
@@ -310,6 +327,8 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
               <LaunchersDronesPanel
                 groups={dronesGroups}
                 selectedGroupId={selectedGroup?.id}
+                isOpen={isSidebarOpen}
+                onToggleOpen={() => setIsSidebarOpen((open) => !open)}
                 onGroupSelect={handleGroupSelect}
                 onCreateGroup={onAddDroneGroup ?? handleCreateGroup}
               />
