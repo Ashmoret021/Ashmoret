@@ -1,8 +1,14 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { ChevronLeft } from 'lucide-react';
+import { ChevronDown, ChevronUp } from 'lucide-react';
 import './SideNavDrawer.css';
+export type NavViewMode =
+  | 'home'
+  | 'scenarios'
+  | 'aircraft_dict'
+  | 'summary'
+  | 'interceptors'
+  | 'drones';
 
-export type NavViewMode = 'summary' | 'interceptors' | 'drones';
 
 interface NavOption {
   id: NavViewMode;
@@ -10,6 +16,9 @@ interface NavOption {
 }
 
 const NAV_OPTIONS: NavOption[] = [
+  { id: 'home', label: 'מסך בית' },
+  { id: 'scenarios', label: 'מאגר תרחישים' },
+  { id: 'aircraft_dict', label: 'מילון כלי תעופה' },
   { id: 'summary', label: 'סיכום סימולציות' },
   { id: 'interceptors', label: 'פריסת מיירטים' },
   { id: 'drones', label: 'פריסת רחפנים' },
@@ -55,42 +64,52 @@ export const SideNavDrawer: React.FC<SideNavDrawerProps> = ({
     <div
       ref={containerRef}
       className={`side-nav-container ${isOpen ? 'expanded' : ''}`}
-      onMouseEnter={() => setIsOpen(true)}
-      onMouseLeave={() => setIsOpen(false)}
     >
-      {/* Floating Trigger Tab at the right edge */}
-      <button
-        type="button"
-        className="side-nav-trigger-tab"
-        onClick={() => setIsOpen(!isOpen)}
-        aria-label="תפריט ניווט"
-        title="פתח תפריט ניווט"
-      >
-        <ChevronLeft size={22} className={`trigger-chevron ${isOpen ? 'rotate' : ''}`} />
-      </button>
+      {/* When closed: Top-right tab with ChevronDown */}
+      {!isOpen && (
+        <button
+          type="button"
+          className="side-nav-closed-tab"
+          onClick={() => setIsOpen(true)}
+          aria-label="פתח תפריט ניווט"
+          title="פתח תפריט ניווט"
+        >
+          <ChevronDown size={22} className="trigger-chevron" />
+        </button>
+      )}
 
-      {/* Flyout Navigation Menu */}
-      <div className={`side-nav-flyout-menu ${isOpen ? 'visible' : ''}`}>
-        <ul className="side-nav-list">
-          {NAV_OPTIONS.map((option) => {
-            const isActive = activeView === option.id;
-            return (
-              <li key={option.id} className="side-nav-item-wrap">
-                <button
-                  type="button"
-                  className={`side-nav-btn ${isActive ? 'active' : ''}`}
-                  onClick={() => handleSelect(option.id)}
-                >
-                  <span className="nav-btn-label">{option.label}</span>
-                  {isActive && (
-                    <ChevronLeft size={16} className="active-nav-chevron" />
-                  )}
-                </button>
-              </li>
-            );
-          })}
-        </ul>
-      </div>
+      {/* When open: Floating Navigation Dropdown Menu matching media_1789025444378.png */}
+      {isOpen && (
+        <div className="side-nav-open-card">
+          <ul className="side-nav-options-list">
+            {NAV_OPTIONS.map((option) => {
+              const isActive = activeView === option.id;
+              return (
+                <li key={option.id} className="side-nav-item">
+                  <button
+                    type="button"
+                    className={`side-nav-item-btn ${isActive ? 'active' : ''}`}
+                    onClick={() => handleSelect(option.id)}
+                  >
+                    <span className="nav-item-text">{option.label}</span>
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+
+          {/* Close button at the bottom of the card with ChevronUp */}
+          <button
+            type="button"
+            className="side-nav-close-bottom-btn"
+            onClick={() => setIsOpen(false)}
+            aria-label="סגור תפריט ניווט"
+            title="סגור תפריט ניווט"
+          >
+            <ChevronUp size={24} className="close-chevron-icon" />
+          </button>
+        </div>
+      )}
     </div>
   );
 };

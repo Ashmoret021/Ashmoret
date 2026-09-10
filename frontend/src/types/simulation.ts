@@ -1,4 +1,16 @@
-export type PlacementMode = 'auto' | 'manual';
+import { Drone, Launcher } from "../../../types/types.ts";
+
+export enum Direction {
+  NORTH = 'צפון',
+  EAST = 'מזרח',
+  SOUTH = 'דרום',
+  WEST = 'מערב',
+}
+
+export enum EventType {
+  SINGLE_AREA = 'חד-זירתי',
+  MULTIPLE_AREAS = 'רב-זירתי',
+}
 
 export interface InterceptorItem {
   id: string;
@@ -11,17 +23,19 @@ export interface InterceptorItem {
 }
 
 export type SeverityLevel = 'low' | 'high' | 'extreme';
-export type ScenarioType = 'single' | 'multi';
+export enum ScenarioType {
+  SINGLE_AREA = 'חד-זירתי',
+  MULTIPLE_AREAS = 'רב-זירתי',
+};
 
 export interface ScenarioItem {
   id: string;
   title: string;
   severity: SeverityLevel;
   type: ScenarioType;
-  typeLabel: string; // 'חד-זירתי' | 'רב-זירתי'
-  droneCount: number;
-  entryPoints: string[]; // e.g. ['צפון'], ['צפון', 'מזרח']
-  droneTypes: string[]; // e.g. ['A', 'B'], ['A', 'B', 'C']
+  drones: Drone[];
+  entryPoints: Direction[]; // e.g. ['צפון'], ['צפון', 'מזרח']
+  launchers: Launcher[];
 }
 
 export interface TacticalMarker {
@@ -41,3 +55,20 @@ export interface ScenarioDetails {
   connected: boolean;
   safeMode: boolean;
 }
+
+/**
+ * EventSimulation data model fitted to backend Scenario API and Simulation records
+ */
+export interface EventSimulation {
+  id: string;
+  scenario_id: string;
+  scenario_name: string;
+  drones_count: number;
+  drones_group_id?: number;
+  launchers_group_id?: number;
+  scenario_type?: 'חד-זירתי' | 'רב-זירתי' | string;
+  execution_date: string; // e.g. "9.9.2026 16:43"
+  duration: string; // e.g. "00:13:45"
+  score: number; // e.g. 85
+}
+

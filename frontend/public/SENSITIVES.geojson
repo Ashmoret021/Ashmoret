@@ -1,0 +1,901 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "OBJECTID": 1,
+        "CITY_TYPE": 0,
+        "PRIORITY": 3,
+        "CITY_ID": "sensitive_001",
+        "CITY_NAME": "Tel Aviv Medical Center",
+        "HEB_NAME": "המרכז הרפואי תל אביב",
+        "ENG_NAME": "Tel Aviv Medical Center",
+        "CATEGORY": "medical",
+        "SENSITIVITY": "high",
+        "VERSION": "1.0.0",
+        "HEB_CATEGORY": "רפואה"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [34.7885, 32.0779],
+            [34.7945, 32.0779],
+            [34.7945, 32.0839],
+            [34.7885, 32.0839],
+            [34.7885, 32.0779]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "OBJECTID": 2,
+        "CITY_TYPE": 0,
+        "PRIORITY": 3,
+        "CITY_ID": "sensitive_002",
+        "CITY_NAME": "Rambam Medical Center",
+        "HEB_NAME": "המרכז הרפואי רמב״ם",
+        "ENG_NAME": "Rambam Medical Center",
+        "CATEGORY": "medical",
+        "SENSITIVITY": "high",
+        "VERSION": "1.0.0",
+        "HEB_CATEGORY": "רפואה"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [34.9866, 32.8291],
+            [34.9926, 32.8291],
+            [34.9926, 32.8351],
+            [34.9866, 32.8351],
+            [34.9866, 32.8291]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "OBJECTID": 3,
+        "CITY_TYPE": 0,
+        "PRIORITY": 3,
+        "CITY_ID": "sensitive_003",
+        "CITY_NAME": "Hadassah Ein Kerem",
+        "HEB_NAME": "הדסה עין כרם",
+        "ENG_NAME": "Hadassah Ein Kerem",
+        "CATEGORY": "medical",
+        "SENSITIVITY": "high",
+        "VERSION": "1.0.0",
+        "HEB_CATEGORY": "רפואה"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [35.1467, 31.7612],
+            [35.1527, 31.7612],
+            [35.1527, 31.7672],
+            [35.1467, 31.7672],
+            [35.1467, 31.7612]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "OBJECTID": 4,
+        "CITY_TYPE": 0,
+        "PRIORITY": 3,
+        "CITY_ID": "sensitive_004",
+        "CITY_NAME": "Soroka Medical Center",
+        "HEB_NAME": "המרכז הרפואי סורוקה",
+        "ENG_NAME": "Soroka Medical Center",
+        "CATEGORY": "medical",
+        "SENSITIVITY": "high",
+        "VERSION": "1.0.0",
+        "HEB_CATEGORY": "רפואה"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [34.7967, 31.2591],
+            [34.8027, 31.2591],
+            [34.8027, 31.2651],
+            [34.7967, 31.2651],
+            [34.7967, 31.2591]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "OBJECTID": 5,
+        "CITY_TYPE": 0,
+        "PRIORITY": 3,
+        "CITY_ID": "sensitive_005",
+        "CITY_NAME": "Kaplan Medical Center",
+        "HEB_NAME": "המרכז הרפואי קפלן",
+        "ENG_NAME": "Kaplan Medical Center",
+        "CATEGORY": "medical",
+        "SENSITIVITY": "high",
+        "VERSION": "1.0.0",
+        "HEB_CATEGORY": "רפואה"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [34.812, 31.8805],
+            [34.818, 31.8805],
+            [34.818, 31.8865],
+            [34.812, 31.8865],
+            [34.812, 31.8805]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "OBJECTID": 6,
+        "CITY_TYPE": 0,
+        "PRIORITY": 3,
+        "CITY_ID": "sensitive_006",
+        "CITY_NAME": "Meir Medical Center",
+        "HEB_NAME": "המרכז הרפואי מאיר",
+        "ENG_NAME": "Meir Medical Center",
+        "CATEGORY": "medical",
+        "SENSITIVITY": "high",
+        "VERSION": "1.0.0",
+        "HEB_CATEGORY": "רפואה"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [34.858, 32.184],
+            [34.864, 32.184],
+            [34.864, 32.19],
+            [34.858, 32.19],
+            [34.858, 32.184]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "OBJECTID": 7,
+        "CITY_TYPE": 0,
+        "PRIORITY": 3,
+        "CITY_ID": "sensitive_007",
+        "CITY_NAME": "Assuta Ashdod Hospital",
+        "HEB_NAME": "בית החולים אסותא אשדוד",
+        "ENG_NAME": "Assuta Ashdod Hospital",
+        "CATEGORY": "medical",
+        "SENSITIVITY": "high",
+        "VERSION": "1.0.0",
+        "HEB_CATEGORY": "רפואה"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [34.652, 31.786],
+            [34.658, 31.786],
+            [34.658, 31.792],
+            [34.652, 31.792],
+            [34.652, 31.786]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "OBJECTID": 8,
+        "CITY_TYPE": 0,
+        "PRIORITY": 3,
+        "CITY_ID": "sensitive_008",
+        "CITY_NAME": "Bnai Zion Medical Center",
+        "HEB_NAME": "המרכז הרפואי בני ציון",
+        "ENG_NAME": "Bnai Zion Medical Center",
+        "CATEGORY": "medical",
+        "SENSITIVITY": "high",
+        "VERSION": "1.0.0",
+        "HEB_CATEGORY": "רפואה"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [34.994, 32.811],
+            [35.0, 32.811],
+            [35.0, 32.817],
+            [34.994, 32.817],
+            [34.994, 32.811]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "OBJECTID": 9,
+        "CITY_TYPE": 0,
+        "PRIORITY": 3,
+        "CITY_ID": "sensitive_009",
+        "CITY_NAME": "Barzilai Medical Center",
+        "HEB_NAME": "המרכז הרפואי ברזילי",
+        "ENG_NAME": "Barzilai Medical Center",
+        "CATEGORY": "medical",
+        "SENSITIVITY": "high",
+        "VERSION": "1.0.0",
+        "HEB_CATEGORY": "רפואה"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [34.568, 31.661],
+            [34.574, 31.661],
+            [34.574, 31.667],
+            [34.568, 31.667],
+            [34.568, 31.661]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "OBJECTID": 10,
+        "CITY_TYPE": 0,
+        "PRIORITY": 3,
+        "CITY_ID": "sensitive_010",
+        "CITY_NAME": "Poriya Medical Center",
+        "HEB_NAME": "המרכז הרפואי פוריה",
+        "ENG_NAME": "Poriya Medical Center",
+        "CATEGORY": "medical",
+        "SENSITIVITY": "high",
+        "VERSION": "1.0.0",
+        "HEB_CATEGORY": "רפואה"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [35.523, 32.787],
+            [35.529, 32.787],
+            [35.529, 32.793],
+            [35.523, 32.793],
+            [35.523, 32.787]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "OBJECTID": 11,
+        "CITY_TYPE": 0,
+        "PRIORITY": 3,
+        "CITY_ID": "sensitive_011",
+        "CITY_NAME": "Ben Gurion Airport",
+        "HEB_NAME": "נמל התעופה בן-גוריון",
+        "ENG_NAME": "Ben Gurion Airport",
+        "CATEGORY": "transportation",
+        "SENSITIVITY": "high",
+        "VERSION": "1.0.0",
+        "HEB_CATEGORY": "תחבורה"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [34.8837, 32.0025],
+            [34.8897, 32.0025],
+            [34.8897, 32.0085],
+            [34.8837, 32.0085],
+            [34.8837, 32.0025]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "OBJECTID": 12,
+        "CITY_TYPE": 0,
+        "PRIORITY": 3,
+        "CITY_ID": "sensitive_012",
+        "CITY_NAME": "Haifa Port Area",
+        "HEB_NAME": "אזור נמל חיפה",
+        "ENG_NAME": "Haifa Port Area",
+        "CATEGORY": "transportation",
+        "SENSITIVITY": "high",
+        "VERSION": "1.0.0",
+        "HEB_CATEGORY": "תחבורה"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [35.019, 32.816],
+            [35.025, 32.816],
+            [35.025, 32.822],
+            [35.019, 32.822],
+            [35.019, 32.816]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "OBJECTID": 13,
+        "CITY_TYPE": 0,
+        "PRIORITY": 3,
+        "CITY_ID": "sensitive_013",
+        "CITY_NAME": "Tel Aviv University",
+        "HEB_NAME": "אוניברסיטת תל אביב",
+        "ENG_NAME": "Tel Aviv University",
+        "CATEGORY": "education",
+        "SENSITIVITY": "high",
+        "VERSION": "1.0.0",
+        "HEB_CATEGORY": "חינוך"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [34.801, 32.11],
+            [34.807, 32.11],
+            [34.807, 32.116],
+            [34.801, 32.116],
+            [34.801, 32.11]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "OBJECTID": 14,
+        "CITY_TYPE": 0,
+        "PRIORITY": 3,
+        "CITY_ID": "sensitive_014",
+        "CITY_NAME": "Hebrew University Givat Ram",
+        "HEB_NAME": "האוניברסיטה העברית – גבעת רם",
+        "ENG_NAME": "Hebrew University Givat Ram",
+        "CATEGORY": "education",
+        "SENSITIVITY": "high",
+        "VERSION": "1.0.0",
+        "HEB_CATEGORY": "חינוך"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [35.199, 31.768],
+            [35.205, 31.768],
+            [35.205, 31.774],
+            [35.199, 31.774],
+            [35.199, 31.768]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "OBJECTID": 15,
+        "CITY_TYPE": 0,
+        "PRIORITY": 3,
+        "CITY_ID": "sensitive_015",
+        "CITY_NAME": "Ben-Gurion University",
+        "HEB_NAME": "אוניברסיטת בן-גוריון בנגב",
+        "ENG_NAME": "Ben-Gurion University",
+        "CATEGORY": "education",
+        "SENSITIVITY": "high",
+        "VERSION": "1.0.0",
+        "HEB_CATEGORY": "חינוך"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [34.796, 31.258],
+            [34.802, 31.258],
+            [34.802, 31.264],
+            [34.796, 31.264],
+            [34.796, 31.258]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "OBJECTID": 16,
+        "CITY_TYPE": "SENSITIVE_PUBLIC",
+        "PRIORITY": "HIGH",
+        "CITY_ID": 16,
+        "CITY_NAME": "Knesset",
+        "HEB_NAME": "הכנסת",
+        "ENG_NAME": "Knesset",
+        "CATEGORY": "government",
+        "SENSITIVITY": "PUBLIC_INTEREST",
+        "VERSION": 1,
+        "HEB_CATEGORY": "ממשלה"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [35.1995, 31.769499999999997],
+            [35.204499999999996, 31.769499999999997],
+            [35.204499999999996, 31.7745],
+            [35.1995, 31.7745],
+            [35.1995, 31.769499999999997]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "OBJECTID": 17,
+        "CITY_TYPE": "SENSITIVE_PUBLIC",
+        "PRIORITY": "HIGH",
+        "CITY_ID": 17,
+        "CITY_NAME": "President's Residence",
+        "HEB_NAME": "בית הנשיא",
+        "ENG_NAME": "President's Residence",
+        "CATEGORY": "government",
+        "SENSITIVITY": "PUBLIC_INTEREST",
+        "VERSION": 1,
+        "HEB_CATEGORY": "ממשלה"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [35.200500000000005, 31.775499999999997],
+            [35.2055, 31.775499999999997],
+            [35.2055, 31.7805],
+            [35.200500000000005, 31.7805],
+            [35.200500000000005, 31.775499999999997]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "OBJECTID": 18,
+        "CITY_TYPE": "SENSITIVE_PUBLIC",
+        "PRIORITY": "HIGH",
+        "CITY_ID": 18,
+        "CITY_NAME": "Supreme Court of Israel",
+        "HEB_NAME": "בית המשפט העליון",
+        "ENG_NAME": "Supreme Court of Israel",
+        "CATEGORY": "government",
+        "SENSITIVITY": "PUBLIC_INTEREST",
+        "VERSION": 1,
+        "HEB_CATEGORY": "ממשלה"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [35.2015, 31.7805],
+            [35.2065, 31.7805],
+            [35.2065, 31.785500000000003],
+            [35.2015, 31.785500000000003],
+            [35.2015, 31.7805]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "OBJECTID": 19,
+        "CITY_TYPE": "SENSITIVE_PUBLIC",
+        "PRIORITY": "HIGH",
+        "CITY_ID": 19,
+        "CITY_NAME": "Prime Minister's Office",
+        "HEB_NAME": "משרד ראש הממשלה",
+        "ENG_NAME": "Prime Minister's Office",
+        "CATEGORY": "government",
+        "SENSITIVITY": "PUBLIC_INTEREST",
+        "VERSION": 1,
+        "HEB_CATEGORY": "ממשלה"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [35.212500000000006, 31.7735],
+            [35.2175, 31.7735],
+            [35.2175, 31.7785],
+            [35.212500000000006, 31.7785],
+            [35.212500000000006, 31.7735]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "OBJECTID": 20,
+        "CITY_TYPE": "SENSITIVE_PUBLIC",
+        "PRIORITY": "HIGH",
+        "CITY_ID": 20,
+        "CITY_NAME": "Ministry of Foreign Affairs",
+        "HEB_NAME": "משרד החוץ",
+        "ENG_NAME": "Ministry of Foreign Affairs",
+        "CATEGORY": "government",
+        "SENSITIVITY": "PUBLIC_INTEREST",
+        "VERSION": 1,
+        "HEB_CATEGORY": "ממשלה"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [35.203500000000005, 31.7475],
+            [35.2085, 31.7475],
+            [35.2085, 31.7525],
+            [35.203500000000005, 31.7525],
+            [35.203500000000005, 31.7475]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "OBJECTID": 21,
+        "CITY_TYPE": "SENSITIVE_PUBLIC",
+        "PRIORITY": "HIGH",
+        "CITY_ID": 21,
+        "CITY_NAME": "Ministry of Finance",
+        "HEB_NAME": "משרד האוצר",
+        "ENG_NAME": "Ministry of Finance",
+        "CATEGORY": "government",
+        "SENSITIVITY": "PUBLIC_INTEREST",
+        "VERSION": 1,
+        "HEB_CATEGORY": "ממשלה"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [35.2135, 31.772499999999997],
+            [35.2185, 31.772499999999997],
+            [35.2185, 31.7775],
+            [35.2135, 31.7775],
+            [35.2135, 31.772499999999997]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "OBJECTID": 22,
+        "CITY_TYPE": "SENSITIVE_PUBLIC",
+        "PRIORITY": "HIGH",
+        "CITY_ID": 22,
+        "CITY_NAME": "Ministry of Justice",
+        "HEB_NAME": "משרד המשפטים",
+        "ENG_NAME": "Ministry of Justice",
+        "CATEGORY": "government",
+        "SENSITIVITY": "PUBLIC_INTEREST",
+        "VERSION": 1,
+        "HEB_CATEGORY": "ממשלה"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [35.214000000000006, 31.773],
+            [35.219, 31.773],
+            [35.219, 31.778000000000002],
+            [35.214000000000006, 31.778000000000002],
+            [35.214000000000006, 31.773]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "OBJECTID": 23,
+        "CITY_TYPE": "SENSITIVE_PUBLIC",
+        "PRIORITY": "HIGH",
+        "CITY_ID": 23,
+        "CITY_NAME": "Western Wall",
+        "HEB_NAME": "הכותל המערבי",
+        "ENG_NAME": "Western Wall",
+        "CATEGORY": "religious",
+        "SENSITIVITY": "PUBLIC_INTEREST",
+        "VERSION": 1,
+        "HEB_CATEGORY": "מוסד דתי"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [35.231500000000004, 31.7742],
+            [35.2365, 31.7742],
+            [35.2365, 31.779200000000003],
+            [35.231500000000004, 31.779200000000003],
+            [35.231500000000004, 31.7742]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "OBJECTID": 24,
+        "CITY_TYPE": "SENSITIVE_PUBLIC",
+        "PRIORITY": "HIGH",
+        "CITY_ID": 24,
+        "CITY_NAME": "Church of the Holy Sepulchre",
+        "HEB_NAME": "כנסיית הקבר",
+        "ENG_NAME": "Church of the Holy Sepulchre",
+        "CATEGORY": "religious",
+        "SENSITIVITY": "PUBLIC_INTEREST",
+        "VERSION": 1,
+        "HEB_CATEGORY": "מוסד דתי"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [35.2271, 31.7759],
+            [35.232099999999996, 31.7759],
+            [35.232099999999996, 31.780900000000003],
+            [35.2271, 31.780900000000003],
+            [35.2271, 31.7759]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "OBJECTID": 25,
+        "CITY_TYPE": "SENSITIVE_PUBLIC",
+        "PRIORITY": "HIGH",
+        "CITY_ID": 25,
+        "CITY_NAME": "Al-Aqsa Mosque",
+        "HEB_NAME": "מסגד אל-אקצא",
+        "ENG_NAME": "Al-Aqsa Mosque",
+        "CATEGORY": "religious",
+        "SENSITIVITY": "PUBLIC_INTEREST",
+        "VERSION": 1,
+        "HEB_CATEGORY": "מוסד דתי"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [35.2329, 31.773699999999998],
+            [35.237899999999996, 31.773699999999998],
+            [35.237899999999996, 31.7787],
+            [35.2329, 31.7787],
+            [35.2329, 31.773699999999998]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "OBJECTID": 26,
+        "CITY_TYPE": "SENSITIVE_PUBLIC",
+        "PRIORITY": "HIGH",
+        "CITY_ID": 26,
+        "CITY_NAME": "Baha'i Shrine",
+        "HEB_NAME": "מקדש הבאב",
+        "ENG_NAME": "Baha'i Shrine",
+        "CATEGORY": "religious",
+        "SENSITIVITY": "PUBLIC_INTEREST",
+        "VERSION": 1,
+        "HEB_CATEGORY": "מוסד דתי"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [35.228300000000004, 32.8115],
+            [35.2333, 32.8115],
+            [35.2333, 32.8165],
+            [35.228300000000004, 32.8165],
+            [35.228300000000004, 32.8115]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "OBJECTID": 27,
+        "CITY_TYPE": "SENSITIVE_PUBLIC",
+        "PRIORITY": "HIGH",
+        "CITY_ID": 27,
+        "CITY_NAME": "Great Synagogue of Jerusalem",
+        "HEB_NAME": "בית הכנסת הגדול בירושלים",
+        "ENG_NAME": "Great Synagogue of Jerusalem",
+        "CATEGORY": "religious",
+        "SENSITIVITY": "PUBLIC_INTEREST",
+        "VERSION": 1,
+        "HEB_CATEGORY": "מוסד דתי"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [35.2145, 31.7765],
+            [35.2195, 31.7765],
+            [35.2195, 31.7815],
+            [35.2145, 31.7815],
+            [35.2145, 31.7765]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "OBJECTID": 28,
+        "CITY_TYPE": "SENSITIVE_PUBLIC",
+        "PRIORITY": "HIGH",
+        "CITY_ID": 28,
+        "CITY_NAME": "U.S. Embassy",
+        "HEB_NAME": "שגרירות ארצות הברית",
+        "ENG_NAME": "U.S. Embassy",
+        "CATEGORY": "embassy",
+        "SENSITIVITY": "PUBLIC_INTEREST",
+        "VERSION": 1,
+        "HEB_CATEGORY": "שגרירות"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [34.7805, 32.0685],
+            [34.7855, 32.0685],
+            [34.7855, 32.073499999999996],
+            [34.7805, 32.073499999999996],
+            [34.7805, 32.0685]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "OBJECTID": 29,
+        "CITY_TYPE": "SENSITIVE_PUBLIC",
+        "PRIORITY": "HIGH",
+        "CITY_ID": 29,
+        "CITY_NAME": "Embassy of France",
+        "HEB_NAME": "שגרירות צרפת",
+        "ENG_NAME": "Embassy of France",
+        "CATEGORY": "embassy",
+        "SENSITIVITY": "PUBLIC_INTEREST",
+        "VERSION": 1,
+        "HEB_CATEGORY": "שגרירות"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [34.8005, 32.0795],
+            [34.805499999999995, 32.0795],
+            [34.805499999999995, 32.0845],
+            [34.8005, 32.0845],
+            [34.8005, 32.0795]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "OBJECTID": 30,
+        "CITY_TYPE": "SENSITIVE_PUBLIC",
+        "PRIORITY": "HIGH",
+        "CITY_ID": 30,
+        "CITY_NAME": "Embassy of Germany",
+        "HEB_NAME": "שגרירות גרמניה",
+        "ENG_NAME": "Embassy of Germany",
+        "CATEGORY": "embassy",
+        "SENSITIVITY": "PUBLIC_INTEREST",
+        "VERSION": 1,
+        "HEB_CATEGORY": "שגרירות"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [34.7915, 32.0825],
+            [34.796499999999995, 32.0825],
+            [34.796499999999995, 32.0875],
+            [34.7915, 32.0875],
+            [34.7915, 32.0825]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "OBJECTID": 31,
+        "CITY_TYPE": "SENSITIVE_PUBLIC",
+        "PRIORITY": "HIGH",
+        "CITY_ID": 31,
+        "CITY_NAME": "Embassy of the United Kingdom",
+        "HEB_NAME": "שגרירות בריטניה",
+        "ENG_NAME": "Embassy of the United Kingdom",
+        "CATEGORY": "embassy",
+        "SENSITIVITY": "PUBLIC_INTEREST",
+        "VERSION": 1,
+        "HEB_CATEGORY": "שגרירות"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [34.7995, 32.080000000000005],
+            [34.8045, 32.080000000000005],
+            [34.8045, 32.085],
+            [34.7995, 32.085],
+            [34.7995, 32.080000000000005]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "OBJECTID": 32,
+        "CITY_TYPE": "SENSITIVE_PUBLIC",
+        "PRIORITY": "HIGH",
+        "CITY_ID": 32,
+        "CITY_NAME": "Embassy of Russia",
+        "HEB_NAME": "שגרירות רוסיה",
+        "ENG_NAME": "Embassy of Russia",
+        "CATEGORY": "embassy",
+        "SENSITIVITY": "PUBLIC_INTEREST",
+        "VERSION": 1,
+        "HEB_CATEGORY": "שגרירות"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [34.7905, 32.072500000000005],
+            [34.7955, 32.072500000000005],
+            [34.7955, 32.0775],
+            [34.7905, 32.0775],
+            [34.7905, 32.072500000000005]
+          ]
+        ]
+      }
+    }
+  ]
+}
