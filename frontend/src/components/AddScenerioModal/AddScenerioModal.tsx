@@ -24,6 +24,11 @@ export interface ModalPage {
   component: React.ReactNode;
 }
 
+interface AddScenerioModalProps {
+  open: boolean;
+  onClose: () => void;
+}
+
 export const MODAL_PAGES: ModalPage[] = [
   {
     label: "פרטים כלליים",
@@ -41,8 +46,7 @@ export const MODAL_PAGES: ModalPage[] = [
 
 const STEP_LABELS = ["פרטים כלליים", "בחירת רחפנים", "בחירת משגרים"];
 
-export const AddScenerioModal: FC = () => {
-  const [open, setOpen] = useState(false);
+export const AddScenerioModal: FC<AddScenerioModalProps> = ({ open, onClose }) => {
   const [page, setPage] = useState(0);
 
   // Scenario Wizard State
@@ -68,36 +72,12 @@ export const AddScenerioModal: FC = () => {
   };
 
   const handleClose = () => {
-    setOpen(false);
+    onClose();
     setPage(0);
   };
 
   return (
     <>
-      {/* Map Trigger Button */}
-      <Button
-        variant="contained"
-        onClick={() => setOpen(true)}
-        sx={{
-          position: "absolute",
-          top: 16,
-          left: 230,
-          zIndex: 1000,
-          bgcolor: "#1e293b",
-          color: "#ffffff",
-          fontWeight: 600,
-          borderRadius: 2,
-          px: 2.5,
-          py: 0.8,
-          boxShadow: "0 2px 8px rgba(0,0,0,0.3)",
-          "&:hover": {
-            bgcolor: "#334155",
-          },
-        }}
-      >
-        יצירת תרחיש
-      </Button>
-
       {/* Main Modal Dialog */}
       <Dialog
         open={open}

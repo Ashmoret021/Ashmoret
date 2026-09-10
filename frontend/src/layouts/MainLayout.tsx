@@ -16,6 +16,7 @@ import {
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { useSimulation } from "../simulation/useSimulation";
+import { AddScenerioModal } from '../components';
 
 interface MainLayoutProps {
   logoSrc?: string;
@@ -49,6 +50,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
 
   const mapRef = useRef<HTMLDivElement | null>(null);
   const [isStateDialogOpen, setIsStateDialogOpen] = useState(false);
+  const [isCreateScenarioOpen, setIsCreateScenarioOpen] = useState(false);
   const { state, pauseClock, resumeClock, setSpeed, startClock } =
     useSimulation();
 
@@ -112,7 +114,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
   };
 
   const handleCreateScenario = () => {
-    console.log('Open Create Scenario modal / action');
+    setIsCreateScenarioOpen(true);
   };
 
   return (
@@ -200,6 +202,8 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
             onCreateScenario={handleCreateScenario}
           />
         )}
+
+        <AddScenerioModal open={isCreateScenarioOpen} onClose={() => setIsCreateScenarioOpen(false)}/>
 
         {/* Interceptors Panel (פריסת מיירטים / ניהול הצבה) */}
         {navView === 'interceptors' && (

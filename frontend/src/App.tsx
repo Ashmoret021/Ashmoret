@@ -21,7 +21,6 @@ import { processEngagementDecision } from "./visual/VisualEventBuilder";
 import { Drone, DroneType } from "./types/types";
 import DroneModal from "./components/DroneModal/DroneModal";
 import axios from "axios";
-import React from "react";
 import { MainLayout } from "./layouts/MainLayout";
 import {
   Button,
