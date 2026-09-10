@@ -384,6 +384,21 @@ export const App = () => {
 
     const baseLayerNames = Object.keys(baseMaps);
 
+    const container = layerControl.getContainer();
+
+    if (container) {
+      map.getContainer().appendChild(container);
+
+      Object.assign(container.style, {
+        position: "absolute",
+        top: "10px",
+        left: "50%",
+        transform: "translateX(-50%)",
+        margin: "0",
+        zIndex: "800",
+      });
+    }
+
     map.on("baselayerchange", (e: L.LayersControlEvent) => {
       setLayers((prev) => [
         ...prev.filter((name) => !baseLayerNames.includes(name)),
