@@ -2,6 +2,14 @@ import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import "../src/styles/App.css";
+import {
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  TextField,
+} from "@mui/material";
 import { CoordinatesControl } from "./components/CoordinatesControl";
 import { MainLayout } from "./layouts/MainLayout";
 
@@ -44,6 +52,7 @@ import {
 } from "./utils/droneMarker";
 import { processEngagementDecision } from "./visual/VisualEventBuilder";
 import { visualEventQueue } from "./visual/VisualEventQueue";
+import { UserLayer, UserPolygon } from "./types/userLayers";
 
 export const App = () => {
   const mapInstanceRef = useRef<L.Map | null>(null);
@@ -62,7 +71,25 @@ export const App = () => {
   const [layers, setLayers] = useState<string[]>(["🗺️ מפה רגילה"]);
   const [layersOpen, setLayersOpen] = useState(false);
   const layerControlRef = useRef<L.Control.Layers | null>(null);
-  const layersMenuRef = useRef<HTMLDivElement | null>(null);
+  const layersMenuRef = useRef<HTMLDivElement>(null);
+  const userLayerGroupsRef = useRef<Map<string, L.LayerGroup>>(new Map());
+  const userDraftPolylineRef = useRef<L.Polyline | null>(null);
+  const userDraftPolygonRef = useRef<L.Polygon | null>(null);
+  const userDraftMarkersRef = useRef<L.Marker[]>([]);
+  const userPolygonRefs = useRef<Map<string, L.Polygon>>(new Map());
+  const [userLayers, setUserLayers] = useState<UserLayer[]>(() =>
+    storageService.getStoredUserLayers(),
+  );
+  const [isCreateLayerDialogOpen, setIsCreateLayerDialogOpen] = useState(false);
+  const [layerNameDraft, setLayerNameDraft] = useState("");
+  const [isDrawingUserLayer, setIsDrawingUserLayer] = useState(false);
+  const [draftUserLayerId, setDraftUserLayerId] = useState<string | null>(null);
+  const [draftPolygonPoints, setDraftPolygonPoints] = useState<L.LatLng[]>([]);
+  const [isPolygonInfoDialogOpen, setIsPolygonInfoDialogOpen] = useState(false);
+  const [polygonInfoDraft, setPolygonInfoDraft] = useState({
+    name: "",
+    description: "",
+  });
   const [selectedDrone, setSelectedDrone] = useState<Drone | null>(null);
   const [selectedThreatId, setSelectedThreatId] = useState<number | null>(null);
   const [map, setMap] = useState<L.Map | null>(null);
@@ -129,6 +156,301 @@ export const App = () => {
     [],
   );
 
+  useEffect(() => {
+    storageService.saveStoredUserLayers(userLayers);
+  }, [userLayers]);
+
+  const renderUserLayerControls = useCallback(() => {
+    const container = layerControlRef.current?.getContainer();
+    const list = container?.querySelector(".leaflet-control-layers-list");
+    if (!container || !list) return;
+
+    const section = list.querySelector(".user-layer-control-section") as HTMLDivElement | null;
+    const createButton = list.querySelector(".user-layer-create-button") as HTMLButtonElement | null;
+
+    if (!section) {
+      const newSection = document.createElement("div");
+      newSection.className = "user-layer-control-section";
+      list.appendChild(newSection);
+    }
+
+    if (!createButton) {
+      const newButton = document.createElement("button");
+      newButton.type = "button";
+      newButton.className = "user-layer-create-button";
+      newButton.textContent = "צור שכבה";
+      newButton.addEventListener("click", () => {
+        setIsCreateLayerDialogOpen(true);
+      });
+      list.appendChild(newButton);
+    }
+
+    const targetSection = list.querySelector(".user-layer-control-section") as HTMLDivElement | null;
+    if (!targetSection) return;
+
+    targetSection.innerHTML = "";
+
+    if (userLayers.length === 0) {
+      const empty = document.createElement("div");
+      empty.className = "user-layer-empty-state";
+      empty.textContent = "אין שכבות משתמש";
+      targetSection.appendChild(empty);
+      return;
+    }
+
+    userLayers.forEach((layer) => {
+      const label = document.createElement("label");
+      label.className = "user-layer-control-item";
+
+      const checkbox = document.createElement("input");
+      checkbox.type = "checkbox";
+      checkbox.checked = layer.visible;
+      checkbox.setAttribute("aria-label", `Toggle layer ${layer.name}`);
+      checkbox.addEventListener("change", (event) => {
+        const checked = (event.target as HTMLInputElement).checked;
+        setUserLayers((prev) =>
+          prev.map((entry) =>
+            entry.id === layer.id
+              ? { ...entry, visible: checked, updatedAt: Date.now() }
+              : entry,
+          ),
+        );
+      });
+
+      const name = document.createElement("span");
+      name.textContent = layer.name;
+
+      label.appendChild(checkbox);
+      label.appendChild(name);
+      targetSection.appendChild(label);
+    });
+  }, [userLayers]);
+
+  const getPolygonPopupHtml = useCallback((layerName: string, polygon: UserPolygon) => {
+    const name = polygon.properties?.name?.trim();
+    const description = polygon.properties?.description?.trim();
+
+    const safeName = name && name.length > 0 ? name : "ללא כותרת";
+    const safeDescription = description && description.length > 0 ? description : "אין מידע נוסף.";
+
+    return `
+      <div style="direction: rtl; font-family: Arial, sans-serif; min-width: 180px; padding: 8px 10px; border-radius: 10px; background: #0f172a; color: #e2e8f0; box-shadow: 0 10px 24px rgba(15,23,42,0.28);">
+        <div style="font-weight: 700; margin-bottom: 6px; color: #7dd3fc;">${safeName}</div>
+        <div style="font-size: 12px; color: #cbd5e1; line-height: 1.5;">${safeDescription}</div>
+        <div style="margin-top: 8px; font-size: 11px; color: #86efac;">שכבה: ${layerName}</div>
+      </div>
+    `;
+  }, []);
+
+  const renderUserPolygons = useCallback(() => {
+    if (!map) return;
+
+    const activeIds = new Set(userLayers.map((layer) => layer.id));
+    for (const [layerId, group] of userLayerGroupsRef.current.entries()) {
+      if (!activeIds.has(layerId)) {
+        group.remove();
+        userLayerGroupsRef.current.delete(layerId);
+      }
+    }
+
+    userLayers.forEach((layer) => {
+      let group = userLayerGroupsRef.current.get(layer.id);
+      if (!group) {
+        group = L.layerGroup();
+        userLayerGroupsRef.current.set(layer.id, group);
+      }
+
+      if (layer.visible) {
+        if (!map.hasLayer(group)) {
+          group.addTo(map);
+        }
+      } else if (map.hasLayer(group)) {
+        group.remove();
+      }
+
+      const activePolygonIds = new Set<string>();
+      layer.polygons.forEach((polygon) => {
+        activePolygonIds.add(polygon.id);
+        const key = `${layer.id}:${polygon.id}`;
+        const existing = userPolygonRefs.current.get(key);
+        const latLngs = polygon.coordinates.map(
+          (point) => [point.lat, point.lng] as [number, number],
+        );
+
+        if (existing) {
+          existing.setLatLngs(latLngs);
+          existing.bindPopup(getPolygonPopupHtml(layer.name, polygon));
+          if (layer.visible && !group.hasLayer(existing)) {
+            group.addLayer(existing);
+          }
+          return;
+        }
+
+        const polygonLayer = L.polygon(latLngs, {
+          color: "#38bdf8",
+          fillColor: "#38bdf8",
+          fillOpacity: 0.25,
+          weight: 2,
+          opacity: 0.9,
+        });
+
+        polygonLayer.bindPopup(getPolygonPopupHtml(layer.name, polygon));
+
+        group.addLayer(polygonLayer);
+        userPolygonRefs.current.set(key, polygonLayer);
+      });
+
+      for (const [key, polygonLayer] of userPolygonRefs.current.entries()) {
+        const [layerIdKey, polygonId] = key.split(":");
+        if (layerIdKey !== layer.id) continue;
+        if (!polygonId || activePolygonIds.has(polygonId)) continue;
+        polygonLayer.remove();
+        userPolygonRefs.current.delete(key);
+      }
+    });
+  }, [getPolygonPopupHtml, map, userLayers]);
+
+  const handleCreateUserLayer = useCallback(() => {
+    const trimmed = layerNameDraft.trim();
+    if (!trimmed) {
+      showToast("יש להזין שם לשכבה.", "error");
+      return;
+    }
+
+    const newLayer: UserLayer = {
+      id: crypto.randomUUID(),
+      name: trimmed,
+      type: "user-drawn",
+      visible: true,
+      polygons: [],
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+    };
+
+    setUserLayers((prev) => [newLayer, ...prev]);
+    setDraftUserLayerId(newLayer.id);
+    setIsCreateLayerDialogOpen(false);
+    setLayerNameDraft("");
+    setIsDrawingUserLayer(true);
+    setPolygonInfoDraft({ name: "", description: "" });
+    setDraftPolygonPoints([]);
+    if (map) {
+      map.getContainer().style.cursor = "crosshair";
+    }
+    showToast(`שכבה נוצרה: ${trimmed}. ציירו פוליגון על המפה.`, "info");
+  }, [layerNameDraft, map, showToast]);
+
+  const finishUserLayerDrawing = useCallback(() => {
+    if (!draftUserLayerId) return;
+
+    if (draftPolygonPoints.length > 0 && draftPolygonPoints.length < 3) {
+      showToast("הפוליגון הנוכחי לא הושלם. יש לצייר לפחות 3 נקודות או לבטל אותו.", "error");
+      return;
+    }
+
+    setIsDrawingUserLayer(false);
+    setDraftUserLayerId(null);
+    setDraftPolygonPoints([]);
+    setIsPolygonInfoDialogOpen(false);
+    setPolygonInfoDraft({ name: "", description: "" });
+    if (userDraftPolylineRef.current) {
+      userDraftPolylineRef.current.remove();
+      userDraftPolylineRef.current = null;
+    }
+    if (userDraftPolygonRef.current) {
+      userDraftPolygonRef.current.remove();
+      userDraftPolygonRef.current = null;
+    }
+    if (map) {
+      map.getContainer().style.cursor = "";
+    }
+    showToast("הצירוף של השכבה הושלם.", "success");
+  }, [draftPolygonPoints, draftUserLayerId, map, showToast]);
+
+  const cancelUserLayerDrawing = useCallback(() => {
+    setIsDrawingUserLayer(false);
+    setDraftUserLayerId(null);
+    setDraftPolygonPoints([]);
+    setIsPolygonInfoDialogOpen(false);
+    setPolygonInfoDraft({ name: "", description: "" });
+    if (userDraftPolylineRef.current) {
+      userDraftPolylineRef.current.remove();
+      userDraftPolylineRef.current = null;
+    }
+    if (userDraftPolygonRef.current) {
+      userDraftPolygonRef.current.remove();
+      userDraftPolygonRef.current = null;
+    }
+    if (map) {
+      map.getContainer().style.cursor = "";
+    }
+  }, [map]);
+
+  const handleFinalizePolygon = useCallback(() => {
+    if (!draftUserLayerId || draftPolygonPoints.length < 3) {
+      showToast("יש לצייר לפחות 3 נקודות כדי ליצור פוליגון.", "error");
+      return;
+    }
+
+    setIsPolygonInfoDialogOpen(true);
+  }, [draftPolygonPoints.length, draftUserLayerId, showToast]);
+
+  const savePolygonToLayer = useCallback(() => {
+    if (!draftUserLayerId) return;
+
+    const normalizedCoords = draftPolygonPoints.map((point) => ({
+      lat: Number(point.lat),
+      lng: Number(point.lng),
+    }));
+
+    const polygon: UserPolygon = {
+      id: crypto.randomUUID(),
+      coordinates: normalizedCoords,
+      ...(polygonInfoDraft.name.trim() || polygonInfoDraft.description.trim()
+        ? {
+            properties: {
+              ...(polygonInfoDraft.name.trim()
+                ? { name: polygonInfoDraft.name.trim() }
+                : {}),
+              ...(polygonInfoDraft.description.trim()
+                ? { description: polygonInfoDraft.description.trim() }
+                : {}),
+            },
+          }
+        : {}),
+    };
+
+    setUserLayers((prev) =>
+      prev.map((layer) =>
+        layer.id === draftUserLayerId
+          ? {
+              ...layer,
+              polygons: [...layer.polygons, polygon],
+              updatedAt: Date.now(),
+            }
+          : layer,
+      ),
+    );
+
+    setIsPolygonInfoDialogOpen(false);
+    setPolygonInfoDraft({ name: "", description: "" });
+    setDraftPolygonPoints([]);
+    if (userDraftPolylineRef.current) {
+      userDraftPolylineRef.current.remove();
+      userDraftPolylineRef.current = null;
+    }
+    if (userDraftPolygonRef.current) {
+      userDraftPolygonRef.current.remove();
+      userDraftPolygonRef.current = null;
+    }
+    userDraftMarkersRef.current.forEach((marker) => marker.remove());
+    userDraftMarkersRef.current = [];
+    if (map) {
+      map.getContainer().style.cursor = "crosshair";
+    }
+    showToast("הפוליגון נשמר לשכבה. אפשר להמשיך לצייר פוליגונים נוספים.", "success");
+  }, [draftPolygonPoints, draftUserLayerId, map, polygonInfoDraft, showToast]);
+
   // Persist waves on change
   useEffect(() => {
     storageService.saveStoredWaves(waves);
@@ -138,6 +460,89 @@ export const App = () => {
   useEffect(() => {
     storageService.saveStoredMetadata({ attackName, attackDescription });
   }, [attackName, attackDescription]);
+
+  useEffect(() => {
+    renderUserLayerControls();
+    renderUserPolygons();
+  }, [renderUserLayerControls, renderUserPolygons]);
+
+  useEffect(() => {
+    if (!map || !isDrawingUserLayer || !draftUserLayerId) return;
+
+    const syncDraftPreview = () => {
+      const points = draftPolygonPoints;
+      const positions = points.map(
+        (point) => [point.lat, point.lng] as [number, number],
+      );
+
+      if (userDraftPolylineRef.current) {
+        userDraftPolylineRef.current.remove();
+        userDraftPolylineRef.current = null;
+      }
+
+      if (userDraftPolygonRef.current) {
+        userDraftPolygonRef.current.remove();
+        userDraftPolygonRef.current = null;
+      }
+
+      userDraftMarkersRef.current.forEach((marker) => marker.remove());
+      userDraftMarkersRef.current = [];
+
+      positions.forEach((position) => {
+        const marker = L.marker(position as [number, number], {
+          icon: L.divIcon({
+            className: "user-draft-polygon-marker",
+            html: '<div style="width: 10px; height: 10px; background: #38bdf8; border: 2px solid #f8fafc; border-radius: 50%; box-shadow: 0 0 0 2px rgba(56,189,248,0.4);"></div>',
+            iconSize: [10, 10],
+            iconAnchor: [5, 5],
+          }),
+        }).addTo(map);
+        userDraftMarkersRef.current.push(marker);
+      });
+
+      if (positions.length >= 3) {
+        userDraftPolygonRef.current = L.polygon(positions, {
+          color: "#38bdf8",
+          fillColor: "#38bdf8",
+          fillOpacity: 0.22,
+          weight: 2,
+          opacity: 0.9,
+        }).addTo(map);
+        return;
+      }
+
+      if (positions.length >= 2) {
+        userDraftPolylineRef.current = L.polyline(positions, {
+          color: "#38bdf8",
+          weight: 2,
+          dashArray: "6 4",
+        }).addTo(map);
+      }
+    };
+
+    const handleMapClick = (e: L.LeafletMouseEvent) => {
+      setDraftPolygonPoints((prev) => [...prev, e.latlng]);
+    };
+
+    syncDraftPreview();
+    map.on("click", handleMapClick);
+    map.getContainer().style.cursor = "crosshair";
+
+    return () => {
+      map.off("click", handleMapClick);
+      map.getContainer().style.cursor = "";
+      if (userDraftPolylineRef.current) {
+        userDraftPolylineRef.current.remove();
+        userDraftPolylineRef.current = null;
+      }
+      if (userDraftPolygonRef.current) {
+        userDraftPolygonRef.current.remove();
+        userDraftPolygonRef.current = null;
+      }
+      userDraftMarkersRef.current.forEach((marker) => marker.remove());
+      userDraftMarkersRef.current = [];
+    };
+  }, [draftPolygonPoints, draftUserLayerId, isDrawingUserLayer, map]);
 
   useEffect(() => {
     // ── Simulation Tick Processor ──────────────────────────────────────────
@@ -394,23 +799,15 @@ export const App = () => {
       "🗺️ מפה רגילה": streetLayer,
       "🛰️ צילום לווייני": satelliteLayer,
     };
+    const baseLayerNames = Object.keys(baseMaps);
 
     const layerControl = L.control.layers(baseMaps, undefined, {
       collapsed: false,
     });
     layerControl.addTo(mapArg);
     layerControlRef.current = layerControl;
-
-    mapArg.on("mousemove", (e: L.LeafletMouseEvent) => {
-      setCoords({ lat: e.latlng.lat, lng: e.latlng.lng });
-    });
-
-    mapArg.on("mouseout", () => {
-      setCoords(null);
-    });
-
-    const baseLayerNames = Object.keys(baseMaps);
-
+    renderUserLayerControls();
+    renderUserPolygons();
     const container = layerControl.getContainer();
     const layersMenu = layersMenuRef.current;
 
@@ -1060,6 +1457,117 @@ export const App = () => {
           onLayersToggle={handleLayersToggle}
           layersMenuRef={layersMenuRef}
         />
+
+        <Dialog
+          open={isCreateLayerDialogOpen}
+          onClose={() => setIsCreateLayerDialogOpen(false)}
+          dir="rtl"
+          PaperProps={{
+            sx: {
+              backgroundColor: "#0f172a",
+              color: "#e2e8f0",
+              border: "1px solid rgba(148, 163, 184, 0.28)",
+              borderRadius: 3,
+              boxShadow: "0 20px 45px rgba(15, 23, 42, 0.38)",
+            },
+          }}
+        >
+          <DialogTitle sx={{ color: "#f8fafc", borderBottom: "1px solid rgba(148,163,184,0.2)", pb: 2 }}>
+            יצירת שכבה חדשה
+          </DialogTitle>
+          <DialogContent sx={{ minWidth: 360, pt: 3 }}>
+            <TextField
+              autoFocus
+              fullWidth
+              label="שם השכבה"
+              value={layerNameDraft}
+              onChange={(event) => setLayerNameDraft(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === "Enter") {
+                  event.preventDefault();
+                  handleCreateUserLayer();
+                }
+              }}
+              sx={{
+                mt: 1,
+                '& .MuiInputBase-root': {
+                  color: '#e2e8f0',
+                  backgroundColor: 'rgba(15, 23, 42, 0.5)',
+                },
+                '& .MuiInputLabel-root': { color: '#cbd5e1' },
+                '& .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(148,163,184,0.4)' },
+              }}
+            />
+          </DialogContent>
+          <DialogActions sx={{ px: 3, pb: 2, pt: 1 }}>
+            <Button onClick={() => setIsCreateLayerDialogOpen(false)} sx={{ color: '#e2e8f0' }}>ביטול</Button>
+            <Button variant="contained" color="success" onClick={handleCreateUserLayer}>התחל ציור</Button>
+          </DialogActions>
+        </Dialog>
+
+        <Dialog
+          open={isPolygonInfoDialogOpen}
+          onClose={() => setIsPolygonInfoDialogOpen(false)}
+          dir="rtl"
+          PaperProps={{
+            sx: {
+              backgroundColor: "#0f172a",
+              color: "#e2e8f0",
+              border: "1px solid rgba(148, 163, 184, 0.28)",
+              borderRadius: 3,
+              boxShadow: "0 20px 45px rgba(15, 23, 42, 0.38)",
+            },
+          }}
+        >
+          <DialogTitle sx={{ color: "#f8fafc", borderBottom: "1px solid rgba(148,163,184,0.2)", pb: 2 }}>
+            מידע על הפוליגון
+          </DialogTitle>
+          <DialogContent sx={{ display: "grid", gap: 2, minWidth: 360, pt: 3 }}>
+            <TextField
+              fullWidth
+              label="שם"
+              value={polygonInfoDraft.name}
+              onChange={(event) =>
+                setPolygonInfoDraft((prev) => ({ ...prev, name: event.target.value }))
+              }
+              sx={{
+                '& .MuiInputBase-root': { color: '#e2e8f0', backgroundColor: 'rgba(15, 23, 42, 0.5)' },
+                '& .MuiInputLabel-root': { color: '#cbd5e1' },
+                '& .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(148,163,184,0.4)' },
+              }}
+            />
+            <TextField
+              fullWidth
+              multiline
+              rows={3}
+              label="תיאור"
+              value={polygonInfoDraft.description}
+              onChange={(event) =>
+                setPolygonInfoDraft((prev) => ({ ...prev, description: event.target.value }))
+              }
+              sx={{
+                '& .MuiInputBase-root': { color: '#e2e8f0', backgroundColor: 'rgba(15, 23, 42, 0.5)' },
+                '& .MuiInputLabel-root': { color: '#cbd5e1' },
+                '& .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(148,163,184,0.4)' },
+              }}
+            />
+          </DialogContent>
+          <DialogActions sx={{ px: 3, pb: 2, pt: 1 }}>
+            <Button onClick={() => setIsPolygonInfoDialogOpen(false)} sx={{ color: '#e2e8f0' }}>ביטול</Button>
+            <Button variant="contained" color="success" onClick={savePolygonToLayer}>שמור</Button>
+          </DialogActions>
+        </Dialog>
+        {isDrawingUserLayer && draftUserLayerId && (
+          <div className="user-layer-drawing-toolbar" dir="rtl">
+            <Button variant="contained" onClick={handleFinalizePolygon}>
+              סיים פוליגון
+            </Button>
+            <Button variant="outlined" color="secondary" onClick={finishUserLayerDrawing}>
+              סיום שכבה
+            </Button>
+          </div>
+        )}
+
         <CoordinatesControl coords={coords} />
         {selectedThreatId !== null && currentThreat && !isThreatNeutralized && (
           <DroneModal

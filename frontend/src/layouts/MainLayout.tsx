@@ -54,7 +54,7 @@ interface MainLayoutProps {
   onAddInterceptorGroup?: () => void;
   layersOpen?: boolean;
   onLayersToggle?: () => void;
-  layersMenuRef?: React.RefObject<HTMLDivElement | null>;
+  layersMenuRef?: React.RefObject<HTMLDivElement> | undefined;
 }
 
 export const MainLayout: React.FC<MainLayoutProps> = ({

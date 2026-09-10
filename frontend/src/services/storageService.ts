@@ -1,4 +1,5 @@
 import { PlacedDrone, DroneWave, Scenario } from "../types/drone";
+ import { isValidUserLayer, UserLayer } from "../types/userLayers";
 
 const STORAGE_KEYS = {
   PLACED_DRONES: "ashmoret_placed_drones",
@@ -6,6 +7,7 @@ const STORAGE_KEYS = {
   ATTACK_METADATA: "ashmoret_attack_metadata",
   SCENARIOS: "ashmoret_scenarios",
   ACTIVE_SCENARIO_ID: "ashmoret_active_scenario_id",
+  USER_LAYERS: "ashmoret_user_layers",
 };
 
 export interface AttackMetadata {
@@ -132,6 +134,33 @@ export const storageService = {
       localStorage.setItem(STORAGE_KEYS.ATTACK_METADATA, JSON.stringify(meta));
     } catch (e) {
       console.error("Failed to save attack metadata to storage:", e);
+    }
+  },
+
+  getStoredUserLayers(): UserLayer[] {
+    try {
+      const data = localStorage.getItem(STORAGE_KEYS.USER_LAYERS);
+      if (!data) return [];
+      const parsed = JSON.parse(data) as unknown;
+      if (!Array.isArray(parsed)) return [];
+
+      const validLayers = parsed.filter((layer) => isValidUserLayer(layer));
+      return validLayers as UserLayer[];
+    } catch (e) {
+      console.error("Failed to load user layers from storage:", e);
+      return [];
+    }
+  },
+
+  saveStoredUserLayers(layers: UserLayer[]): void {
+    try {
+      const normalized = layers.filter((layer) => isValidUserLayer(layer));
+      localStorage.setItem(
+        STORAGE_KEYS.USER_LAYERS,
+        JSON.stringify(normalized),
+      );
+    } catch (e) {
+      console.error("Failed to save user layers to storage:", e);
     }
   },
 

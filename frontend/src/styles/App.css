@@ -13,3 +13,91 @@
   width: 8px;
   height: 8px;
 }
+
+.leaflet-popup-content-wrapper,
+.leaflet-popup-tip {
+  background: #0f172a;
+  color: #e2e8f0;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.3);
+}
+
+.leaflet-popup-content-wrapper {
+  border-radius: 12px;
+  border: 1px solid rgba(148, 163, 184, 0.28);
+}
+
+.leaflet-popup-close-button {
+  color: #f8fafc !important;
+  opacity: 0.9;
+}
+
+.user-layer-control-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px 0 4px;
+  border-top: 1px solid rgba(148, 163, 184, 0.35);
+  margin-top: 8px;
+}
+
+.user-layer-control-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #e2e8f0;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.user-layer-control-item input {
+  accent-color: #38bdf8;
+}
+
+.user-layer-empty-state {
+  color: #cbd5e1;
+  font-size: 12px;
+  opacity: 0.8;
+}
+
+.user-layer-create-button {
+  width: 100%;
+  border: none;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #4ade80 0%, #16a34a 100%);
+  color: #f8fafc;
+  font-weight: 700;
+  font-size: 13px;
+  padding: 9px 12px;
+  cursor: pointer;
+  box-shadow: 0 6px 18px rgba(22, 163, 74, 0.35);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
+}
+
+.user-layer-create-button:hover {
+  filter: brightness(1.06);
+  transform: translateY(-1px);
+  box-shadow: 0 8px 22px rgba(22, 163, 74, 0.45);
+}
+
+.user-layer-create-button:active {
+  transform: translateY(0);
+}
+
+.user-layer-drawing-toolbar {
+  position: absolute;
+  bottom: 24px;
+  left: 24px;
+  z-index: 1200;
+  display: flex;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: rgba(15, 23, 42, 0.74);
+  backdrop-filter: blur(6px);
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.28);
+}
+
+.user-layer-drawing-toolbar .MuiButton-root {
+  min-width: 124px;
+  border-radius: 10px;
+}
