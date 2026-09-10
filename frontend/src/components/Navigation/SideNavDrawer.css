@@ -2,12 +2,15 @@
 .side-nav-container {
   position: absolute;
   top: 0;
-  /* Positioned to the left of the 385px side panels (EventsPanel / LaunchersDronesPanel),
-     plus their 28px collapse tab, so the dropdown never overlaps them. */
   right: 430px;
   z-index: 1200;
   direction: rtl;
   user-select: none;
+  transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.side-nav-container.sidebar-collapsed {
+  right: 45px;
 }
 
 /* Closed State Tab - Top Right dropdown tab matching media_1789025422331.png */
