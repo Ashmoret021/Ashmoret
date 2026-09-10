@@ -158,15 +158,16 @@ export const MapView: React.FC<MapViewProps> = React.memo(
           zIndex: 0,
         }}
       />
-
-      <div style={{ display: 'flex', position: 'absolute', top: '80px', right: '10px' }}>
         <Button
           title={rulerActive ? "בטל מדידה (ESC)" : "מדוד מרחק"}
           onClick={() => setRulerActive((a) => !a)}
           sx={{
-            minWidth: '38px',
-            width: '34px',
-            height: '38px',
+            position: 'absolute',
+            right: '880px',
+            top: '12px',
+            minWidth: '44px',
+            width: '44px',
+            height: '44px',
             border: '2px solid',
             borderColor: rulerActive ? '#388e3c' : 'rgba(0,0,0,.2)',
             backgroundColor: 'white',
@@ -179,7 +180,6 @@ export const MapView: React.FC<MapViewProps> = React.memo(
         >
           📏
         </Button>
-      </div>
       </>
   );
 });
