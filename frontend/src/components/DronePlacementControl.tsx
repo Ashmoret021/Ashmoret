@@ -15,7 +15,7 @@ export interface DronePlacementProps {
   remainingForWave: number;
   isComplete: boolean;
   labelStyle?: React.CSSProperties;
-  updateWave: (id: string | number, field: string, value: any) => void;
+  updateWave: (id: string | number, field: string, value: string | number | boolean) => void;
   onStartPlacement: (
     waveId: string | number,
     options: { mode: "single" | "batch"; count: number }

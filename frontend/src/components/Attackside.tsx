@@ -51,7 +51,7 @@ export const AttackSide: React.FC<AttackSideProps> = ({
   const updateWave = (
     id: string | number,
     field: string,
-    value: any,
+    value: string | number | boolean,
   ) => {
     setWaves((prev) =>
       prev.map((wave) =>
