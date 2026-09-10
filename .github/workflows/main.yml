@@ -13,5 +13,6 @@ jobs:
     with:
       TAG: "latest"
       MADOR: "ashmoret"
+      ENVIRONMENT: "pre"
     secrets:
       GCP_CREDENTIALS: ${{ secrets.GCP_CREDENTIALS }}
