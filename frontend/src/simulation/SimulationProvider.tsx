@@ -5,6 +5,7 @@ import {
   onTick,
   pauseClock,
   resumeClock,
+  seekToTime,
   setSpeed,
   setState,
   startClock,
@@ -34,6 +35,7 @@ export function SimulationProvider({ children }: { children: ReactNode }) {
     resumeClock,
     stopClock,
     setSpeed,
+    seekToTime,
     onTick,
     subscribe,
   };
@@ -44,4 +46,3 @@ export function SimulationProvider({ children }: { children: ReactNode }) {
     </SimulationReactContext.Provider>
   );
 }
-
