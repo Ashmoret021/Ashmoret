@@ -8,27 +8,33 @@ export type DroneInput = Partial<Drone> & {
   drones_group_id?: number;
 };
 
-export const getAllDrones = async (dronesGroupId?: number): Promise<Drone[]> => {
+export const getAllDrones = async (
+  dronesGroupId?: number,
+  includeRelations = false
+): Promise<Drone[]> => {
   const repo = getDroneRepository();
   return repo.find({
     where: dronesGroupId !== undefined ? { dronesGroupId } : undefined,
-    relations: { dronesGroup: true, droneType: true },
+    relations: includeRelations ? { dronesGroup: true, droneType: true } : undefined,
     order: { id: 'ASC' },
   });
 };
 
-export const getDroneById = async (id: number): Promise<Drone | null> => {
+export const getDroneById = async (
+  id: number,
+  includeRelations = false
+): Promise<Drone | null> => {
   const repo = getDroneRepository();
   return repo.findOne({
     where: { id },
-    relations: { dronesGroup: true, droneType: true },
+    relations: includeRelations ? { dronesGroup: true, droneType: true } : undefined,
   });
 };
 
 export const createDrone = async (data: DroneInput): Promise<Drone> => {
   const repo = getDroneRepository();
   const drone = repo.create({
-    // id: data.id,
+    id: data.id,
     dronesGroupId: data.dronesGroupId ?? data.drones_group_id,
     longitude: data.longitude,
     latitude: data.latitude,
