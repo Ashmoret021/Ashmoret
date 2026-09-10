@@ -21,7 +21,7 @@ export const getScenarioById = async (id: string): Promise<Scenario | null> => {
   const repo = getScenarioRepository();
   return repo.findOne({
     where: { id },
-    relations: { dronesGroup: { drones: true }, launchersGroup: { launchers: true } },
+    relations: { dronesGroup: { drones: { droneType: true} }, launchersGroup: { launchers: { launcherType: true } } },
   });
 };
 
