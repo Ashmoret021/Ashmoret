@@ -1,0 +1,109 @@
+.scenarios-repository-panel {
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle at 50% 20%, #0d172a 0%, #070c18 100%);
+    padding: 28px 40px 48px 40px;
+    overflow-y: auto;
+    direction: rtl;
+    user-select: none;
+    box-sizing: border-box;
+  }
+  
+  /* Header */
+  .scenarios-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 28px;
+    padding-bottom: 8px;
+  }
+  
+  .scenarios-page-title {
+    font-size: 36px;
+    font-weight: 800;
+    color: #ffffff;
+    letter-spacing: 0.4px;
+    margin: 0;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+    font-family: 'Heebo', Arial, sans-serif;
+  }
+  
+  /* Search Box */
+  .scenarios-search-container {
+    position: relative;
+    width: 260px;
+    display: flex;
+    align-items: center;
+  }
+  
+  .scenarios-search-input {
+    width: 100%;
+    background: #0b1322;
+    border: 1.5px solid #1e355c;
+    border-radius: 9999px;
+    padding: 9px 40px 9px 18px;
+    color: #f1f5f9;
+    font-size: 13.5px;
+    font-family: inherit;
+    outline: none;
+    transition: all 0.2s ease;
+    text-align: right;
+    direction: rtl;
+  }
+  
+  .scenarios-search-input::placeholder {
+    color: #64748b;
+  }
+  
+  .scenarios-search-input:focus {
+    border-color: #38bdf8;
+    box-shadow: 0 0 12px rgba(56, 189, 248, 0.35);
+    background: #101d36;
+  }
+  
+  .scenarios-search-icon {
+    position: absolute;
+    right: 14px;
+    color: #64748b;
+    pointer-events: none;
+  }
+  
+  /* Cards Grid */
+  .scenarios-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 16px;
+  }
+  
+  @media (max-width: 1600px) {
+    .scenarios-cards-grid {
+      grid-template-columns: repeat(4, 1fr);
+    }
+  }
+  
+  @media (max-width: 1200px) {
+    .scenarios-cards-grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+  
+  @media (max-width: 850px) {
+    .scenarios-cards-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+  
+  @media (max-width: 550px) {
+    .scenarios-cards-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+  
+  /* Empty State */
+  .no-scenarios-results {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 80px 20px;
+    color: #64748b;
+    font-size: 15px;
+  }

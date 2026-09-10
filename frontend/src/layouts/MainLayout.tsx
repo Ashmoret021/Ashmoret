@@ -21,6 +21,7 @@ import { useSimulation } from "../simulation/useSimulation";
 import { AddScenerioModal } from '../components';
 import { MapView } from "../ui/MapView";
 import { LaunchersDronesPanel } from "../components/LaunchersDronesPanel/LaunchersDronesPanel";
+import { EventSummary } from "../components/EventSummary/EventSummary";
 
 interface MainLayoutProps {
   logoSrc?: string;
@@ -85,6 +86,14 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
     setSelectedScenario(scenario);
   };
 
+  const handleScenarioSelectFromSummary = (scenarioId: string) => {
+    const foundScenario = INITIAL_SCENARIOS.find((s) => s.id === scenarioId);
+    if (foundScenario) {
+      setSelectedScenario(foundScenario);
+    }
+    setNavView("scenarios");
+  };
+
   const handleCreateScenario = () => {
     setIsCreateScenarioOpen(true);
   };
@@ -103,12 +112,12 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
   };
 
   useEffect(() => {
-    if (navView === "summary") {
+    if (navView === "summary" || navView === "summary_scenarios") {
       setShowMainAdditionalComponents(false); 
     } else {
       setShowMainAdditionalComponents(true);
     }
-  }, [navView]);
+  }, [navView, setShowMainAdditionalComponents]);
 
   return (
     <div className="main-layout-container">
@@ -124,12 +133,18 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
 
       {/* Main Workspace */}
       <main className="main-viewport">
-        {/* Navigation Dropdown Drawer (סיכום סימולציות, פריסת מיירטים, פריסת רחפנים וכו') */}
-        <SideNavDrawer activeView={navView} onViewChange={setNavView} />
+        {/* Navigation Dropdown Drawer */}
+        <SideNavDrawer activeView={navView as NavViewMode} onViewChange={setNavView} />
 
-        {/* View 1: Simulation Summary Panel (Without additional sidebar buttons) */}
+        {/* View 1: Simulation Summary Panel */}
         {navView === "summary" ? (
           <SimulationSummaryPanel onViewSimulation={handleViewSimulation} />
+        ) : navView === "summary_scenarios" ? (
+          /* View 2: Scenarios Repository Panel (מאגר תרחישים) */
+          <EventSummary
+            scenarios={INITIAL_SCENARIOS}
+            onSelectScenario={handleScenarioSelectFromSummary}
+          />
         ) : (
           <>
             {/* Tactical Map View */}
@@ -211,7 +226,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
               />
             )}
 
-            {/* Events Panel (פריסת רחפנים / תרחישים / מסך בית) */}
+            {/* Events Panel */}
             {navView === "scenarios" && (
               <EventsPanel
                 scenarios={INITIAL_SCENARIOS}
