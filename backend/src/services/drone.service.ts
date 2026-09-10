@@ -1,19 +1,22 @@
-import { AppDataSource } from '../config/db';
-import { Drone } from '../Entities';
-import { logger } from '../middleware/logger';
+import { AppDataSource } from "../config/db";
+import { Drone } from "../Entities";
+import { logger } from "../middleware/logger";
 
 export const getDroneRepository = () => AppDataSource.getRepository(Drone);
 
 export type DroneInput = Partial<Drone> & {
   drones_group_id?: number;
+  start_time?: number;
 };
 
-export const getAllDrones = async (dronesGroupId?: number): Promise<Drone[]> => {
+export const getAllDrones = async (
+  dronesGroupId?: number,
+): Promise<Drone[]> => {
   const repo = getDroneRepository();
   return repo.find({
     where: dronesGroupId !== undefined ? { dronesGroupId } : undefined,
     relations: { dronesGroup: true, droneType: true },
-    order: { id: 'ASC' },
+    order: { id: "ASC" },
   });
 };
 
@@ -28,7 +31,6 @@ export const getDroneById = async (id: number): Promise<Drone | null> => {
 export const createDrone = async (data: DroneInput): Promise<Drone> => {
   const repo = getDroneRepository();
   const drone = repo.create({
-    id: data.id,
     dronesGroupId: data.dronesGroupId ?? data.drones_group_id,
     longitude: data.longitude,
     latitude: data.latitude,
@@ -36,6 +38,7 @@ export const createDrone = async (data: DroneInput): Promise<Drone> => {
     agl: data.agl,
     heading: data.heading,
     velocity: data.velocity,
+    startTime: data.startTime ?? data.start_time ?? 0,
     type: data.type,
   });
   const saved = await repo.save(drone);
@@ -45,7 +48,7 @@ export const createDrone = async (data: DroneInput): Promise<Drone> => {
 
 export const updateDrone = async (
   id: number,
-  data: Partial<DroneInput>
+  data: Partial<DroneInput>,
 ): Promise<Drone | null> => {
   const repo = getDroneRepository();
   const existing = await repo.findOneBy({ id });
@@ -63,9 +66,12 @@ export const updateDrone = async (
   if (data.agl !== undefined) updatePayload.agl = data.agl;
   if (data.heading !== undefined) updatePayload.heading = data.heading;
   if (data.velocity !== undefined) updatePayload.velocity = data.velocity;
+  if (data.startTime !== undefined || data.start_time !== undefined) {
+    updatePayload.startTime = data.startTime ?? data.start_time;
+  }
   if (data.type !== undefined) updatePayload.type = data.type;
 
-  await repo.update(id, updatePayload);
+  await repo.update(id, updatePayload as any);
   const updated = await repo.findOneBy({ id });
   if (updated) {
     logger.info(`Updated drone with id: ${id}`);

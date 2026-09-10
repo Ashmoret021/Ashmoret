@@ -7,6 +7,7 @@ export type Drone = {
   agl: number;
   heading: number;
   velocity: number;
+  start_time: number;
   type: number;
 };
 

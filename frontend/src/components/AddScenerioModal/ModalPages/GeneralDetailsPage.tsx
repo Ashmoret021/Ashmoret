@@ -18,6 +18,9 @@ export interface GeneralDetailsData {
 export interface GeneralDetailsPageProps {
   data?: GeneralDetailsData;
   onChange?: (data: Partial<GeneralDetailsData>) => void;
+  setCanMovePage?: (canMovePage: boolean) => void;
+  name?: string;
+  onNameChange?: (name: string) => void;
 }
 
 const darkInputSx = {
@@ -106,17 +109,21 @@ const menuPropsSx = {
 export const GeneralDetailsPage: FC<GeneralDetailsPageProps> = ({
   data,
   onChange,
+  setCanMovePage,
+  name,
+  onNameChange
 }) => {
-  const [internalName, setInternalName] = useState("");
-  const [internalType, setInternalType] = useState("Single");
-
-  const scenarioName = data?.scenarioName ?? internalName;
-  const scenarioType = data?.scenarioType ?? internalType;
+  const [internalType, setInternalType] = useState("יחיד");
 
   const handleNameChange = (event: ChangeEvent<HTMLInputElement>) => {
     const val = event.target.value;
-    setInternalName(val);
+    onNameChange?.(val);
     onChange?.({ scenarioName: val });
+    if (val) {
+      setCanMovePage?.(true);
+    } else {
+      setCanMovePage?.(false);
+    }
   };
 
   const handleSelectChange = (event: SelectChangeEvent) => {
@@ -136,7 +143,7 @@ export const GeneralDetailsPage: FC<GeneralDetailsPageProps> = ({
           variant="outlined"
           label="שם התרחיש"
           placeholder="הזן שם לתרחיש"
-          value={scenarioName}
+          value={name}
           onChange={handleNameChange}
           inputProps={{ dir: "rtl", style: { textAlign: "right" } }}
           sx={darkInputSx}
@@ -147,13 +154,13 @@ export const GeneralDetailsPage: FC<GeneralDetailsPageProps> = ({
           <Select
             labelId="scenario-type-label"
             id="scenario-type-select"
-            value={scenarioType}
+            value={internalType}
             label="סוג תרחיש"
             onChange={handleSelectChange}
             MenuProps={menuPropsSx}
           >
-            <MenuItem value="Single">חד זירתי</MenuItem>
-            <MenuItem value="Multi">רב-זירתי</MenuItem>
+            <MenuItem value="יחיד">יחיד</MenuItem>
+            <MenuItem value="רב-מערכתי">רב מערכתי</MenuItem>
           </Select>
         </FormControl>
       </Stack>

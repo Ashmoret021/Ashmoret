@@ -424,6 +424,7 @@ export const DefenseSide: React.FC<DefenseSideProps> = ({
     console.log("Defense side:", {
       defenseDetails,
     });
+    onClose();
   };
 
   const handleCancel = () => {

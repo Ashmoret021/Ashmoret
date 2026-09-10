@@ -1,107 +1,177 @@
--- init.sql
--- Creates all PostgreSQL tables for the Ashmoret system based on the TypeORM entities
--- in backend/src/Entities. Safe to re-run: each table is dropped (if it exists) before
--- being recreated.
+-- Enable UUID extension if needed in the future
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
-CREATE SCHEMA IF NOT EXISTS scenario_management;
-SET search_path TO scenario_management;
+-- ============================================================
+-- Schema
+-- ============================================================
 
--- ==========================================================================
--- Lookup / reference tables
--- ==========================================================================
+CREATE SCHEMA IF NOT EXISTS scenario;
 
-DROP TABLE IF EXISTS drone_type CASCADE;
-CREATE TABLE drone_type (
-  id SERIAL PRIMARY KEY,
-  name VARCHAR(255) NOT NULL UNIQUE
+-- ============================================================
+-- Drop existing tables
+-- Drop in reverse dependency order
+-- ============================================================
+
+DROP TABLE IF EXISTS scenario.launcher_ammunition CASCADE;
+DROP TABLE IF EXISTS scenario.launcher CASCADE;
+DROP TABLE IF EXISTS scenario.drone CASCADE;
+DROP TABLE IF EXISTS scenario.scenario CASCADE;
+DROP TABLE IF EXISTS scenario.launchers_group CASCADE;
+DROP TABLE IF EXISTS scenario.drones_group CASCADE;
+DROP TABLE IF EXISTS scenario.interceptor_type CASCADE;
+DROP TABLE IF EXISTS scenario.launcher_type CASCADE;
+DROP TABLE IF EXISTS scenario.drone_type CASCADE;
+
+-- ============================================================
+-- 1. Static Reference Tables
+-- ============================================================
+
+CREATE TABLE scenario.drone_type (
+
+    id SERIAL NOT NULL PRIMARY KEY,
+
+    name VARCHAR(255) NOT NULL UNIQUE
+
 );
 
-DROP TABLE IF EXISTS interceptor_type CASCADE;
-CREATE TABLE interceptor_type (
-  id SERIAL PRIMARY KEY,
-  name VARCHAR(255) NOT NULL UNIQUE
+CREATE TABLE scenario.launcher_type (
+
+    id SERIAL NOT NULL PRIMARY KEY,
+
+    name VARCHAR(255) NOT NULL UNIQUE,
+
+    reload_time NUMERIC NOT NULL
+
 );
 
-DROP TABLE IF EXISTS launcher_type CASCADE;
-CREATE TABLE launcher_type (
-  id SERIAL PRIMARY KEY,
-  name VARCHAR(255) NOT NULL UNIQUE,
-  reload_time DOUBLE PRECISION NOT NULL
+CREATE TABLE scenario.interceptor_type (
+
+    id SERIAL NOT NULL PRIMARY KEY,
+
+    name VARCHAR(255) NOT NULL UNIQUE
+
 );
 
--- ==========================================================================
--- Groups
--- ==========================================================================
+-- ============================================================
+-- 2. Group Tables
+-- ============================================================
 
-DROP TABLE IF EXISTS drones_group CASCADE;
-CREATE TABLE drones_group (
-  id SERIAL PRIMARY KEY,
-  name VARCHAR(255) NOT NULL,
-  description TEXT
+CREATE TABLE scenario.drones_group (
+
+    id SERIAL NOT NULL PRIMARY KEY,
+
+    name VARCHAR(255) NOT NULL,
+
+    description TEXT
+
 );
 
-DROP TABLE IF EXISTS launchers_group CASCADE;
-CREATE TABLE launchers_group (
-  id SERIAL PRIMARY KEY,
-  name VARCHAR(255) NOT NULL,
-  description TEXT
+CREATE TABLE scenario.launchers_group (
+
+    id SERIAL NOT NULL PRIMARY KEY,
+
+    name VARCHAR(255) NOT NULL,
+
+    description TEXT
+
 );
 
--- ==========================================================================
--- Scenario
--- ==========================================================================
+-- ============================================================
+-- 3. Core Scenario Table
+-- ============================================================
 
-DROP TABLE IF EXISTS scenario CASCADE;
-CREATE TABLE scenario (
-  id VARCHAR(255) PRIMARY KEY,
-  name VARCHAR(255) NOT NULL,
-  drones_group_id INTEGER NOT NULL REFERENCES drones_group (id),
-  launchers_group_id INTEGER NOT NULL REFERENCES launchers_group (id),
-  type VARCHAR(255) NOT NULL
+CREATE TABLE scenario.scenario (
+
+    id SERIAL NOT NULL PRIMARY KEY,
+
+    name VARCHAR(255) NOT NULL,
+
+    drones_group_id INTEGER NOT NULL
+        REFERENCES scenario.drones_group(id)
+        ON DELETE RESTRICT,
+
+    launchers_group_id INTEGER NOT NULL
+        REFERENCES scenario.launchers_group(id)
+        ON DELETE RESTRICT,
+
+    type VARCHAR(50) NOT NULL
+
 );
 
--- ==========================================================================
--- Drone
--- ==========================================================================
+-- ============================================================
+-- 4. Entity Tables
+-- ============================================================
 
-DROP TABLE IF EXISTS drone CASCADE;
-CREATE TABLE drone (
-  id SERIAL PRIMARY KEY,
-  drones_group_id INTEGER NOT NULL REFERENCES drones_group (id),
-  longitude DOUBLE PRECISION NOT NULL,
-  latitude DOUBLE PRECISION NOT NULL,
-  asl DOUBLE PRECISION NOT NULL,
-  agl DOUBLE PRECISION NOT NULL,
-  heading DOUBLE PRECISION NOT NULL,
-  velocity DOUBLE PRECISION NOT NULL,
-  type INTEGER NOT NULL REFERENCES drone_type (id)
+CREATE TABLE scenario.drone (
+
+    id SERIAL NOT NULL PRIMARY KEY,
+
+    drones_group_id INTEGER NOT NULL
+        REFERENCES scenario.drones_group(id)
+        ON DELETE CASCADE,
+
+    longitude NUMERIC NOT NULL,
+
+    latitude NUMERIC NOT NULL,
+
+    asl NUMERIC NOT NULL,
+
+    agl NUMERIC NOT NULL,
+
+    heading NUMERIC NOT NULL,
+
+    velocity NUMERIC NOT NULL,
+
+    start_time NUMERIC NOT NULL,
+
+    type INTEGER NOT NULL
+        REFERENCES scenario.drone_type(id)
+        ON DELETE RESTRICT
+
 );
 
--- ==========================================================================
--- Launcher
--- ==========================================================================
+CREATE TABLE scenario.launcher (
 
-DROP TABLE IF EXISTS launcher CASCADE;
-CREATE TABLE launcher (
-  id SERIAL PRIMARY KEY,
-  launchers_group_id INTEGER NOT NULL REFERENCES launchers_group (id),
-  longitude DOUBLE PRECISION NOT NULL,
-  latitude DOUBLE PRECISION NOT NULL,
-  asl DOUBLE PRECISION NOT NULL,
-  agl DOUBLE PRECISION NOT NULL,
-  type INTEGER NOT NULL REFERENCES launcher_type (id),
-  amount INTEGER NOT NULL,
-  active BOOLEAN NOT NULL
+    id SERIAL NOT NULL PRIMARY KEY,
+
+    launchers_group_id INTEGER NOT NULL
+        REFERENCES scenario.launchers_group(id)
+        ON DELETE CASCADE,
+
+    longitude NUMERIC NOT NULL,
+
+    latitude NUMERIC NOT NULL,
+
+    asl NUMERIC NOT NULL,
+
+    agl NUMERIC NOT NULL,
+
+    type INTEGER NOT NULL
+        REFERENCES scenario.launcher_type(id)
+        ON DELETE RESTRICT,
+
+    amount INTEGER NOT NULL,
+
+    active BOOLEAN NOT NULL DEFAULT TRUE
+
 );
 
--- ==========================================================================
--- Launcher ammunition (launcher <-> interceptor_type join table)
--- ==========================================================================
+-- ============================================================
+-- 5. Ammunition Junction Table
+-- ============================================================
 
-DROP TABLE IF EXISTS launcher_ammunition CASCADE;
-CREATE TABLE launcher_ammunition (
-  launcher_id INTEGER NOT NULL REFERENCES launcher (id),
-  interceptor_type_id INTEGER NOT NULL REFERENCES interceptor_type (id),
-  amount INTEGER NOT NULL,
-  PRIMARY KEY (launcher_id, interceptor_type_id)
+CREATE TABLE scenario.launcher_ammunition (
+
+    launcher_id INTEGER NOT NULL
+        REFERENCES scenario.launcher(id)
+        ON DELETE CASCADE,
+
+    interceptor_type_id INTEGER NOT NULL
+        REFERENCES scenario.interceptor_type(id)
+        ON DELETE RESTRICT,
+
+    amount INTEGER NOT NULL,
+
+    PRIMARY KEY (launcher_id, interceptor_type_id)
+
 );

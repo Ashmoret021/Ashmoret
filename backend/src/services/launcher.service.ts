@@ -1,4 +1,4 @@
-import { AppDataSource } from '../config/db';
+import { AppDataSource } from "../config/db";
 import { Launcher } from '../Entities';
 import { logger } from '../middleware/logger';
 
@@ -28,7 +28,6 @@ export const getLauncherById = async (id: number): Promise<Launcher | null> => {
 export const createLauncher = async (data: LauncherInput): Promise<Launcher> => {
   const repo = getLauncherRepository();
   const launcher = repo.create({
-    id: data.id,
     launchersGroupId: data.launchersGroupId ?? data.launchers_group_id,
     longitude: data.longitude,
     latitude: data.latitude,
@@ -65,7 +64,7 @@ export const updateLauncher = async (
   if (data.amount !== undefined) updatePayload.amount = data.amount;
   if (data.active !== undefined) updatePayload.active = data.active;
 
-  await repo.update(id, updatePayload);
+  await repo.update(id, updatePayload as any);
   const updated = await repo.findOneBy({ id });
   if (updated) {
     logger.info(`Updated launcher with id: ${id}`);

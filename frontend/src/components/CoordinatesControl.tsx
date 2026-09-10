@@ -42,7 +42,7 @@ export const CoordinatesControl: React.FC<CoordinatesControlProps> = ({
       >
         {coords ? (
           <span>
-            x: {coords.lat.toFixed(5)}, y: {coords.lng.toFixed(5)}
+            x: {coords.lng.toFixed(5)}, y: {coords.lat.toFixed(5)}
           </span>
         ) : (
           <span style={{ color: "#fcfcfc" }}>x: ---, y: ---</span>
