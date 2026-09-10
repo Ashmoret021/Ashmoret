@@ -8,7 +8,7 @@ type EntityGroup = DroneGroup | LauncherGroup;
 type GroupTabFilter = 'all' | 'drones' | 'launchers';
 
 interface LaunchersDronesPanelProps {
-  groups?: EntityGroup[];
+  groups: EntityGroup[];
   selectedGroupId?: number;
   isOpen?: boolean;
   onToggleOpen?: () => void;
@@ -17,7 +17,7 @@ interface LaunchersDronesPanelProps {
 }
 
 export const LaunchersDronesPanel: React.FC<LaunchersDronesPanelProps> = ({
-  groups = [],
+  groups,
   selectedGroupId,
   isOpen: controlledIsOpen,
   onToggleOpen,

@@ -7,7 +7,7 @@ import { INITIAL_SCENARIOS } from '../../mock/events';
 import './EventsPanel.css';
 
 interface EventsPanelProps {
-  scenarios?: ScenarioItem[];
+  scenarios: ScenarioItem[];
   selectedScenarioId?: string;
   isOpen?: boolean;
   onToggleOpen?: () => void;
