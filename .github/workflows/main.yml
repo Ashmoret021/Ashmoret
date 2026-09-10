@@ -1,0 +1,15 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - '*'
+
+jobs:
+  pipeline:
+    uses: Devops-Had-Hatzot/ci-template/.github/workflows/main.yml@main
+    with:
+      TAG: "1.0.0"
+    secrets: inherit
