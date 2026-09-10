@@ -105,22 +105,20 @@ export const LauncherSelectionPage: FC<LauncherSelectionPageProps> = ({
   selectedGroup: propGroup,
   onSelectGroup,
 }) => {
-  const [internalGroup, setInternalGroup] = useState<number>(0);
   const {launchersGroups} = useGetAllLaunchersGroups();
+  const [internalGroup, setInternalGroup] = useState<number>(1);
   const [isDefenseSideOPen, setIsDefenseSideOpen] = useState<boolean>(false);
-
-  const currentGroup = propGroup ?? internalGroup;
 
   const handleSelectChange = (event: SelectChangeEvent) => {
     const val = +event.target.value;
     setInternalGroup(val);
-    const chosen = launchersGroups?.data?.find((b: LauncherGroup) => b.id === +val);
+    const chosen = launchersGroups.find((b: LauncherGroup) => b.id === +val);
     onSelectGroup?.(val, chosen?.name);
   };
 
   const handleClose = () => {
     setIsDefenseSideOpen(false);
-    setInternalGroup(launchersGroups.data[launchersGroups.data.length - 1].id)
+    setInternalGroup(launchersGroups[launchersGroups.length - 1].id)
   }
 
   return (
@@ -131,12 +129,12 @@ export const LauncherSelectionPage: FC<LauncherSelectionPageProps> = ({
           <Select
             labelId="launcher-select-label"
             id="launcher-select-option"
-            value={currentGroup.toString()}
+            value={internalGroup.toString()}
             label="בחר קבוצת משגרים"
             onChange={handleSelectChange}
             MenuProps={menuPropsSx}
           >
-            {launchersGroups?.data?.map((b: LauncherGroup) => (
+            {launchersGroups.map((b: LauncherGroup) => (
               <MenuItem key={b.id} value={b.id}>
                 {b.name}
               </MenuItem>
@@ -159,7 +157,7 @@ export const LauncherSelectionPage: FC<LauncherSelectionPageProps> = ({
         >
           יצירת קבוצת משגרים
         </Button>
-        <DefenseSide open={isDefenseSideOPen} onClose={() => {setIsDefenseSideOpen(false)}}/>
+        <DefenseSide open={isDefenseSideOPen} onClose={handleClose}/>
       </Stack>
     </Box>
   );

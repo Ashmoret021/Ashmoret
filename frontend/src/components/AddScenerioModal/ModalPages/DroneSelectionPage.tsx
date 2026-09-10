@@ -11,6 +11,10 @@ import {
 import { FC, useState } from "react";
 import { useGetAllDronesGroups } from "../../../api/hooks";
 import { DroneGroup } from "../../../types/types";
+import { storageService } from "../../../services/storageService";
+import { DroneWave, PlacedDrone } from "../../../types/drone";
+import { createWave } from "../../../constants/droneConstants";
+import AttackSide from "../../Attackside";
 
 export interface DroneSelectionPageProps {
   selectedGroup?: number;
@@ -104,32 +108,57 @@ export const DroneSelectionPage: FC<DroneSelectionPageProps> = ({
   selectedGroup: propGroup,
   onSelectGroup,
 }) => {
-  const [internalGroup, setInternalGroup] = useState<number>(0);
-  const {dronesGroups} = useGetAllDronesGroups();
-
-  const currentGroup = propGroup ?? internalGroup;
+  const [attackModalOpen, setAttackModalOpen] = useState(false);
+  const [defenseModalOpen, setDefenseModalOpen] = useState(false);
+  const [currentScenarioId, setCurrentScenarioId] = useState<string | null>(
+    () => {
+      return storageService.getActiveScenarioId();
+    },
+  );
+  const [attackName, setAttackName] = useState<string>(() => {
+    return storageService.getStoredMetadata()?.attackName || "";
+  });
+  const [attackDescription, setAttackDescription] = useState<string>(() => {
+    return storageService.getStoredMetadata()?.attackDescription || "";
+  });
+  const [waves, setWaves] = useState<DroneWave[]>(() => {
+    const saved = storageService.getStoredWaves();
+    return saved && saved.length > 0 ? saved : [createWave(1)];
+  });
+  const [placedDrones, setPlacedDrones] = useState<PlacedDrone[]>(() => {
+    return storageService.getStoredDrones();
+  });
+  const [placingWaveId, setPlacingWaveId] = useState<number | null>(null);
+  const [highlightedDroneId, setHighlightedDroneId] = useState<string | null>(
+    null,
+  );
+  const [internalGroup, setInternalGroup] = useState<number>(1);
+  const { dronesGroups } = useGetAllDronesGroups();
 
   const handleSelectChange = (event: SelectChangeEvent) => {
     const val = +event.target.value;
     setInternalGroup(val);
-    const chosen = dronesGroups?.data?.find((g: DroneGroup) => g.id === val);
+    const chosen = dronesGroups.find((g: DroneGroup) => g.id === val);
     onSelectGroup?.(val, chosen?.name);
   };
 
   return (
-    <Box dir="rtl" sx={{ width: "100%", direction: "rtl", textAlign: "right", pt: 1 }}>
+    <Box
+      dir="rtl"
+      sx={{ width: "100%", direction: "rtl", textAlign: "right", pt: 1 }}
+    >
       <Stack spacing={2.5}>
         <FormControl fullWidth sx={darkInputSx}>
           <InputLabel id="drone-select-label">בחר קבוצת רחפנים</InputLabel>
           <Select
             labelId="drone-select-label"
             id="drone-select-option"
-            value={currentGroup.toString()}
+            value={internalGroup.toString()}
             label="בחר קבוצת רחפנים"
             onChange={handleSelectChange}
             MenuProps={menuPropsSx}
           >
-            {dronesGroups?.data?.map((g: DroneGroup) => (
+            {dronesGroups.map((g: DroneGroup) => (
               <MenuItem key={g.id} value={g.id}>
                 {g.name}
               </MenuItem>
@@ -140,6 +169,7 @@ export const DroneSelectionPage: FC<DroneSelectionPageProps> = ({
         <Button
           variant="outlined"
           fullWidth
+          onClick={() => setAttackModalOpen(true)}
           sx={{
             color: "#38bdf8",
             borderColor: "rgba(56, 189, 248, 0.4)",
@@ -151,6 +181,42 @@ export const DroneSelectionPage: FC<DroneSelectionPageProps> = ({
         >
           יצירת קבוצת רחפנים
         </Button>
+        <AttackSide
+          open={attackModalOpen}
+          onClose={() => setAttackModalOpen(false)}
+          waves={waves}
+          setWaves={setWaves}
+          placedDrones={placedDrones}
+          onStartPlacement={(waveId, options) => {
+            const numericWaveId = Number(waveId);
+            if (!Number.isFinite(numericWaveId)) {
+              console.error("מזהה גם לא תקין")
+              return;
+            }
+
+            setPlacingWaveId(numericWaveId);
+
+            if (options) {
+              setWaves((prev) =>
+                prev.map((wave) =>
+                  String(wave.id) === String(waveId)
+                    ? {
+                        ...wave,
+                        placementMode: options.mode,
+                        batchSize: options.count,
+                      }
+                    : wave,
+                ),
+              );
+            }
+
+          }}
+          attackName={attackName}
+          setAttackName={setAttackName}
+          attackDescription={attackDescription}
+          setAttackDescription={setAttackDescription}
+          onSaveScenario={()=>{}}
+        />
       </Stack>
     </Box>
   );
