@@ -12,6 +12,7 @@ export type UpdateScenarioInput = Partial<Omit<Scenario, 'id'>>;
 export interface DronesGroup {
   id: number;
   name: string;
+  description?: string;
 }
 
 export type CreateDronesGroupInput = DronesGroup;
@@ -20,6 +21,7 @@ export type UpdateDronesGroupInput = Partial<Omit<DronesGroup, 'id'>>;
 export interface LaunchersGroup {
   id: number;
   name: string;
+  description?: string;
 }
 
 export type CreateLaunchersGroupInput = LaunchersGroup;

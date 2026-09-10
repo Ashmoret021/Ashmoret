@@ -4,13 +4,13 @@ import { InterceptorType } from "./InterceptorType.entity";
 
 @Entity("launcher_ammunition")
 export class LauncherAmmunition {
-  @PrimaryColumn({ name: "launcher_id" })
+  @PrimaryColumn({ type: "int", name: "launcher_id" })
   launcherId!: number;
 
-  @PrimaryColumn({ name: "interceptor_type_id" })
+  @PrimaryColumn({ type: "int", name: "interceptor_type_id" })
   interceptorTypeId!: number;
 
-  @Column()
+  @Column({ type: "int" })
   amount!: number;
 
   @ManyToOne(() => Launcher, (launcher: Launcher) => launcher.ammunition)
