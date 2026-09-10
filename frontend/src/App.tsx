@@ -72,9 +72,11 @@ export const App = () => {
   // ── Attack Side (wave placement builder) state ─────────────────────────
   const [attackModalOpen, setAttackModalOpen] = useState(false);
   const [defenseModalOpen, setDefenseModalOpen] = useState(false);
-  const [currentScenarioId, setCurrentScenarioId] = useState<string | null>(() => {
-    return storageService.getActiveScenarioId();
-  });
+  const [currentScenarioId, setCurrentScenarioId] = useState<string | null>(
+    () => {
+      return storageService.getActiveScenarioId();
+    },
+  );
   const [attackName, setAttackName] = useState<string>(() => {
     return storageService.getStoredMetadata()?.attackName || "";
   });
@@ -89,7 +91,9 @@ export const App = () => {
     return storageService.getStoredDrones();
   });
   const [placingWaveId, setPlacingWaveId] = useState<number | null>(null);
-  const [highlightedDroneId, setHighlightedDroneId] = useState<string | null>(null);
+  const [highlightedDroneId, setHighlightedDroneId] = useState<string | null>(
+    null,
+  );
   const [deleteModal, setDeleteModal] = useState<{
     open: boolean;
     title: string;
@@ -106,12 +110,15 @@ export const App = () => {
     type: "success" | "error" | "info";
   } | null>(null);
 
-  const showToast = useCallback((message: string, type: "success" | "error" | "info" = "info") => {
-    setToast({ message, type });
-    setTimeout(() => {
-      setToast((curr) => (curr?.message === message ? null : curr));
-    }, 4000);
-  }, []);
+  const showToast = useCallback(
+    (message: string, type: "success" | "error" | "info" = "info") => {
+      setToast({ message, type });
+      setTimeout(() => {
+        setToast((curr) => (curr?.message === message ? null : curr));
+      }, 4000);
+    },
+    [],
+  );
 
   // Persist waves on change
   useEffect(() => {
@@ -588,49 +595,55 @@ export const App = () => {
   // ── Attack Side (wave placement builder) handlers ─────────────────────────
 
   // Drone focus / centering action
-  const handleFocusDrone = useCallback((droneId: string) => {
-    const drone = placedDrones.find((d) => d.id === droneId);
-    if (!drone || !mapInstanceRef.current) return;
+  const handleFocusDrone = useCallback(
+    (droneId: string) => {
+      const drone = placedDrones.find((d) => d.id === droneId);
+      if (!drone || !mapInstanceRef.current) return;
 
-    mapInstanceRef.current.flyTo([drone.latitude, drone.longitude], 12, {
-      animate: true,
-      duration: 1,
-    });
+      mapInstanceRef.current.flyTo([drone.latitude, drone.longitude], 12, {
+        animate: true,
+        duration: 1,
+      });
 
-    setHighlightedDroneId(droneId);
+      setHighlightedDroneId(droneId);
 
-    setTimeout(() => {
-      const marker = markersMapRef.current.get(droneId);
-      if (marker) {
-        marker.openPopup();
-      }
-    }, 400);
+      setTimeout(() => {
+        const marker = markersMapRef.current.get(droneId);
+        if (marker) {
+          marker.openPopup();
+        }
+      }, 400);
 
-    setTimeout(() => {
-      setHighlightedDroneId((curr) => (curr === droneId ? null : curr));
-    }, 5000);
-  }, [placedDrones]);
+      setTimeout(() => {
+        setHighlightedDroneId((curr) => (curr === droneId ? null : curr));
+      }, 5000);
+    },
+    [placedDrones],
+  );
 
   // Request Delete Single Drone (with confirmation modal)
-  const handleDeleteDroneRequestById = useCallback((droneId: string) => {
-    const drone = placedDrones.find((d) => d.id === droneId);
-    if (!drone) return;
+  const handleDeleteDroneRequestById = useCallback(
+    (droneId: string) => {
+      const drone = placedDrones.find((d) => d.id === droneId);
+      if (!drone) return;
 
-    setDeleteModal({
-      open: true,
-      title: `מחיקת רחפן ${drone.name || drone.id}`,
-      message: `האם אתה בטוח שברצונך למחוק את רחפן ${drone.id} (גל ${drone.waveId}) מהמפה? פעולה זו תפנה מקום להצבת רחפן נוסף.`,
-      onConfirm: () => {
-        setPlacedDrones((prev) => {
-          const updated = prev.filter((d) => d.id !== droneId);
-          storageService.saveStoredDrones(updated);
-          return updated;
-        });
-        setDeleteModal((curr) => ({ ...curr, open: false }));
-        showToast(`רחפן ${drone.id} נמחק בהצלחה`, "success");
-      },
-    });
-  }, [placedDrones, showToast]);
+      setDeleteModal({
+        open: true,
+        title: `מחיקת רחפן ${drone.name || drone.id}`,
+        message: `האם אתה בטוח שברצונך למחוק את רחפן ${drone.id} (גל ${drone.waveId}) מהמפה? פעולה זו תפנה מקום להצבת רחפן נוסף.`,
+        onConfirm: () => {
+          setPlacedDrones((prev) => {
+            const updated = prev.filter((d) => d.id !== droneId);
+            storageService.saveStoredDrones(updated);
+            return updated;
+          });
+          setDeleteModal((curr) => ({ ...curr, open: false }));
+          showToast(`רחפן ${drone.id} נמחק בהצלחה`, "success");
+        },
+      });
+    },
+    [placedDrones, showToast],
+  );
 
   // Render & Update Markers on the Leaflet Map
   useEffect(() => {
@@ -651,7 +664,7 @@ export const App = () => {
       const popupElement = createDronePopupContent(
         drone,
         (id) => handleDeleteDroneRequestById(id),
-        (id) => handleFocusDrone(id)
+        (id) => handleFocusDrone(id),
       );
 
       marker.bindPopup(popupElement, {
@@ -666,7 +679,12 @@ export const App = () => {
         marker.openPopup();
       }
     });
-  }, [placedDrones, highlightedDroneId, handleDeleteDroneRequestById, handleFocusDrone]);
+  }, [
+    placedDrones,
+    highlightedDroneId,
+    handleDeleteDroneRequestById,
+    handleFocusDrone,
+  ]);
 
   // Handle Map Click when in Placement Mode
   useEffect(() => {
@@ -680,13 +698,15 @@ export const App = () => {
     }
 
     const onMapClick = (e: L.LeafletMouseEvent) => {
-      const placedForWave = placedDrones.filter((d) => d.waveId === activeWave.id);
+      const placedForWave = placedDrones.filter(
+        (d) => d.waveId === activeWave.id,
+      );
       const required = Number(activeWave.quantity) || 0;
 
       if (placedForWave.length >= required) {
         showToast(
           `הושלמה הצבת כל ${required} הרחפנים לגל ${activeWave.id}. לא ניתן לחרוג מהכמות המוגדרת.`,
-          "error"
+          "error",
         );
         setPlacingWaveId(null);
         return;
@@ -704,15 +724,24 @@ export const App = () => {
 
       for (let i = 0; i < batchCount; i++) {
         const nextNum = placedForWave.length + 1 + i;
-        const uniqueSuffix = Math.random().toString(36).substring(2, 6).toUpperCase();
+        const uniqueSuffix = Math.random()
+          .toString(36)
+          .substring(2, 6)
+          .toUpperCase();
         const droneId = `DRN-W${activeWave.id}-${String(nextNum).padStart(2, "0")}-${uniqueSuffix}`;
         const droneName = `רחפן ${nextNum} (גל ${activeWave.id})`;
 
         // Slight offset for multi-placement batch items
-        const offsetRadius = isBatch && batchCount > 1 ? 0.0003 * Math.sqrt(i) : 0;
-        const offsetAngle = isBatch && batchCount > 1 ? (i * 2 * Math.PI) / batchCount : 0;
-        const droneLat = Number((lat + offsetRadius * Math.cos(offsetAngle)).toFixed(6));
-        const droneLng = Number((lng + offsetRadius * Math.sin(offsetAngle)).toFixed(6));
+        const offsetRadius =
+          isBatch && batchCount > 1 ? 0.0003 * Math.sqrt(i) : 0;
+        const offsetAngle =
+          isBatch && batchCount > 1 ? (i * 2 * Math.PI) / batchCount : 0;
+        const droneLat = Number(
+          (lat + offsetRadius * Math.cos(offsetAngle)).toFixed(6),
+        );
+        const droneLng = Number(
+          (lng + offsetRadius * Math.sin(offsetAngle)).toFixed(6),
+        );
 
         newDronesToPlace.push({
           id: droneId,
@@ -733,12 +762,13 @@ export const App = () => {
       setPlacedDrones(updatedDrones);
       storageService.saveStoredDrones(updatedDrones);
 
-      const remaining = required - (placedForWave.length + newDronesToPlace.length);
+      const remaining =
+        required - (placedForWave.length + newDronesToPlace.length);
 
       if (remaining <= 0) {
         showToast(
           `כל ${required} הרחפנים עבור גל ${activeWave.id} הוצבו בהצלחה!`,
-          "success"
+          "success",
         );
         setPlacingWaveId(null);
       } else {
@@ -746,7 +776,7 @@ export const App = () => {
           batchCount > 1
             ? `הוצבו ${batchCount} רחפנים במקבץ! נותרו עוד ${remaining} רחפנים להצבה.`
             : `רחפן ${newDronesToPlace[0].name} מוקם בהצלחה! נותרו עוד ${remaining} רחפנים להצבה.`,
-          "success"
+          "success",
         );
       }
     };
@@ -760,7 +790,8 @@ export const App = () => {
 
   // Scenario Management Callbacks
   const handleSaveScenario = useCallback(() => {
-    const scenarioId = currentScenarioId || `SCN-${Date.now().toString().slice(-6)}`;
+    const scenarioId =
+      currentScenarioId || `SCN-${Date.now().toString().slice(-6)}`;
     const scenarioName =
       attackName.trim() ||
       `תרחיש ${new Date().toLocaleTimeString("he-IL", { hour: "2-digit", minute: "2-digit" })}`;
@@ -785,23 +816,40 @@ export const App = () => {
 
     storageService.setActiveScenarioId(null);
     storageService.saveStoredWaves([createWave(1)]);
-    storageService.saveStoredMetadata({ attackName: "", attackDescription: "" });
+    storageService.saveStoredMetadata({
+      attackName: "",
+      attackDescription: "",
+    });
 
     setAttackModalOpen(false);
     showToast(
       `תרחיש "${scenarioName}" נשמר בהצלחה עם ${scenarioToSave.drones.length} רחפנים. הרחפנים הוסרו מהמפה הפעילה.`,
-      "success"
+      "success",
     );
-  }, [currentScenarioId, attackName, attackDescription, waves, placedDrones, showToast]);
+  }, [
+    currentScenarioId,
+    attackName,
+    attackDescription,
+    waves,
+    placedDrones,
+    showToast,
+  ]);
 
   // Active wave calculation
   const activePlacingWave =
-    placingWaveId !== null ? waves.find((w) => w.id === placingWaveId) || null : null;
+    placingWaveId !== null
+      ? waves.find((w) => w.id === placingWaveId) || null
+      : null;
   const activePlacedCount = activePlacingWave
     ? placedDrones.filter((d) => d.waveId === activePlacingWave.id).length
     : 0;
-  const activeRequiredCount = activePlacingWave ? Number(activePlacingWave.quantity) || 0 : 0;
-  const activeRemainingCount = Math.max(0, activeRequiredCount - activePlacedCount);
+  const activeRequiredCount = activePlacingWave
+    ? Number(activePlacingWave.quantity) || 0
+    : 0;
+  const activeRemainingCount = Math.max(
+    0,
+    activeRequiredCount - activePlacedCount,
+  );
 
   const stateJson = JSON.stringify(state, null, 2);
   const isRunning = state.status === "running";
@@ -831,22 +879,6 @@ export const App = () => {
 
   return (
     <>
-      <style>
-        {`
-          .leaflet-top.leaflet-left {
-            display: flex !important;
-            flex-direction: row !important;
-            align-items: center !important;
-            gap: 12px !important;
-            top: 16px !important;
-            left: 16px !important;
-          }
-          .leaflet-top.leaflet-left .leaflet-control {
-            margin: 0 !important;
-          }
-        `}
-      </style>
-
       <div
         className={placingWaveId !== null ? "placement-active-cursor" : ""}
         style={{
