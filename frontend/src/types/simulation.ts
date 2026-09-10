@@ -1,4 +1,6 @@
-import { Drone, Launcher } from "../../../types/types.ts";
+import { Drone, Launcher } from "./types";
+
+export type PlacementMode = 'auto' | 'manual';
 
 export enum Direction {
   NORTH = 'צפון',
@@ -23,19 +25,17 @@ export interface InterceptorItem {
 }
 
 export type SeverityLevel = 'low' | 'high' | 'extreme';
-export enum ScenarioType {
-  SINGLE_AREA = 'חד-זירתי',
-  MULTIPLE_AREAS = 'רב-זירתי',
-};
+export type ScenarioType = 'single' | 'multi';
 
 export interface ScenarioItem {
   id: string;
   title: string;
   severity: SeverityLevel;
   type: ScenarioType;
-  drones: Drone[];
-  entryPoints: Direction[]; // e.g. ['צפון'], ['צפון', 'מזרח']
-  launchers: Launcher[];
+  typeLabel: string; // 'חד-זירתי' | 'רב-זירתי'
+  droneCount: number;
+  entryPoints: string[]; // e.g. ['צפון'], ['צפון', 'מזרח']
+  droneTypes: string[]; // e.g. ['A', 'B'], ['A', 'B', 'C']
 }
 
 export interface TacticalMarker {

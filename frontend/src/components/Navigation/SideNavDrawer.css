@@ -2,7 +2,9 @@
 .side-nav-container {
   position: absolute;
   top: 0;
-  right: 28px;
+  /* Positioned to the left of the 385px side panels (EventsPanel / LaunchersDronesPanel),
+     plus their 28px collapse tab, so the dropdown never overlaps them. */
+  right: 430px;
   z-index: 1200;
   direction: rtl;
   user-select: none;
