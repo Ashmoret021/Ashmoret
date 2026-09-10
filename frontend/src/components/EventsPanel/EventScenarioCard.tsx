@@ -42,6 +42,8 @@ export const EventScenarioCard: React.FC<EventScenarioCardProps> = ({
     }
   };
 
+  console.log(scenario)
+
   return (
     <div
       className={`scenario-card ${isSelected ? 'selected' : ''}`}

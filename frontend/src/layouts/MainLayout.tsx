@@ -51,16 +51,14 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
   onAddDroneGroup,
   onAddInterceptorGroup,
 }) => {
-  const [navView, setNavView] = useState<NavViewMode>("drones");
+  const [navView, setNavView] = useState<NavViewMode>("home");
   const [selectedScenario, setSelectedScenario] = useState<ScenarioItem | null>(null);
 
   const {dronesGroups, setDronesGroups} = useGetAllDronesGroups();
   const {launchersGroups, setLaunchersGroups} = useGetAllLaunchersGroups();
-  const {scenarios, setScenarios} = useGetAllScenarios();
 
-  console.log("FGEWG")
-  console.log(launchersGroups)
-  console.log(dronesGroups)
+  //TODO: data doesnt match to INITIAL_SCENARIOS
+  const {scenarios, setScenarios} = useGetAllScenarios();
 
   const [selectedGroup, setSelectedGroup] = useState<DroneGroup | LauncherGroup | null>(null);
 
@@ -235,7 +233,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
             </div>
 
             {/* Scenario selection panel (home / drones view) */}
-            {(navView === "drones" || navView === "home") && (
+            {(navView === "home") && (
               <EventsPanel
                 scenarios={INITIAL_SCENARIOS}
                 selectedScenarioId={selectedScenario?.id}
@@ -249,7 +247,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
             {navView === "scenarios" && (
               <EventsPanel
                 selectedScenarioId={selectedScenario?.id}
-                scenarios={scenarios}
+                scenarios={INITIAL_SCENARIOS}
                 onScenarioSelect={handleScenarioSelect}
                 onCreateScenario={handleCreateScenario}
               />
@@ -266,7 +264,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
             )}
 
             {/* Drone groups panel (attack-side placement) */}
-            {navView === "drones" && false /* handled above by EventsPanel */ && (
+            {navView === "drones" && (
               <LaunchersDronesPanel
                 groups={dronesGroups}
                 selectedGroupId={selectedGroup?.id}
