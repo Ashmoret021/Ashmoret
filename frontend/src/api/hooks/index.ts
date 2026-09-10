@@ -11,7 +11,7 @@ export const useGetAllDronesGroups = () => {
         .dronesGroup()
         .getAllDronesGroups()
         .then((response) => {
-          setDronesGroups(response.data.data);
+          setDronesGroups(response.data);
         })
         .catch((error) => {
           console.log(error);
@@ -33,7 +33,7 @@ export const useGetAllLaunchersGroups = () => {
         .launchersGroup()
         .getAllLaunchersGroups()
         .then((response) => {
-          setLaunchersGroups(response.data.data);
+          setLaunchersGroups(response.data);
         })
         .catch((error) => {
           console.log(error);
@@ -43,4 +43,25 @@ export const useGetAllLaunchersGroups = () => {
   }, []);
 
   return { launchersGroups, setLaunchersGroups };
+};
+
+export const useGetAllScenarios = () => {
+  const [scenarios, setScenarios] = useState<any>([]);
+
+  useEffect(() => {
+    const fetchScenarios = async () => {
+      api
+        .scenerios()
+        .getAllScenerios()
+        .then((response) => {
+          setScenarios(response.data);
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    };
+    fetchScenarios();
+  }, []);
+
+  return { scenarios, setScenarios };
 };
