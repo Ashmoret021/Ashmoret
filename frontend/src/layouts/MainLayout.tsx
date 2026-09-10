@@ -46,9 +46,10 @@ interface MainLayoutProps {
   simId?: string;
   onStartSimulation?: () => void;
   handleMapReady?: (map: Map) => void;
-  setShowMainAdditionalComponents: React.Dispatch<
-    React.SetStateAction<boolean>
-  >;
+  setShowMainAdditionalComponents: React.Dispatch<React.SetStateAction<boolean>>;
+  onGoToCoordinates?: (lat: number, lng: number) => void;
+  onRemoveMarker?: () => void;
+  hasMarker?: boolean;
   onAddDroneGroup?: () => void;
   onAddInterceptorGroup?: () => void;
   layersOpen?: boolean;
@@ -64,6 +65,9 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
   onStartSimulation,
   handleMapReady,
   setShowMainAdditionalComponents,
+  onGoToCoordinates,
+  onRemoveMarker,
+  hasMarker = false,
   onAddDroneGroup,
   onAddInterceptorGroup,
   layersOpen = false,
@@ -196,6 +200,9 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
         onLayersToggle={onLayersToggle}
         layersMenuRef={layersMenuRef}
         logoSrc={logoSrc}
+        onGoToCoordinates={onGoToCoordinates}
+        onRemoveMarker={onRemoveMarker}
+        hasMarker={hasMarker}
       />
 
       {/* Main Workspace */}
