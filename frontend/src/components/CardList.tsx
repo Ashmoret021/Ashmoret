@@ -32,7 +32,7 @@ export default function Cards() {
       interceptorsPerSystem={24}
       totalInterceptors={192}
       interceptorCost={15000}
-      estimatedInterceptionSuccessRate="72% מול SkyMite-C7; 38% מול NanoSwarm-Q9"
+      estimatedInterceptionSuccessRate="72% מול SkyMite-C7 38% מול NanoSwarm-Q9"
       operationalRange={10}
       />
     </div>

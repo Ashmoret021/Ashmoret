@@ -92,7 +92,7 @@ export default function InterceptorCard({
 
         <div className="info-item stacked">
           <span>אחוז הצלחת יירוט משוער:</span>
-          <strong>{estimatedInterceptionSuccessRate}%</strong>
+          <strong>{estimatedInterceptionSuccessRate}</strong>
         </div>
 
         <div className="info-item">
