@@ -10,7 +10,10 @@ export default {
         return {
             createScenerio: (data: ScenerioCreationType): Promise<AxiosResponse> => {
                 return axiosInstance.post("/scenerios", data);
-            }
+            },
+            getAllScenerios: (): Promise<AxiosResponse> => {
+                return axiosInstance.get("/scenarios");
+            },
         }
     },
     dronesGroup() {

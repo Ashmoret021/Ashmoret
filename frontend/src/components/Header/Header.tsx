@@ -6,10 +6,10 @@ import {
   Wifi,
   ShieldCheck,
   Crosshair,
-    Ruler,
+  Ruler,
   Layers3,
 } from "lucide-react";
-import { CoordinateSearch } from './CoordinateSearch';
+import { CoordinateSearch } from "./CoordinateSearch";
 import "./Header.css";
 interface HeaderProps {
   scenarioName?: string;
@@ -77,7 +77,7 @@ export const Header: React.FC<HeaderProps> = ({
             )}
           </div>
           <div className="brand-titles">
-            <h1 className="system-title">מערכת סימולציית יירוט</h1>
+            <h1 className="system-title">אשמורת</h1>
             <span className="system-subtitle">SIMULATION CONTROL CENTER</span>
           </div>
         </div>
@@ -90,14 +90,6 @@ export const Header: React.FC<HeaderProps> = ({
           </span>
         </div>
 
-        {/* Coordinate Search moved to right side */}
-        {onGoToCoordinates && (
-          <CoordinateSearch
-            onGoToCoordinates={onGoToCoordinates}
-            onRemoveMarker={onRemoveMarker}
-            hasMarker={hasMarker}
-          />
-        )}
         <div className="map-tools-section" aria-label="כלי מפה">
           <span className="map-tools-title">כלי מפה</span>
           <div className="map-tools-actions">
@@ -126,6 +118,13 @@ export const Header: React.FC<HeaderProps> = ({
                 <span>שכבות</span>
               </button>
             </div>
+            {onGoToCoordinates && (
+              <CoordinateSearch
+                onGoToCoordinates={onGoToCoordinates}
+                onRemoveMarker={onRemoveMarker}
+                hasMarker={hasMarker}
+              />
+            )}
           </div>
         </div>
       </div>
@@ -160,25 +159,6 @@ export const Header: React.FC<HeaderProps> = ({
           <Radio size={13} className="sim-icon" />
           <span>{simId}</span>
         </div>
-
-        {/* Notification button */}
-        <button
-          className="header-action-btn"
-          title="התראות"
-          aria-label="התראות"
-        >
-          <Bell size={17} />
-          <span className="notification-dot" />
-        </button>
-
-        {/* Settings button */}
-        <button
-          className="header-action-btn"
-          title="הגדרות מערכת"
-          aria-label="הגדרות"
-        >
-          <Settings size={17} />
-        </button>
       </div>
     </header>
   );

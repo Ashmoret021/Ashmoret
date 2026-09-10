@@ -1,6 +1,7 @@
 import L from "leaflet";
 import { PlacedDrone } from "../types/drone";
 import { getClosestDirection } from "../constants/droneConstants";
+import { getDroneIconUrl } from "../map/icons";
 
 export function createDroneDivIcon(drone: PlacedDrone, isHighlighted: boolean = false): L.DivIcon {
   const highlightClass = isHighlighted ? "drone-marker-highlighted" : "";
@@ -17,19 +18,9 @@ export function createDroneDivIcon(drone: PlacedDrone, isHighlighted: boolean = 
       </div>
       <div class="drone-marker-pin">
         <div class="drone-marker-icon">
-          <!-- Tactical Drone Quadcopter Silhouette oriented to drone angle -->
-          <div class="drone-quad-rotator" style="transform: rotate(${angle}deg); display: flex; align-items: center; justify-content: center; width: 18px; height: 18px;">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="9" y="9" width="6" height="6" rx="1.5" fill="rgba(255,255,255,0.4)" />
-              <path d="M9 9L5 5" />
-              <path d="M15 9L19 5" />
-              <path d="M9 15L5 19" />
-              <path d="M15 15L19 19" />
-              <circle cx="5" cy="5" r="2" fill="white" />
-              <circle cx="19" cy="5" r="2" fill="white" />
-              <circle cx="5" cy="19" r="2" fill="white" />
-              <circle cx="19" cy="19" r="2" fill="white" />
-            </svg>
+          <!-- Tactical Drone Icon oriented to drone angle -->
+          <div class="drone-quad-rotator" style="transform: rotate(${angle}deg); display: flex; align-items: center; justify-content: center; width: 22px; height: 22px;">
+            <img src="${getDroneIconUrl(drone.droneType)}" width="22" height="22" style="display: block; pointer-events: none;" alt="Drone" />
           </div>
         </div>
       </div>
