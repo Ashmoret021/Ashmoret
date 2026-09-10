@@ -20,7 +20,6 @@ export const LaunchersDroneCard: React.FC<LaunchersDroneCardProps> = ({
     return 'drones' in item;
   };
 
-  console.log(group)
 
   const getDroneTypeClass = (droneType: DroneType): string => {
     switch (droneType) {
