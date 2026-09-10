@@ -10,7 +10,6 @@ import {
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { useSimulation } from "./simulation/useSimulation";
-import axios from "axios";
 import { SimulationControls } from "./ui/SimulationControls";
 import { SimulationStats } from "./ui/SimulationStats";
 import { Drone, DroneType } from "../../types/types";
@@ -32,6 +31,7 @@ import { sampleScenario } from "./simulation/sampleScenario";
 import { LeafletRenderer } from "./map/LeafletRenderer";
 import { visualEventQueue } from "./visual/VisualEventQueue";
 import { processEngagementDecision } from "./visual/VisualEventBuilder";
+import axios from "axios";
 import "leaflet/dist/leaflet.css";
 import { algorithmClient } from "./algorithm/AlgorithmClient";
 import { WorldSnapshotBuilder } from "./algorithm/WorldSnapshotBuilder";
@@ -40,9 +40,9 @@ export const App = () => {
   const [isStateDialogOpen, setIsStateDialogOpen] = useState(false);
   const { state, pauseClock, resumeClock, setSpeed, startClock } =
     useSimulation();
-  const [layers, setLayers] = useState<string[]>(["🗺️ מפה רגילה"]);
   const rendererRef = useRef<LeafletRenderer | null>(null);
   const engagedDronesRef = useRef<Set<number>>(new Set());
+  const [layers, setLayers] = useState<string[]>(["🗺️ מפה רגילה"]);
   const [selectedDrone, setSelectedDrone] = useState<Drone | null>(null);
 
   const tickIdRef = useRef<number>(0);
@@ -377,10 +377,9 @@ export const App = () => {
       "🛰️ צילום לווייני": satelliteLayer,
     };
 
-    const layerControl = L.control.layers(baseMaps, undefined, { position: "topright" }).addTo(map);
-
-    layerControl.getContainer()?.classList.add("top-center-layer-control");
-
+    const layerControl = L.control
+      .layers(baseMaps, undefined, { position: "topright" })
+      .addTo(map);
 
     const baseLayerNames = Object.keys(baseMaps);
 
@@ -425,7 +424,6 @@ export const App = () => {
             fillOpacity: 0.35,
           },
         });
-
 
         layerControl.addOverlay(citiesLayer, "🏙️ ערים");
       })
@@ -566,71 +564,10 @@ export const App = () => {
             onClose={() => setSelectedDrone(null)}
           />
         )}
-        <div ref={mapRef} style={{ height: "100%", width: "100%" }} />
-        <Button
-          onClick={() => setIsStateDialogOpen(true)}
-          style={{ left: 16, position: "absolute", top: 16, zIndex: 1000 }}
-          variant="contained"
-        >
-          View simulation state
-        </Button>
-
-        {/* Mission 4.2: Simulation Stats HUD */}
-        <SimulationStats />
-
-        {/* Mission 4.1: Simulation Control Bar */}
-        <SimulationControls />
-
-        <Dialog
-          fullWidth
-          maxWidth="md"
-          onClose={() => setIsStateDialogOpen(false)}
-          open={isStateDialogOpen}
-        >
-          <DialogTitle>Simulation state</DialogTitle>
-          <DialogContent>
-            <pre
-              style={{
-                backgroundColor: "#f5f5f5",
-                borderRadius: 4,
-                fontFamily: "monospace",
-                fontSize: 13,
-                margin: 0,
-                maxHeight: "60vh",
-                overflow: "auto",
-                padding: 16,
-                whiteSpace: "pre-wrap",
-                wordBreak: "break-word",
-              }}
-            >
-              {stateJson}
-            </pre>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={toggleClock}>
-              {isRunning ? "Pause clock" : "Run clock"}
-            </Button>
-            <select
-              aria-label="Simulation speed"
-              value={state.speedMultiplier}
-              onChange={(event) =>
-                setSpeed(Number(event.target.value) as 1 | 2 | 5 | 10)
-              }
-            >
-              {[1, 2, 5, 10].map((speed) => (
-                <option key={speed} value={speed}>
-                  x{speed}
-                </option>
-              ))}
-            </select>
-            <Button onClick={() => setIsStateDialogOpen(false)}>Close</Button>
-          </DialogActions>
-        </Dialog>
-         <EventLog />
+        <EventLog />
         <SimulationStats />
         <SimulationControls onRestart={handleRestart} />
       </div>
     </>
   );
 };
-
