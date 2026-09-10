@@ -7,7 +7,8 @@ export type NavViewMode =
   | 'aircraft_dict'
   | 'summary'
   | 'interceptors'
-  | 'drones';
+  | 'drones'
+  | 'summary_scenarios';
 
 interface NavOption {
   id: NavViewMode;
@@ -21,6 +22,7 @@ const NAV_OPTIONS: NavOption[] = [
   { id: 'summary', label: 'סיכום סימולציות' },
   { id: 'interceptors', label: 'פריסת מיירטים' },
   { id: 'drones', label: 'פריסת רחפנים' },
+  { id : 'summary_scenarios', label : 'סיכום תרחישים'}
 ];
 
 interface SideNavDrawerProps {

@@ -29,6 +29,7 @@ import "leaflet/dist/leaflet.css";
 import { useSimulation } from "../simulation/useSimulation";
 import { AddScenerioModal } from "../components";
 import { MapView } from "../ui/MapView";
+import { EventSummary } from "../components/EventSummary/EventSummary";
 import {
   clearScenario,
   loadScenario,
@@ -93,6 +94,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
   const { dronesGroups, setDronesGroups } = useGetAllDronesGroups();
   const { launchersGroups, setLaunchersGroups } = useGetAllLaunchersGroups();
 
+  //TODO: data doesnt match to INITIAL_SCENARIOS
   const { scenarios, setScenarios } = useGetAllScenarios();
 
   const [isStateDialogOpen, setIsStateDialogOpen] = useState(false);
@@ -148,6 +150,14 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
     }
   };
 
+  const handleScenarioSelectFromSummary = (scenarioId: string) => {
+    const foundScenario = INITIAL_SCENARIOS.find((s) => s.id === scenarioId);
+    if (foundScenario) {
+      setSelectedScenario(foundScenario);
+    }
+    setNavView("scenarios");
+  };
+
   const handleRestart = () => {
     const renderer = (window as any).__leafletRenderer;
     stopClock();
@@ -192,12 +202,12 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
 
   // ── Hide simulation HUD when Summary view is active ───────────────────────
   useEffect(() => {
-    if (navView === "summary") {
+    if (navView === "summary" || navView === "summary_scenarios") {
       setShowMainAdditionalComponents(false);
     } else {
       setShowMainAdditionalComponents(true);
     }
-  }, [navView]);
+  }, [navView, setShowMainAdditionalComponents]);
 
   return (
     <div className="main-layout-container">
@@ -231,6 +241,12 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
         {/* View: Simulation Summary (full-screen, no map / HUD) */}
         {navView === "summary" ? (
           <SimulationSummaryPanel onViewSimulation={handleViewSimulation} />
+        ) : navView === "summary_scenarios" ? (
+          /* View 2: Scenarios Repository Panel (מאגר תרחישים) */
+          <EventSummary
+            scenarios={INITIAL_SCENARIOS}
+            onSelectScenario={handleScenarioSelectFromSummary}
+          />
         ) : (
           <>
             {/* Tactical Map */}
@@ -305,7 +321,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
               onClose={() => setIsCreateScenarioOpen(false)}
             />
 
-            {/* Scenarios panel (dedicated scenarios view) */}
+            {/* Events Panel */}
             {navView === "scenarios" && (
               <EventsPanel
                 selectedScenarioId={selectedScenario?.id}
