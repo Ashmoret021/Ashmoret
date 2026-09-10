@@ -1,3 +1,5 @@
+import { useCallback, useEffect, useRef, useState } from "react";
+import { CoordinatesControl } from "./components/CoordinatesControl";
 import React from "react";
 import { MainLayout } from "./layouts/MainLayout";
 import {
@@ -8,7 +10,6 @@ import {
   DialogTitle,
 } from "@mui/material";
 import L from "leaflet";
-import "leaflet/dist/leaflet.css";
 import "./styles/droneStyles.css";
 import { useSimulation } from "./simulation/useSimulation";
 import { SimulationControls } from "./ui/SimulationControls";
@@ -26,8 +27,6 @@ import {
   createDroneDivIcon,
   createDronePopupContent,
 } from "./utils/droneMarker";
-import { useCallback, useEffect, useRef, useState } from "react";
-import "leaflet/dist/leaflet.css";
 import { MapView } from "./ui/MapView";
 import { EventLog } from "./ui/EventLog";
 import {
@@ -47,8 +46,11 @@ import axios from "axios";
 import "leaflet/dist/leaflet.css";
 import { algorithmClient } from "./algorithm/AlgorithmClient";
 import { WorldSnapshotBuilder } from "./algorithm/WorldSnapshotBuilder";
+
 export const App = () => {
-  const mapRef = useRef<HTMLDivElement | null>(null);
+  const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(
+    null,
+  );
   const mapInstanceRef = useRef<L.Map | null>(null);
   const markersLayerRef = useRef<L.LayerGroup | null>(null);
   const markersMapRef = useRef<Map<string, L.Marker>>(new Map());
@@ -458,6 +460,14 @@ export const App = () => {
       .layers(baseMaps, undefined, { position: "topright" })
       .addTo(map);
 
+    map.on("mousemove", (e: L.LeafletMouseEvent) => {
+      setCoords({ lat: e.latlng.lat, lng: e.latlng.lng });
+    });
+
+    map.on("mouseout", () => {
+      setCoords(null);
+    });
+
     const baseLayerNames = Object.keys(baseMaps);
 
     const container = layerControl.getContainer();
@@ -855,6 +865,7 @@ export const App = () => {
           onAddDroneGroup={() => setAttackModalOpen(true)}
           onAddInterceptorGroup={() => setDefenseModalOpen(true)}
         />
+        <CoordinatesControl coords={coords} />
         {selectedDrone && (
           <DroneModal
             drone={selectedDrone}
