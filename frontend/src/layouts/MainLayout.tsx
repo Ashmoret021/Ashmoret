@@ -191,8 +191,6 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
 
   const handleViewSimulation = (simulationId: string) => {
     console.log("Viewing simulation:", simulationId);
-    setNavView("drones");
-    setIsSidebarOpen(true);
   };
 
   const handleViewChange = (view: NavViewMode) => {
