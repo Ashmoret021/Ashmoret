@@ -32,9 +32,9 @@ import { LeafletRenderer } from "./map/LeafletRenderer";
 import { visualEventQueue } from "./visual/VisualEventQueue";
 import { processEngagementDecision } from "./visual/VisualEventBuilder";
 import axios from "axios";
-import 'leaflet/dist/leaflet.css';
-import { algorithmClient } from './algorithm/AlgorithmClient';
-import { WorldSnapshotBuilder } from './algorithm/WorldSnapshotBuilder';
+import "leaflet/dist/leaflet.css";
+import { algorithmClient } from "./algorithm/AlgorithmClient";
+import { WorldSnapshotBuilder } from "./algorithm/WorldSnapshotBuilder";
 
 export const App = () => {
   const rendererRef = useRef<LeafletRenderer | null>(null);
@@ -89,9 +89,15 @@ export const App = () => {
           );
         }
         // B. Threat Straight-Line Movement
-        else if (threat.logicalStatus === 'active' || threat.logicalStatus === 'interceptPending') {
+        else if (
+          threat.logicalStatus === "active" ||
+          threat.logicalStatus === "interceptPending"
+        ) {
           const flightDuration = 40; // 40 seconds — wider corridor in advanced scenario
-          const progress = Math.min(1, (simTime - threat.startTime) / flightDuration);
+          const progress = Math.min(
+            1,
+            (simTime - threat.startTime) / flightDuration,
+          );
 
           if (threat.route && threat.route.length >= 2) {
             const start = threat.route[0];
@@ -241,12 +247,18 @@ export const App = () => {
       }
 
       // C. Algorithm API Step (fired once per 1 second of simulation time)
-      if (!pendingApiCallRef.current && (simTime - lastApiTickSimTimeRef.current >= 1.0)) {
+      if (
+        !pendingApiCallRef.current &&
+        simTime - lastApiTickSimTimeRef.current >= 1.0
+      ) {
         lastApiTickSimTimeRef.current = simTime;
         pendingApiCallRef.current = true;
         tickIdRef.current += 1;
 
-        const snapshot = WorldSnapshotBuilder.buildSnapshot(getState(), tickIdRef.current);
+        const snapshot = WorldSnapshotBuilder.buildSnapshot(
+          getState(),
+          tickIdRef.current,
+        );
 
         algorithmClient.step(snapshot).then((response) => {
           pendingApiCallRef.current = false;
@@ -258,22 +270,27 @@ export const App = () => {
 
           for (const decision of response.engagements) {
             const targetIdNum = Number(decision.targetId);
-            if (!engagedDronesRef.current.has(targetIdNum) && nextThreats[targetIdNum]?.logicalStatus === 'active') {
+            if (
+              !engagedDronesRef.current.has(targetIdNum) &&
+              nextThreats[targetIdNum]?.logicalStatus === "active"
+            ) {
               engagedDronesRef.current.add(targetIdNum);
               nextThreats[targetIdNum] = {
                 ...nextThreats[targetIdNum],
-                logicalStatus: 'interceptPending',
+                logicalStatus: "interceptPending",
               };
               threatsStateUpdated = true;
 
               const bundle = processEngagementDecision(decision, currentState);
               if (bundle) {
                 visualEventQueue.enqueue(bundle.visualEvent);
-                rendererRef.current?.registerInterceptorVisualState(bundle.interceptorState);
+                rendererRef.current?.registerInterceptorVisualState(
+                  bundle.interceptorState,
+                );
 
                 appendLog(
-                  'launch',
-                  'שיגור מיירט',
+                  "launch",
+                  "שיגור מיירט",
                   `מיירט ${decision.interceptorType} שוגר מסוללה #${decision.defenseSystemId} לעבר איום #${decision.targetId}`,
                   bundle.interceptorState.startPosition,
                 );
@@ -285,14 +302,17 @@ export const App = () => {
                     if (s.threats[targetIdNum]) {
                       const updated = {
                         ...s.threats,
-                        [targetIdNum]: { ...s.threats[targetIdNum], logicalStatus: 'intercepted' as const },
+                        [targetIdNum]: {
+                          ...s.threats[targetIdNum],
+                          logicalStatus: "intercepted" as const,
+                        },
                       };
                       setState({ threats: updated });
 
                       appendLog(
-                        'interception',
-                        'יירוט מוצלח',
-                        `איום #${targetIdNum} (סוג: ${s.threats[targetIdNum].type ?? 'אויב'}) יורט בהצלחה`,
+                        "interception",
+                        "יירוט מוצלח",
+                        `איום #${targetIdNum} (סוג: ${s.threats[targetIdNum].type ?? "אויב"}) יורט בהצלחה`,
                         s.threats[targetIdNum].location,
                       );
                     }
@@ -358,7 +378,9 @@ export const App = () => {
       "🛰️ צילום לווייני": satelliteLayer,
     };
 
-    const layerControl = L.control.layers(baseMaps, undefined, { position: 'topright' }).addTo(map);
+    const layerControl = L.control
+      .layers(baseMaps, undefined, { position: "topright" })
+      .addTo(map);
 
     const baseLayerNames = Object.keys(baseMaps);
 
@@ -474,6 +496,7 @@ export const App = () => {
           scenarioName="רב-זירתי - צפון ומזרח"
           simId="SIM-01"
           onStartSimulation={handleStartSimulation}
+          handleMapReady={handleMapReady}
         />
         {selectedDrone && (
           <DroneModal
@@ -485,7 +508,6 @@ export const App = () => {
             onClose={() => setSelectedDrone(null)}
           />
         )}
-        <MapView onMapReady={handleMapReady} />
         <EventLog />
         <SimulationStats />
         <SimulationControls onRestart={handleRestart} />
