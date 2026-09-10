@@ -1416,8 +1416,10 @@ export const App = () => {
         )}
         {showMainAdditionalComponents && (
           <>
-            <EventLog />
-            <SimulationStats />
+            <div className="simulation-info-stack">
+              <SimulationStats />
+              <EventLog />
+            </div>
             <SimulationControls onRestart={handleRestart} />
             <DefenseSide
               map={map}
