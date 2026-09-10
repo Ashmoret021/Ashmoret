@@ -59,8 +59,8 @@ export const AddScenerioModal: FC<AddScenerioModalProps> = ({ open, onClose }) =
   });
 
   const [name, setName] = useState("");
-  const [selectedDroneGroup, setSelectedDroneGroup] = useState(0);
-  const [selectedLauncherGroup, setSelectedLauncherGroup] = useState(0);
+  const [selectedDroneGroup, setSelectedDroneGroup] = useState(1);
+  const [selectedLauncherGroup, setSelectedLauncherGroup] = useState(1);
 
   const handleNext = () => {
     if (page < STEP_LABELS.length - 1) {
