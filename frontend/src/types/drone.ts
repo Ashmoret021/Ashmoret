@@ -36,6 +36,8 @@ export interface DroneWave {
   direction: string;
   altitude: number;
   simulationArea: boolean;
+  placementMode?: "single" | "batch";
+  batchSize?: number;
 }
 
 export interface WavePlacementSummary {

@@ -11,8 +11,8 @@ export function TemporaryAddButton({ onClick }: TemporaryAddButtonProps) {
       onClick={onClick}
       sx={{
         position: 'fixed',
-        top: 22,
-        right: 22,
+        top: 70,
+        right: 5,
         width: 58,
         height: 58,
         fontSize: '2rem',

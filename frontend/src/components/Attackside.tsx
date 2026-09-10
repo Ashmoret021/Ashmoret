@@ -9,15 +9,23 @@ import {
   createWave,
 } from "../constants/droneConstants";
 
+import DronePlacementControl from "./DronePlacementControl";
+
 export type { DroneWave };
 
-interface AttackSideProps {
+export interface AttackSideProps {
   open: boolean;
   onClose: () => void;
   waves: DroneWave[];
   setWaves: React.Dispatch<React.SetStateAction<DroneWave[]>>;
   placedDrones: PlacedDrone[];
-  onStartPlacement: (waveId: number) => void;
+  onStartPlacement: (
+    waveId: string | number,
+    options?: {
+      mode: "single" | "batch";
+      count: number;
+    }
+  ) => void;
   attackName: string;
   setAttackName: React.Dispatch<React.SetStateAction<string>>;
   attackDescription: string;
@@ -41,13 +49,13 @@ export const AttackSide: React.FC<AttackSideProps> = ({
   if (!open) return null;
 
   const updateWave = (
-    id: number,
-    field: keyof DroneWave,
-    value: string | number | boolean,
+    id: string | number,
+    field: string,
+    value: any,
   ) => {
     setWaves((prev) =>
       prev.map((wave) =>
-        wave.id === id
+        String(wave.id) === String(id)
           ? { ...wave, [field]: value }
           : wave,
       ),
@@ -1334,98 +1342,17 @@ export const AttackSide: React.FC<AttackSideProps> = ({
                     </div>
 
                     {/* Drone Placement on Map */}
-                    <div style={{ marginTop: 6 }}>
-                      <label style={labelStyle}>
-                        מיקום רחפנים על המפה
-                      </label>
-
-                      {/* Wave Placement Status Box */}
-                      <div
-                        style={{
-                          background: "#f8fafc",
-                          borderRadius: 8,
-                          padding: "9px 12px",
-                          marginBottom: 10,
-                          border: "1px solid #e2e8f0",
-                          display: "grid",
-                          gridTemplateColumns: "1fr 1fr 1fr",
-                          gap: 6,
-                          textAlign: "center",
-                          fontSize: 11,
-                        }}
-                      >
-                        <div>
-                          <span style={{ color: "#64748b", display: "block" }}>דרושים</span>
-                          <span style={{ fontWeight: 800, color: "#1e293b", fontSize: 13.5 }}>
-                            {requiredForWave}
-                          </span>
-                        </div>
-                        <div>
-                          <span style={{ color: "#64748b", display: "block" }}>הוצבו</span>
-                          <span style={{ fontWeight: 800, color: "#873535", fontSize: 13.5 }}>
-                            {placedForWave}
-                          </span>
-                        </div>
-                        <div>
-                          <span style={{ color: "#64748b", display: "block" }}>נותרו</span>
-                          <span
-                            style={{
-                              fontWeight: 800,
-                              color: isComplete ? "#10b981" : "#0284c7",
-                              fontSize: 13.5,
-                            }}
-                          >
-                            {remainingForWave}
-                          </span>
-                        </div>
-                      </div>
-
-                      {/* "Place Drones" Button */}
-                      <button
-                        type="button"
-                        disabled={isComplete}
-                        onClick={() => {
-                          onStartPlacement(wave.id);
-                          onClose();
-                        }}
-                        style={{
-                          width: "100%",
-                          height: 48,
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          gap: 8,
-                          borderRadius: 8,
-                          border: isComplete ? "1px solid #cbd5e1" : "none",
-                          background: isComplete
-                            ? "#f1f5f9"
-                            : "linear-gradient(135deg, #873535 0%, #ad4242 100%)",
-                          color: isComplete ? "#94a3b8" : "#ffffff",
-                          cursor: isComplete ? "not-allowed" : "pointer",
-                          fontSize: 12.5,
-                          fontWeight: 700,
-                          boxShadow: isComplete ? "none" : "0 4px 12px rgba(135, 53, 53, 0.25)",
-                          transition: "all 0.2s ease",
-                        }}
-                      >
-                        <svg
-                          width="18"
-                          height="18"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                        >
-                          <path d="M12 21C16 17 19 13.8 19 9.5C19 5.9 16.3 3 12 3C7.7 3 5 5.9 5 9.5C5 13.8 8 17 12 21Z" />
-                          <circle cx="12" cy="9.5" r="2.5" />
-                        </svg>
-                        <span>
-                          {isComplete
-                            ? `✓ כל ${requiredForWave} הרחפנים הוצבו במפה`
-                            : `מקם רחפנים במפה (נותרו ${remainingForWave})`}
-                        </span>
-                      </button>
-                    </div>
+                    <DronePlacementControl
+                      wave={wave}
+                      requiredForWave={requiredForWave}
+                      placedForWave={placedForWave}
+                      remainingForWave={remainingForWave}
+                      isComplete={isComplete}
+                      labelStyle={labelStyle}
+                      updateWave={updateWave}
+                      onStartPlacement={onStartPlacement}
+                      onClose={onClose}
+                    />
                   </div>
                 )}
               </div>
@@ -1613,3 +1540,6 @@ const selectStyle: React.CSSProperties = {
 
   cursor: "pointer",
 };
+
+export { DronePlacementControl };
+export default AttackSide;
