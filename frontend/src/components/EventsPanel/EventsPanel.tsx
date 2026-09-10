@@ -3,7 +3,6 @@ import { Layers, Plus, ChevronRight, ChevronLeft } from 'lucide-react';
 import { EventScenarioCard } from './EventScenarioCard';
 import { EventsFilter, EventTypeFilter, DroneCountFilter } from './EventsFilter';
 import { ScenarioItem, ScenarioType } from '../../types/simulation';
-import { INITIAL_SCENARIOS } from '../../mock/events';
 import './EventsPanel.css';
 
 interface EventsPanelProps {
@@ -57,7 +56,8 @@ export const EventsPanel: React.FC<EventsPanelProps> = ({
       if (eventTypeFilter === 'single' && sc.type !== ScenarioType.SINGLE_AREA) return false;
       if (eventTypeFilter === 'multi' && sc.type !== ScenarioType.MULTIPLE_AREAS) return false;
 
-      const droneCount = sc.drones?.length ?? 0;
+      const droneCount = sc.dronesGroup?.drones?.length ?? 0;
+
       if (droneCountFilter === '1' && droneCount !== 1) return false;
       if (droneCountFilter === '2-5' && (droneCount < 2 || droneCount > 5)) return false;
       if (droneCountFilter === '6-10' && (droneCount < 6 || droneCount > 10)) return false;

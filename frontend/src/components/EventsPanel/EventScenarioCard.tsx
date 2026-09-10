@@ -2,7 +2,7 @@ import React from 'react';
 import { ChevronLeft, Target, Crosshair, Drone, MapPin } from 'lucide-react';
 import { ScenarioItem, SeverityLevel } from '../../types/simulation';
 import './EventsPanel.css';
-import { DroneType } from '../../../../types/types';
+import { DroneType } from '../../types/types';
 
 interface EventScenarioCardProps {
   scenario: ScenarioItem;
@@ -15,7 +15,7 @@ export const EventScenarioCard: React.FC<EventScenarioCardProps> = ({
   isSelected = false,
   onSelect,
 }) => {
-  const getSeverityLabel = (severity: SeverityLevel): string => {
+  const getSeverityLabel = (severity: SeverityLevel | undefined): string => {
     switch (severity) {
       case 'low':
         return 'נמוכה';
@@ -43,9 +43,10 @@ export const EventScenarioCard: React.FC<EventScenarioCardProps> = ({
     }
   };
 
-  const uniqueDroneTypes = Array.from(
-    new Set(scenario.drones?.map((drone) => drone.type) || [])
-  );
+  // Drones live under the populated dronesGroup on the DB-shaped scenario.
+  const scenarioDrones = scenario.dronesGroup?.drones ?? [];
+  const uniqueDroneTypes = Array.from(new Set(scenarioDrones.map((drone) => drone.type)));
+  const entryPoints = scenario.entryPoints ?? [];
 
   return (
     <div
@@ -58,10 +59,10 @@ export const EventScenarioCard: React.FC<EventScenarioCardProps> = ({
       <div className="card-top-row">
         <div className="scenario-title-wrap">
           {isSelected && <ChevronLeft size={16} className="selected-chevron" />}
-          <h4 className="scenario-title">{scenario.title}</h4>
+          <h4 className="scenario-title">{scenario.name}</h4>
         </div>
 
-        <span className={`severity-tag severity-${scenario.severity}`}>
+        <span className={`severity-tag severity-${scenario.severity ?? 'unknown'}`}>
           {getSeverityLabel(scenario.severity)}
         </span>
       </div>
@@ -75,7 +76,7 @@ export const EventScenarioCard: React.FC<EventScenarioCardProps> = ({
 
         <div className="drone-count-indicator">
           <Crosshair size={13} className="meta-icon" />
-          <span>{scenario.drones.length} רחפנים</span>
+          <span>{scenarioDrones.length} איומים</span>
         </div>
       </div>
 
@@ -87,7 +88,7 @@ export const EventScenarioCard: React.FC<EventScenarioCardProps> = ({
         </div>
 
         <div className="entry-point-tags">
-          {scenario.entryPoints.map((point) => (
+          {entryPoints.map((point) => (
             <span key={point} className="location-tag">
               {point}
             </span>
@@ -102,7 +103,7 @@ export const EventScenarioCard: React.FC<EventScenarioCardProps> = ({
         <div className="drone-type-badges">
           {uniqueDroneTypes.map((droneType) => (
             <span key={droneType} className={`drone-type-badge ${getDroneTypeClass(droneType)}`}>
-              {droneType}
+              {DroneType[droneType] ?? droneType}
             </span>
           ))}
         </div>

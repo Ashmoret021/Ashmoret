@@ -122,6 +122,8 @@ CREATE TABLE scenario.drone (
 
     velocity NUMERIC NOT NULL,
 
+    start_time NUMERIC NOT NULL,
+
     type INTEGER NOT NULL
         REFERENCES scenario.drone_type(id)
         ON DELETE RESTRICT

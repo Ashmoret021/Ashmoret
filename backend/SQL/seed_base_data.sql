@@ -10,10 +10,10 @@
 
 INSERT INTO scenario.drone_type (name)
 VALUES
-    ('רחפן מרובע'),
-    ('רחפן כנף קבועה'),
-    ('רחפן המראה ונחיתה אנכית'),
-    ('רחפן תצפית');
+    ('SkyMiteC7'),
+    ('LoadBeeM2'),
+    ('FalconLongX4'),
+    ('NanoSwarmQ9');
 
 
 INSERT INTO scenario.launcher_type (name, reload_time)
@@ -25,10 +25,14 @@ VALUES
 
 INSERT INTO scenario.interceptor_type (name)
 VALUES
-    ('מיירט א'),
-    ('מיירט ב'),
-    ('מיירט ג'),
-    ('מיירט ד');
+    ('BuzzStop15'),
+    ('NetWing30'),
+    ('DartFoxS'),
+    ('SpearMini70'),
+    ('SkyLanceM'),
+    ('FalconClipH'),
+    ('SwarmMist5'),
+    ('MicroNetR');
 
 
 -- ============================================================
@@ -148,6 +152,7 @@ INSERT INTO scenario.drone (
     agl,
     heading,
     velocity,
+    start_time,
     type
 )
 VALUES
@@ -160,8 +165,9 @@ VALUES
         80,
         45,
         25,
+        1,
         (SELECT id FROM scenario.drone_type
-         WHERE name = 'רחפן מרובע')
+         WHERE name = 'SkyMiteC7')
     ),
     (
         (SELECT id FROM scenario.drones_group
@@ -172,8 +178,9 @@ VALUES
         100,
         90,
         30,
+        2,
         (SELECT id FROM scenario.drone_type
-         WHERE name = 'רחפן מרובע')
+         WHERE name = 'SkyMiteC7')
     ),
     (
         (SELECT id FROM scenario.drones_group
@@ -184,8 +191,9 @@ VALUES
         150,
         180,
         35,
+        3,
         (SELECT id FROM scenario.drone_type
-         WHERE name = 'רחפן כנף קבועה')
+         WHERE name = 'LoadBeeM2')
     ),
     (
         (SELECT id FROM scenario.drones_group
@@ -196,8 +204,9 @@ VALUES
         70,
         270,
         20,
+        1,
         (SELECT id FROM scenario.drone_type
-         WHERE name = 'רחפן המראה ונחיתה אנכית')
+         WHERE name = 'FalconLongX4')
     ),
     (
         (SELECT id FROM scenario.drones_group
@@ -208,8 +217,9 @@ VALUES
         90,
         315,
         28,
+        2,
         (SELECT id FROM scenario.drone_type
-         WHERE name = 'רחפן מרובע')
+         WHERE name = 'SkyMiteC7')
     ),
     (
         (SELECT id FROM scenario.drones_group
@@ -220,8 +230,9 @@ VALUES
         200,
         135,
         40,
+        1,
         (SELECT id FROM scenario.drone_type
-         WHERE name = 'רחפן תצפית')
+         WHERE name = 'NanoSwarmQ9')
     ),
     (
         (SELECT id FROM scenario.drones_group
@@ -232,8 +243,9 @@ VALUES
         250,
         225,
         45,
+        4,
         (SELECT id FROM scenario.drone_type
-         WHERE name = 'רחפן כנף קבועה')
+         WHERE name = 'LoadBeeM2')
     ),
     (
         (SELECT id FROM scenario.drones_group
@@ -244,8 +256,9 @@ VALUES
         50,
         0,
         15,
+        1,
         (SELECT id FROM scenario.drone_type
-         WHERE name = 'רחפן מרובע')
+         WHERE name = 'SkyMiteC7')
     );
 
 
@@ -374,7 +387,7 @@ VALUES
               AND l.latitude = 32.070000
         ),
         (SELECT id FROM scenario.interceptor_type
-         WHERE name = 'מיירט א'),
+         WHERE name = 'BuzzStop15'),
         10
     ),
     (
@@ -388,7 +401,7 @@ VALUES
               AND l.latitude = 32.070000
         ),
         (SELECT id FROM scenario.interceptor_type
-         WHERE name = 'מיירט ב'),
+         WHERE name = 'NetWing30'),
         5
     ),
     (
@@ -402,7 +415,7 @@ VALUES
               AND l.latitude = 32.070000
         ),
         (SELECT id FROM scenario.interceptor_type
-         WHERE name = 'מיירט ג'),
+         WHERE name = 'DartFoxS'),
         2
     ),
 
@@ -418,7 +431,7 @@ VALUES
               AND l.latitude = 32.075000
         ),
         (SELECT id FROM scenario.interceptor_type
-         WHERE name = 'מיירט א'),
+         WHERE name = 'BuzzStop15'),
         8
     ),
     (
@@ -432,7 +445,7 @@ VALUES
               AND l.latitude = 32.075000
         ),
         (SELECT id FROM scenario.interceptor_type
-         WHERE name = 'מיירט ב'),
+         WHERE name = 'NetWing30'),
         4
     ),
 
@@ -448,7 +461,7 @@ VALUES
               AND l.latitude = 31.940000
         ),
         (SELECT id FROM scenario.interceptor_type
-         WHERE name = 'מיירט א'),
+         WHERE name = 'BuzzStop15'),
         12
     ),
     (
@@ -462,7 +475,7 @@ VALUES
               AND l.latitude = 31.940000
         ),
         (SELECT id FROM scenario.interceptor_type
-         WHERE name = 'מיירט ג'),
+         WHERE name = 'DartFoxS'),
         6
     ),
     (
@@ -476,7 +489,7 @@ VALUES
               AND l.latitude = 31.940000
         ),
         (SELECT id FROM scenario.interceptor_type
-         WHERE name = 'מיירט ד'),
+         WHERE name = 'SpearMini70'),
         3
     ),
 
@@ -492,7 +505,7 @@ VALUES
               AND l.latitude = 31.945000
         ),
         (SELECT id FROM scenario.interceptor_type
-         WHERE name = 'מיירט ב'),
+         WHERE name = 'NetWing30'),
         10
     ),
 
@@ -508,7 +521,7 @@ VALUES
               AND l.latitude = 32.030000
         ),
         (SELECT id FROM scenario.interceptor_type
-         WHERE name = 'מיירט א'),
+         WHERE name = 'BuzzStop15'),
         5
     ),
     (
@@ -522,7 +535,7 @@ VALUES
               AND l.latitude = 32.030000
         ),
         (SELECT id FROM scenario.interceptor_type
-         WHERE name = 'מיירט ב'),
+         WHERE name = 'NetWing30'),
         5
     ),
     (
@@ -536,7 +549,7 @@ VALUES
               AND l.latitude = 32.030000
         ),
         (SELECT id FROM scenario.interceptor_type
-         WHERE name = 'מיירט ד'),
+         WHERE name = 'SpearMini70'),
         2
     ),
 
@@ -552,7 +565,7 @@ VALUES
               AND l.latitude = 32.035000
         ),
         (SELECT id FROM scenario.interceptor_type
-         WHERE name = 'מיירט א'),
+         WHERE name = 'BuzzStop15'),
         15
     ),
     (
@@ -566,7 +579,7 @@ VALUES
               AND l.latitude = 32.035000
         ),
         (SELECT id FROM scenario.interceptor_type
-         WHERE name = 'מיירט ג'),
+         WHERE name = 'DartFoxS'),
         5
     ),
 
@@ -582,7 +595,7 @@ VALUES
               AND l.latitude = 32.010000
         ),
         (SELECT id FROM scenario.interceptor_type
-         WHERE name = 'מיירט א'),
+         WHERE name = 'BuzzStop15'),
         5
     ),
     (
@@ -596,7 +609,7 @@ VALUES
               AND l.latitude = 32.010000
         ),
         (SELECT id FROM scenario.interceptor_type
-         WHERE name = 'מיירט ב'),
+         WHERE name = 'NetWing30'),
         3
     );
 

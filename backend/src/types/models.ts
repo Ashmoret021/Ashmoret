@@ -36,6 +36,7 @@ export interface Drone {
   agl: number;
   heading: number;
   velocity: number;
+  start_time: number;
   type: number;
 }
 

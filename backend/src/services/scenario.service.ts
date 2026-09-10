@@ -14,8 +14,8 @@ export const getAllScenarios = async (): Promise<Scenario[]> => {
   const repo = getScenarioRepository();
   const scenarios = await repo.find({
     relations: {
-      dronesGroup: { drones: true },
-      launchersGroup: { launchers: true },
+      dronesGroup: { drones: { droneType: true } },
+      launchersGroup: { launchers: { launcherType: true } },
     },
     order: { id: "ASC" },
   });
@@ -113,7 +113,7 @@ export const updateScenario = async (
       data.launchersGroupId ?? data.launchers_group_id;
   }
 
-  await repo.update(id, updatePayload);
+  await repo.update(id, updatePayload as any);
   const updated = await repo.findOneBy({ id });
   if (updated) {
     logger.info(`Updated scenario with id: ${id}`);
