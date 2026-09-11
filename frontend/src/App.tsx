@@ -15,6 +15,7 @@ import { CoordinatesControl } from "./components/CoordinatesControl";
 import { DefenseSide } from "./components/DefenseSide/defenseSide";
 import { DeleteConfirmModal } from "./components/DeleteConfirmModal";
 import DroneModal from "./components/DroneModal/DroneModal";
+import { SimulationResultModal } from "./components/SimulationResultModal";
 import { PlacementHUD } from "./components/PlacementHUD";
 import { createWave, createDroneFormation } from "./constants/droneConstants";
 import { MainLayout } from "./layouts/MainLayout";
@@ -74,6 +75,8 @@ export const App = () => {
   const [mapMoveTick, setMapMoveTick] = useState(0);
   const [showMainAdditionalComponents, setShowMainAdditionalComponents] =
     useState<boolean>(true);
+  const [showSimControls, setShowSimControls] = useState(false);
+  const [isResultModalOpen, setIsResultModalOpen] = useState(false);
 
   const tickIdRef = useRef<number>(0);
   const lastApiTickSimTimeRef = useRef<number>(0); // Start at 0 so first API call fires at simTime≥1.0 (after threats have moved)
@@ -116,7 +119,7 @@ export const App = () => {
     open: false,
     title: "",
     message: "",
-    onConfirm: () => {},
+    onConfirm: () => { },
   });
   const [toast, setToast] = useState<{
     message: string;
@@ -399,6 +402,7 @@ export const App = () => {
         );
       if (allDone && status === "running") {
         finishClock();
+        setIsResultModalOpen(true);
       }
     });
 
@@ -557,6 +561,7 @@ export const App = () => {
 
   const handleRestart = useCallback(() => {
     setSelectedThreatId(null);
+    setIsResultModalOpen(false);
     stopClock();
     algorithmClient.reset();
     simulationGenerationRef.current += 1; // invalidate any in-flight async callbacks
@@ -802,13 +807,13 @@ export const App = () => {
           prev.map((drone) =>
             existingDraft.droneIds.includes(drone.id)
               ? {
-                  ...drone,
-                  latitude: existingDraft.origin.lat,
-                  longitude: existingDraft.origin.lng,
-                  heading,
-                  angle: heading,
-                  placedAt: new Date().toISOString(),
-                }
+                ...drone,
+                latitude: existingDraft.origin.lat,
+                longitude: existingDraft.origin.lng,
+                heading,
+                angle: heading,
+                placedAt: new Date().toISOString(),
+              }
               : drone,
           ),
         );
@@ -912,13 +917,13 @@ export const App = () => {
             prev.map((drone) =>
               clusterDrones.some((candidate) => candidate.id === drone.id)
                 ? {
-                    ...drone,
-                    latitude: drone.latitude,
-                    longitude: drone.longitude,
-                    heading,
-                    angle: heading,
-                    placedAt: drone.placedAt,
-                  }
+                  ...drone,
+                  latitude: drone.latitude,
+                  longitude: drone.longitude,
+                  heading,
+                  angle: heading,
+                  placedAt: drone.placedAt,
+                }
                 : drone,
             ),
           );
@@ -1006,13 +1011,13 @@ export const App = () => {
           prev.map((drone) =>
             drone.id === newDrone.id
               ? {
-                  ...drone,
-                  latitude: newDrone.latitude,
-                  longitude: newDrone.longitude,
-                  heading,
-                  angle: heading,
-                  placedAt: drone.placedAt,
-                }
+                ...drone,
+                latitude: newDrone.latitude,
+                longitude: newDrone.longitude,
+                heading,
+                angle: heading,
+                placedAt: drone.placedAt,
+              }
               : drone,
           ),
         );
@@ -1142,9 +1147,9 @@ export const App = () => {
 
       const result = isUpdate
         ? await updateDronesGroupWithDrones(
-            existingGroupId,
-            payload as Record<string, unknown>,
-          )
+          existingGroupId,
+          payload as Record<string, unknown>,
+        )
         : await createDronesGroupWithDrones(payload as Record<string, unknown>);
 
       const response = result as { group?: { id?: number }; id?: number } | undefined;
@@ -1362,9 +1367,9 @@ export const App = () => {
       const a =
         Math.sin(dLat / 2) * Math.sin(dLat / 2) +
         Math.cos((threat.location.latitude * Math.PI) / 180) *
-          Math.cos((end.latitude * Math.PI) / 180) *
-          Math.sin(dLon / 2) *
-          Math.sin(dLon / 2);
+        Math.cos((end.latitude * Math.PI) / 180) *
+        Math.sin(dLon / 2) *
+        Math.sin(dLon / 2);
       const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
       const dist = Math.max(1, Math.round(R * c));
       return `${dist} ק"מ`;
@@ -1414,6 +1419,17 @@ export const App = () => {
             onClose={() => setSelectedThreatId(null)}
           />
         )}
+        <SimulationResultModal
+          open={isResultModalOpen}
+          onClose={() => setIsResultModalOpen(false)}
+          interceptedCount={
+            Object.values(state.threats).filter(
+              (t) => t.logicalStatus === "intercepted",
+            ).length
+          }
+          totalThreats={Object.keys(state.threats).length}
+          responseTimeSeconds={Math.round(state.simulationTime * 10) / 10}
+        />
         {showMainAdditionalComponents && (
           <>
             <div className="simulation-info-stack">
@@ -1468,10 +1484,10 @@ export const App = () => {
                 prev.map((wave) =>
                   String(wave.id) === String(waveId)
                     ? {
-                        ...wave,
-                        placementMode: options.mode,
-                        batchSize: options.count,
-                      }
+                      ...wave,
+                      placementMode: options.mode,
+                      batchSize: options.count,
+                    }
                     : wave,
                 ),
               );
